@@ -5,6 +5,7 @@ import { getSession } from "@/lib/session";
 import type {
   Board,
   LeaderboardListing,
+  ListingProduct,
   ReactionState,
   ReactionType,
   Viewer,
@@ -23,10 +24,12 @@ const listingSelect = `
     l.product_url,
     l.product_description,
     l.product_logo_url,
+    l.products_json,
     l.tokens_spent_usd,
     l.revenue_usd,
     l.efficiency_score,
     l.model_provider,
+    l.ai_spend_verification,
     l.bid_cents,
     l.created_at,
     l.updated_at,
@@ -36,6 +39,35 @@ const listingSelect = `
   join users u on u.id = l.owner_user_id
   left join reactions r on r.listing_id = l.id
 `;
+
+function normalizeProducts(row: LeaderboardRow): ListingProduct[] {
+  const fallback = {
+    name: String(row.product_name),
+    url: String(row.product_url),
+    description: String(row.product_description),
+    logoUrl: row.product_logo_url ? String(row.product_logo_url) : null,
+  };
+
+  if (!row.products_json) return [fallback];
+  try {
+    const products = JSON.parse(String(row.products_json));
+    if (!Array.isArray(products)) return [fallback];
+    const normalized = products.flatMap((product): ListingProduct[] => {
+      if (!product || typeof product !== "object") return [];
+      const candidate = product as Record<string, unknown>;
+      if (typeof candidate.name !== "string" || typeof candidate.url !== "string") return [];
+      return [{
+        name: candidate.name,
+        url: candidate.url,
+        description: typeof candidate.description === "string" ? candidate.description : "",
+        logoUrl: typeof candidate.logoUrl === "string" ? candidate.logoUrl : null,
+      }];
+    });
+    return normalized.length ? normalized : [fallback];
+  } catch {
+    return [fallback];
+  }
+}
 
 function normalizeRow(row: LeaderboardRow): LeaderboardListing {
   return {
@@ -48,10 +80,12 @@ function normalizeRow(row: LeaderboardRow): LeaderboardListing {
     productUrl: String(row.product_url),
     productDescription: String(row.product_description),
     productLogoUrl: row.product_logo_url ? String(row.product_logo_url) : null,
+    products: normalizeProducts(row),
     tokensSpentUsd: Number(row.tokens_spent_usd),
     revenueUsd: Number(row.revenue_usd),
     efficiencyScore: Number(row.efficiency_score),
     modelProvider: String(row.model_provider) as LeaderboardListing["modelProvider"],
+    aiSpendVerification: row.ai_spend_verification === "self_reported" ? "self_reported" : "api",
     bidCents: Number(row.bid_cents),
     loveCount: Number(row.love_count),
     laughCount: Number(row.laugh_count),
@@ -62,10 +96,12 @@ function normalizeRow(row: LeaderboardRow): LeaderboardListing {
 
 export function sortListings(listings: LeaderboardListing[], board: Board) {
   return [...listings].sort((a, b) => {
+    const verificationTieBreak = Number(b.aiSpendVerification === "api")
+      - Number(a.aiSpendVerification === "api");
     if (board === "respected") {
-      return b.loveCount - a.loveCount || b.efficiencyScore - a.efficiencyScore;
+      return b.loveCount - a.loveCount || verificationTieBreak || b.efficiencyScore - a.efficiencyScore;
     }
-    return b.laughCount - a.laughCount || a.efficiencyScore - b.efficiencyScore;
+    return b.laughCount - a.laughCount || verificationTieBreak || a.efficiencyScore - b.efficiencyScore;
   });
 }
 

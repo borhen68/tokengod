@@ -8,6 +8,7 @@ const receiptSchema = z.object({
   kind: z.enum(["tokens", "revenue"]),
   userId: z.string().uuid(),
   provider: z.enum(["openai", "anthropic", "stripe"]),
+  verificationMethod: z.enum(["api", "self_reported"]).default("api"),
   amountUsd: z.number().nonnegative().finite(),
   periodStart: z.string().datetime(),
   periodEnd: z.string().datetime(),
@@ -116,4 +117,3 @@ export function verifyVerificationReceipt(
 
   return payload;
 }
-

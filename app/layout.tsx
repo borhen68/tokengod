@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
 
 import { Header } from "@/components/header";
 import { Logo } from "@/components/logo";
@@ -7,6 +8,9 @@ import { Logo } from "@/components/logo";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const dataFastWebsiteId = process.env.NEXT_PUBLIC_DATAFAST_WEBSITE_ID
+  || "dfid_7e2JjRMAMJP4ppGiuJAoj";
+const dataFastDomain = process.env.NEXT_PUBLIC_DATAFAST_DOMAIN || "tokengod.lol";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -15,23 +19,31 @@ export const metadata: Metadata = {
     template: "%s · TokenGod",
   },
   description:
-    "The verified leaderboard for what founders burned on AI and what their products made back.",
+    "The transparent leaderboard for what founders spent on AI and what their products made back.",
   openGraph: {
     title: "TokenGod — Who turned tokens into money?",
-    description: "Verified AI spend. Verified revenue. Public respect and public roasting.",
+    description: "AI spend with visible proof labels. Verified revenue. Public respect and public roasting.",
     type: "website",
     siteName: "TokenGod",
   },
   twitter: {
     card: "summary_large_image",
     title: "TokenGod — Who turned tokens into money?",
-    description: "Verified AI spend. Verified revenue. Public respect and public roasting.",
+    description: "AI spend with visible proof labels. Verified revenue. Public respect and public roasting.",
   },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
+      <head>
+        <Script id="datafast-queue" strategy="beforeInteractive">
+          {`window.datafast = window.datafast || function() {
+            window.datafast.q = window.datafast.q || [];
+            window.datafast.q.push(arguments);
+          };`}
+        </Script>
+      </head>
       <body>
         <div className="ambient-bubble bubble-bg-one" />
         <div className="ambient-bubble bubble-bg-two" />
@@ -51,7 +63,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </div>
             <div className="footer-manifesto">
               <span>THE RULE</span>
-              <p>Numbers are verified. Reactions require X. The water is dramatic.</p>
+              <p>Revenue is verified. AI-spend proof is labeled. Reactions require X. The water is dramatic.</p>
             </div>
           </div>
           <div className="footer-bottom">
@@ -60,6 +72,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </div>
         </footer>
       </body>
+      <Script
+        src="https://datafa.st/js/script.js"
+        data-website-id={dataFastWebsiteId}
+        data-domain={dataFastDomain}
+        strategy="afterInteractive"
+      />
     </html>
   );
 }

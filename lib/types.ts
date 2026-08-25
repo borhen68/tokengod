@@ -1,6 +1,14 @@
 export type Board = "respected" | "roasted";
 export type ModelProvider = "anthropic" | "openai" | "other";
 export type ReactionType = "love" | "laugh";
+export type AiSpendVerification = "api" | "self_reported";
+
+export type ListingProduct = {
+  name: string;
+  url: string;
+  description: string;
+  logoUrl: string | null;
+};
 
 export type LeaderboardListing = {
   id: string;
@@ -12,10 +20,12 @@ export type LeaderboardListing = {
   productUrl: string;
   productDescription: string;
   productLogoUrl: string | null;
+  products: ListingProduct[];
   tokensSpentUsd: number;
   revenueUsd: number;
   efficiencyScore: number;
   modelProvider: ModelProvider;
+  aiSpendVerification: AiSpendVerification;
   bidCents: number;
   loveCount: number;
   laughCount: number;
@@ -37,6 +47,7 @@ export type VerificationReceiptPayload = {
   kind: "tokens" | "revenue";
   userId: string;
   provider: "openai" | "anthropic" | "stripe";
+  verificationMethod: "api" | "self_reported";
   amountUsd: number;
   periodStart: string;
   periodEnd: string;

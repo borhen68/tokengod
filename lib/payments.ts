@@ -54,7 +54,8 @@ export async function finalizeCheckoutSession(
       if (String(pending.stripe_checkout_session_id) !== session.id) {
         throw new ApiError("Checkout session does not match this submission.", 400);
       }
-      if (Number(pending.bid_cents) !== session.amount_total) {
+      const siteFeeCents = Number(pending.site_fee_cents || 0);
+      if (Number(pending.bid_cents) + siteFeeCents !== session.amount_total) {
         throw new ApiError("Checkout amount does not match this submission.", 400);
       }
 
@@ -96,11 +97,12 @@ export async function finalizeCheckoutSession(
       await tx.execute({
         sql: `insert into listings (
                 id, owner_user_id, product_name, product_url, product_description,
-                product_logo_url,
+                product_logo_url, products_json,
                 tokens_spent_usd, revenue_usd, efficiency_score, model_provider,
+                ai_spend_verification,
                 verification_period_start, verification_period_end, verified_at,
                 created_at, updated_at, bid_cents, stripe_checkout_session_id
-              ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           listingId,
           pendingId,
@@ -108,10 +110,12 @@ export async function finalizeCheckoutSession(
           String(pending.product_url),
           String(pending.product_description),
           pending.product_logo_url ? String(pending.product_logo_url) : null,
+          pending.products_json ? String(pending.products_json) : null,
           Number(pending.tokens_spent_usd),
           Number(pending.revenue_usd),
           Number(pending.efficiency_score),
           String(pending.model_provider),
+          pending.ai_spend_verification === "self_reported" ? "self_reported" : "api",
           Number(pending.verification_period_start),
           Number(pending.verification_period_end),
           now,

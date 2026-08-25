@@ -86,7 +86,7 @@ function enforceRateLimit(request: Request) {
   const key = forwarded || request.headers.get("x-real-ip") || "local";
   const cutoff = Date.now() - 60_000;
   const recent = (recentRequests.get(key) || []).filter((time) => time > cutoff);
-  if (recent.length >= 10) throw new ApiError("Too many website previews. Wait a minute and retry.", 429);
+  if (recent.length >= 30) throw new ApiError("Too many website previews. Wait a minute and retry.", 429);
   if (recentRequests.size > 5_000) recentRequests.clear();
   recent.push(Date.now());
   recentRequests.set(key, recent);

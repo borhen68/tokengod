@@ -1,6 +1,5 @@
 import {
   ArrowRight,
-  BadgeCheck,
   BarChart3,
   KeyRound,
 } from "lucide-react";
@@ -86,7 +85,7 @@ export default async function HomePage({
           <div className="hero-copy">
             <div className="hero-kicker">
               <span><i /> LIVE RANKING</span>
-              <span><BadgeCheck size={14} /> {listings.length} VERIFIED BUILDS</span>
+              <span><BarChart3 size={14} /> {listings.length} BUILDS IN THE TANK</span>
             </div>
             <h1>
               Who turned the
@@ -135,8 +134,8 @@ export default async function HomePage({
       <section className="how-section section-shell" id="how-it-works">
         <div className="section-heading how-heading">
           <div>
-            <span className="eyebrow">NO HONOR SYSTEM</span>
-            <h2>Receipts in. Ego out.</h2>
+          <span className="eyebrow">PROOF, CLEARLY LABELED</span>
+          <h2>Receipts when possible. Honesty always.</h2>
           </div>
           <p>From @handle to a native share card in under five minutes.</p>
         </div>
@@ -144,15 +143,15 @@ export default async function HomePage({
           <article>
             <span className="step-number">01</span>
             <div className="step-icon"><KeyRound size={24} /></div>
-            <h3>Connect the receipts</h3>
-            <p>Use read-only Stripe plus an OpenAI or Anthropic admin key. We pull one aggregate, then forget the keys.</p>
-            <small>90 completed days · UTC</small>
+            <h3>Choose your proof</h3>
+            <p>Verify organization API spend, or report a personal Claude/ChatGPT plan. Every row shows which path you used.</p>
+            <small>API verified or founder reported</small>
           </article>
           <article>
             <span className="step-number">02</span>
             <div className="step-icon"><BarChart3 size={24} /></div>
             <h3>Get your efficiency score</h3>
-            <p>Revenue divided by AI spend. A clean number that makes excellent founders look unfairly competent.</p>
+            <p>Stripe-verified revenue divided by 90-day AI spend. API-verified entries win exact reaction-count ties.</p>
             <small>Revenue ÷ token spend</small>
           </article>
           <article className="step-roast">

@@ -16,6 +16,10 @@ export function renderStatCard(
   const site = new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   ).hostname.replace(/^www\./, "");
+  const buildLabel = listing.products.length > 1
+    ? `${listing.productName.slice(0, 30)} + ${listing.products.length - 1} more`
+    : listing.productName.slice(0, 42);
+  const apiVerified = listing.aiSpendVerification === "api";
 
   return new ImageResponse(
     (
@@ -47,14 +51,14 @@ export function renderStatCard(
                 TOKEN<span style={{ color: "#66ddff" }}>GOD</span>
               </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#bfff5b", border: "1px solid rgba(191,255,91,.32)", borderRadius: 999, padding: "8px 13px", fontSize: 13, fontWeight: 700, letterSpacing: 1.1 }}>
-              90-DAY VERIFIED
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: apiVerified ? "#bfff5b" : "#b7c2c8", border: apiVerified ? "1px solid rgba(191,255,91,.32)" : "1px solid rgba(183,194,200,.3)", borderRadius: 999, padding: "8px 13px", fontSize: 13, fontWeight: 700, letterSpacing: 1.1 }}>
+              {apiVerified ? "AI + REVENUE VERIFIED" : "AI FOUNDER REPORTED · REVENUE VERIFIED"}
             </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", marginTop: 52 }}>
             <div style={{ display: "flex", color: "#8da6b8", fontSize: 24, marginBottom: 9 }}>
-              @{listing.xHandle} burned
+              @{listing.xHandle} {apiVerified ? "burned" : "reports spending"}
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
               <span style={{ color: "#f5fbff", fontSize: 84, lineHeight: 1, fontWeight: 850, letterSpacing: -5 }}>
@@ -63,7 +67,7 @@ export function renderStatCard(
               <span style={{ color: "#ff8d74", fontSize: 22, fontWeight: 700 }}>in AI tokens</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", marginTop: 17, color: "#a9bdca", fontSize: 24 }}>
-              → built&nbsp;<span style={{ color: "#f5fbff", fontWeight: 800 }}>{listing.productName.slice(0, 42)}</span>
+              → built&nbsp;<span style={{ color: "#f5fbff", fontWeight: 800 }}>{buildLabel}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", marginTop: 9, color: "#a9bdca", fontSize: 24 }}>
               → made&nbsp;<span style={{ color: "#bfff5b", fontWeight: 800 }}>{formatMoney(listing.revenueUsd)}</span>

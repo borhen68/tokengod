@@ -1,6 +1,6 @@
 # TokenGod
 
-TokenGod is a verified AI-spend efficiency leaderboard for founders. Every live listing combines a self-listed X handle, provider-reported AI spend, Stripe revenue, and authenticated public reactions.
+TokenGod is a transparent AI-spend efficiency leaderboard for founders. Every live listing combines a self-listed X handle, clearly labeled AI spend, Stripe-verified revenue, and authenticated public reactions.
 
 ## What is implemented
 
@@ -8,15 +8,19 @@ TokenGod is a verified AI-spend efficiency leaderboard for founders. Every live 
 - Frictionless listing attribution with an X handle—no login required to submit
 - Best-effort public X profile enrichment for the founder display name and avatar
 - X OAuth 2.0 with PKCE and signed, httpOnly session cookies for reactions
-- OpenAI and Anthropic organization-cost verification
+- Two honest AI-spend paths: organization API verification or clearly labeled founder-reported personal/subscription spend
+- OpenAI and Anthropic organization-cost verification for founders who can safely use Admin API keys
 - Stripe live revenue verification using captured USD charges minus refunds
 - Signed 30-minute verification receipts that can be claimed only once
 - Turso schema constraints for one Love and one Laugh per X user per listing
 - Transactional reaction rate limiting at 20 actions per minute
 - Dynamic, downloadable 1200×630 cards and listing-specific social metadata
-- A $3 Stripe Checkout entry fee plus an explicitly sponsored **Surface 3** where each extra $1 raises a build
+- A $3 Stripe Checkout entry fee that includes up to 3 sites, then $1 per additional site
+- One founder profile, one verified efficiency score, and one leaderboard position across every submitted site
+- An explicitly sponsored **Surface 3** where optional boost dollars—not added-site fees—raise a build
 - Stripe webhook and success-return finalization with idempotent paid-entry and backing records
 - Stripe metadata isolation: TokenGod ignores checkout events created by other apps sharing the account
+- DataFast pageviews, funnel goals, and Stripe visitor/session attribution for TokenGod only
 - Product URL auto-fill for editable name, description, and logo metadata
 - A responsive flood-tank visual metaphor; it is explicitly not a physical water-use estimate
 
@@ -38,6 +42,8 @@ Then open `http://localhost:3000`.
 | Variable | Purpose |
 | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Public origin used for callbacks, metadata, and share links. No trailing slash. |
+| `NEXT_PUBLIC_DATAFAST_WEBSITE_ID` | Optional public override for TokenGod's DataFast website ID. |
+| `NEXT_PUBLIC_DATAFAST_DOMAIN` | Optional public override for the tracked domain; defaults to `tokengod.lol`. |
 | `TURSO_DATABASE_URL` | Turso `libsql://` database URL. |
 | `TURSO_AUTH_TOKEN` | Server-only Turso token with read/write access. |
 | `X_CLIENT_ID` | Optional X OAuth 2.0 client ID for authenticated reactions. |
@@ -75,11 +81,17 @@ The submission flow sends each credential once to the relevant provider, stores 
 - **Anthropic:** an organization Admin API key (`sk-ant-admin…`). TokenGod reads `GET /v1/organizations/cost_report`, includes only token costs, and converts Anthropic's reported USD cents to dollars.
 - **Stripe:** a live restricted key (`rk_live_…`) with **Charges: Read** only. TokenGod totals captured USD charges minus refunds in the same window. Multi-currency accounts are rejected in v1 instead of applying an invented exchange rate.
 
-Both revenue and AI spend must verify for the identical window before publishing. The X handle, product name, URL, and description are self-listed fields. A founder's restricted revenue key is never used to collect TokenGod's fee; payments use the separate platform Stripe key above.
+Stripe revenue must verify for the 90-day window before publishing. AI spend can either be pulled from the provider for the same window or entered by a personal-plan user as founder-reported spend. The verification source is stored and displayed on every leaderboard row, detail page, and share card; API-verified entries win exact reaction-count ties before efficiency is considered.
 
-## Paid entry and Surface 3
+Anthropic individual accounts cannot use its Usage & Cost Admin API. Claude Console Admin keys also have broad organization access rather than a cost-only scope, so the UI discloses that risk and never presents the Admin-key route as required. OpenAI's organization cost endpoint likewise requires an Admin API key. Credentials are used for one request and are never written to Turso.
 
-Publishing costs exactly $3 through hosted Stripe Checkout. The same checkout can include an optional whole-dollar Surface boost. Surface 3 is a visibly labeled sponsored board ranked by total paid entry plus backing, with older entries winning exact-dollar ties. Love and Roast remain earned rankings and are never affected by payment.
+The X handle, product name, URL, and description are self-listed fields. A founder's restricted revenue key is never used to collect TokenGod's fee; payments use the separate platform Stripe key above.
+
+## Paid entry, multiple sites, and Surface 3
+
+Publishing costs $3 through hosted Stripe Checkout and includes up to 3 product sites under one founder profile. Site 4 and every additional site cost $1 each. All sites share the same Stripe-verified 90-day revenue, labeled AI spend, efficiency score, reaction totals, and leaderboard position.
+
+The same checkout can include an optional whole-dollar Surface boost. Surface 3 is a visibly labeled sponsored board ranked only by the $3 entry plus explicit boost/backing dollars, with older entries winning exact-dollar ties. Additional-site fees are stored separately and never affect rank. Love and Roast remain earned rankings and are never affected by payment.
 
 Anyone can back a visible Surface 3 build by $1 or more. Stripe Checkout redirects back through `/payment/complete`, while the webhook provides the durable production confirmation. Both paths call the same idempotent finalizer.
 

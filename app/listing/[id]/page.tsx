@@ -5,10 +5,12 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   ArrowUpRight,
+  AtSign,
   BadgeCheck,
   Download,
   Droplets,
   Flame,
+  Layers3,
   Share2,
   ShieldCheck,
   Trophy,
@@ -39,7 +41,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const card = `${siteUrl}/api/listings/${listing.id}/card?v=${encodeURIComponent(listing.updatedAt)}`;
-  const description = `${listing.founderName} burned ${formatMoney(listing.tokensSpentUsd)} in AI tokens, built ${listing.productName}, and made ${formatMoney(listing.revenueUsd)}.`;
+  const buildLabel = listing.products.length > 1
+    ? `${listing.productName} + ${listing.products.length - 1} more`
+    : listing.productName;
+  const spendProof = listing.aiSpendVerification === "api" ? "API-verified" : "founder-reported";
+  const description = `${listing.founderName} ${spendProof} ${formatMoney(listing.tokensSpentUsd)} in AI spend, built ${buildLabel}, and made ${formatMoney(listing.revenueUsd)} in verified revenue.`;
 
   return {
     title: `${listing.productName} by @${listing.xHandle}`,
@@ -68,7 +74,11 @@ export default async function ListingPage({ params }: PageProps) {
   const pressure = waterPressure(listing.tokensSpentUsd, maxSpend);
   const ownerImage = listing.avatarUrl || listing.productLogoUrl;
   const pageUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/listing/${listing.id}`;
-  const normalShare = `I burned ${formatMoney(listing.tokensSpentUsd)} in AI tokens to build ${listing.productName} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. Respect it or roast it 👇`;
+  const buildLabel = listing.products.length > 1
+    ? `${listing.productName} + ${listing.products.length - 1} more`
+    : listing.productName;
+  const spendDisclosure = listing.aiSpendVerification === "api" ? "API-verified AI spend" : "founder-reported AI spend";
+  const normalShare = `I spent ${formatMoney(listing.tokensSpentUsd)} on AI to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; Stripe revenue verified. Respect it or roast it 👇`;
 
   const droppedBoard = respectedRank > 10 ? "Most Respected" : roastedRank > 10 ? "Most Roasted" : null;
   const overtaker = droppedBoard === "Most Respected" ? respected[9] : droppedBoard === "Most Roasted" ? roasted[9] : null;
@@ -84,7 +94,10 @@ export default async function ListingPage({ params }: PageProps) {
 
       <section className="listing-hero">
         <div className="listing-main-copy">
-          <div className="verified-line"><BadgeCheck size={16} fill="currentColor" /> VERIFIED · LAST 90 COMPLETED DAYS</div>
+          <div className={`verified-line ${listing.aiSpendVerification === "self_reported" ? "is-reported" : ""}`}>
+            {listing.aiSpendVerification === "api" ? <BadgeCheck size={16} fill="currentColor" /> : <AtSign size={16} />}
+            {listing.aiSpendVerification === "api" ? "AI SPEND + REVENUE VERIFIED" : "AI SPEND FOUNDER REPORTED · REVENUE VERIFIED"} · 90 DAYS
+          </div>
           <h1>{listing.productName}</h1>
           <p>{listing.productDescription}</p>
           <div className="listing-owner">
@@ -105,17 +118,54 @@ export default async function ListingPage({ params }: PageProps) {
       </section>
 
       <section className="listing-scoreboard">
-        <article><span><Flame size={15} /> AI token burn</span><strong>{formatMoney(listing.tokensSpentUsd)}</strong><small>{listing.modelProvider} · verified</small></article>
+        <article><span><Flame size={15} /> AI token burn</span><strong>{formatMoney(listing.tokensSpentUsd)}</strong><small>{listing.modelProvider} · {listing.aiSpendVerification === "api" ? "API verified" : "founder reported"}</small></article>
         <article><span>Revenue made</span><strong>{formatMoney(listing.revenueUsd)}</strong><small>Stripe · verified</small></article>
         <article className="efficiency-highlight"><span>Efficiency score</span><strong>{formatEfficiency(listing.efficiencyScore)}</strong><small>made per $1 spent</small></article>
         <article className="detail-water"><div className="detail-water-gauge"><i style={{ height: `${pressure}%` }} /></div><div><span><Droplets size={14} /> Cooling panic</span><strong>{pressure}%</strong><small>{pressureLabel(pressure)}</small></div></article>
       </section>
 
+      {listing.products.length > 1 ? (
+        <section className="listing-products">
+          <header>
+            <div>
+              <span className="eyebrow">FOUNDER PORTFOLIO</span>
+              <h2>{listing.products.length} builds. One founder score.</h2>
+            </div>
+            <span className="listing-products-rule"><Layers3 size={15} /> One profile · one leaderboard position</span>
+          </header>
+          <div className="listing-product-grid">
+            {listing.products.map((product, index) => (
+              <a
+                className="listing-product-card"
+                href={safeExternalUrl(product.url)}
+                target="_blank"
+                rel="noopener noreferrer"
+                key={`${product.url}-${index}`}
+              >
+                <span
+                  className={product.logoUrl ? "has-product-logo" : ""}
+                  style={product.logoUrl ? { backgroundImage: `url(${JSON.stringify(product.logoUrl)})` } : undefined}
+                  aria-hidden="true"
+                >
+                  {!product.logoUrl ? product.name.slice(0, 1).toUpperCase() : null}
+                </span>
+                <div>
+                  <small>{index === 0 ? "PRIMARY BUILD" : `BUILD ${String(index + 1).padStart(2, "0")}`}</small>
+                  <strong>{product.name}</strong>
+                  {product.description ? <p>{product.description}</p> : null}
+                </div>
+                <ArrowUpRight size={17} />
+              </a>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="listing-content-grid">
         <div className="card-panel">
           <header><div><span className="eyebrow">SHAREABLE RECEIPT</span><h2>The card that starts the fight.</h2></div><BadgeCheck size={20} /></header>
           <div className="stat-card-image">
-            <Image src={`/api/listings/${listing.id}/card?v=${encodeURIComponent(listing.updatedAt)}`} alt={`Verified TokenGod stat card for ${listing.productName}`} width={1200} height={630} unoptimized priority />
+            <Image src={`/api/listings/${listing.id}/card?v=${encodeURIComponent(listing.updatedAt)}`} alt={`TokenGod stat card for ${listing.productName}`} width={1200} height={630} unoptimized priority />
           </div>
           <div className="card-actions">
             <a className="button button-primary" href={shareHref} target="_blank" rel="noopener noreferrer"><Share2 size={16} /> {viewer?.id === listing.ownerUserId && droppedBoard ? "Reclaim your spot" : "Share on X"}</a>

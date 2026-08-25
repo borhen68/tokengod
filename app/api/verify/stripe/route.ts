@@ -28,6 +28,7 @@ export async function POST(request: Request) {
       kind: "revenue",
       userId: submissionId,
       provider: "stripe",
+      verificationMethod: "api",
       amountUsd,
       periodStart,
       periodEnd,
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
       amountUsd: result.payload.amountUsd,
       periodStart,
       periodEnd,
+      verificationMethod: result.payload.verificationMethod,
     });
   } catch (error) {
     if (error instanceof ProviderVerificationError) {

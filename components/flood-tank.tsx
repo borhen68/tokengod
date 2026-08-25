@@ -470,13 +470,13 @@ export function FloodTank({
       ref={hostRef}
       className={`token-reactor ${hasVerifiedSpend ? "" : "is-idle"}`}
       style={{ "--reactor-level": `${level}%` } as CSSProperties}
-      aria-label={`${formatMoney(spend)} in verified AI token spend; ${pressureLabel(level)} at ${level}% flood level`}
+      aria-label={`${formatMoney(spend)} in AI spend; ${pressureLabel(level)} at ${level}% flood level`}
     >
       <canvas ref={canvasRef} className="token-reactor-canvas" aria-hidden="true" />
       <div className="reactor-burn-readout">
         <span><Flame size={13} /> AI TOKENS BURNED</span>
         <strong>{formatMoney(spend, true)}</strong>
-        <small>VERIFIED · LAST 90 DAYS</small>
+        <small>LABELED · LAST 90 DAYS</small>
       </div>
       <div className="reactor-flood-readout">
         <span><Droplets size={13} /> FLOOD LEVEL</span>
@@ -485,7 +485,7 @@ export function FloodTank({
       {!hasVerifiedSpend ? (
         <div className="reactor-idle" aria-hidden="true">
           <span>TANK EMPTY</span>
-          <strong>First verified build starts the burn.</strong>
+          <strong>First founder starts the burn.</strong>
         </div>
       ) : null}
       <div className="reactor-legend" aria-hidden="true">

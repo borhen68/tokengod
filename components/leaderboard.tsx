@@ -2,6 +2,7 @@
 
 import {
   ArrowUpRight,
+  AtSign,
   BadgeCheck,
   Crown,
   Droplets,
@@ -47,11 +48,13 @@ export function Leaderboard({
 
   const ordered = useMemo(
     () =>
-      [...listings].sort((a, b) =>
-        board === "respected"
-          ? b.loveCount - a.loveCount || b.efficiencyScore - a.efficiencyScore
-          : b.laughCount - a.laughCount || a.efficiencyScore - b.efficiencyScore,
-      ),
+      [...listings].sort((a, b) => {
+        const verificationTieBreak = Number(b.aiSpendVerification === "api")
+          - Number(a.aiSpendVerification === "api");
+        return board === "respected"
+          ? b.loveCount - a.loveCount || verificationTieBreak || b.efficiencyScore - a.efficiencyScore
+          : b.laughCount - a.laughCount || verificationTieBreak || a.efficiencyScore - b.efficiencyScore;
+      }),
     [board, listings],
   );
   const visibleListings = ordered.slice(0, 50);
@@ -66,9 +69,14 @@ export function Leaderboard({
         </div>
         <p>
           {board === "respected"
-            ? "Love decides the order. Efficiency breaks the tie."
-            : "Laughs decide the order. The worst return breaks the tie."}
+            ? "Love decides the order. API proof, then efficiency, breaks a tie."
+            : "Laughs decide the order. API proof, then worst return, breaks a tie."}
         </p>
+      </div>
+
+      <div className="board-proof-key">
+        <span><BadgeCheck size={13} fill="currentColor" /> API spend + revenue verified</span>
+        <span className="is-reported"><AtSign size={13} /> AI spend founder reported · revenue verified</span>
       </div>
 
       <div className="board-switch" role="tablist" aria-label="Leaderboard view">
@@ -136,10 +144,11 @@ export function Leaderboard({
                 <div className="founder-product">
                   <Link href={`/listing/${listing.id}`}>{listing.productName}</Link>
                   <span>
-                    {listing.founderName} · @{listing.xHandle}
+                    {listing.founderName} · @{listing.xHandle}{listing.products.length > 1 ? ` · ${listing.products.length} sites` : ""}
                   </span>
-                  <small>
-                    <BadgeCheck size={12} fill="currentColor" /> 90-day verified · {listing.modelProvider}
+                  <small className={listing.aiSpendVerification === "self_reported" ? "is-reported" : ""}>
+                    {listing.aiSpendVerification === "api" ? <BadgeCheck size={12} fill="currentColor" /> : <AtSign size={12} />}
+                    {listing.aiSpendVerification === "api" ? "API spend verified" : "AI spend founder reported"} · {listing.modelProvider}
                   </small>
                 </div>
               </div>
@@ -206,7 +215,7 @@ export function Leaderboard({
         <div className="empty-board">
           <Droplets size={30} />
           <h3>The tank is bone-dry.</h3>
-          <p>Verify the first build and claim every number-one spot at once.</p>
+          <p>Enter the first build and claim every number-one spot at once.</p>
           <Link className="button button-primary" href="/?enter=1&bid=300">Be first in for $3</Link>
         </div>
       ) : null}

@@ -19,6 +19,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
+import { trackDataFast } from "@/lib/datafast";
 import type { LeaderboardListing } from "@/lib/types";
 
 const focusableSelector =
@@ -72,6 +73,11 @@ export function BoostModal({
 
   useEffect(() => {
     if (!open) return;
+    trackDataFast("surface_modal_opened", {
+      listing_id: listing.id,
+      rank,
+      take_first_cents: takeFirstCents,
+    });
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const focusTimer = window.setTimeout(() => closeRef.current?.focus(), 0);
@@ -89,7 +95,7 @@ export function BoostModal({
       document.removeEventListener("keydown", onDocumentKeyDown);
       document.body.style.overflow = previousOverflow;
     };
-  }, [defaultOpen, open, router]);
+  }, [defaultOpen, listing.id, open, rank, router, takeFirstCents]);
 
   function keepFocusInside(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key !== "Tab") return;
@@ -115,6 +121,11 @@ export function BoostModal({
     }
     setBusy(true);
     setError("");
+    trackDataFast("surface_checkout_started", {
+      listing_id: listing.id,
+      amount_cents: amountCents,
+      current_rank: rank,
+    });
     try {
       const response = await fetch("/api/checkout/boost", {
         method: "POST",

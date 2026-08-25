@@ -14,7 +14,10 @@ export async function GET(request: Request) {
   try {
     const session = await getPlatformStripe().checkout.sessions.retrieve(sessionId);
     const result = await finalizeCheckoutSession(session);
-    return NextResponse.redirect(new URL(`/listing/${result.listingId}?paid=1`, siteUrl));
+    const destination = new URL(`/listing/${result.listingId}`, siteUrl);
+    destination.searchParams.set("paid", "1");
+    destination.searchParams.set("session_id", sessionId);
+    return NextResponse.redirect(destination);
   } catch {
     return NextResponse.redirect(new URL("/?payment=failed", siteUrl));
   }

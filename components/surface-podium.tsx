@@ -2,6 +2,7 @@
 
 import {
   ArrowUpRight,
+  AtSign,
   BadgeCheck,
   BadgeDollarSign,
   Crown,
@@ -59,7 +60,7 @@ export function SurfacePodium({
         <div>
           <span className="surface-eyebrow"><i /> PAID SURFACE · 3 SPOTS ONLY</span>
           <h2>The builds above water.</h2>
-          <p>$3 gets verified founders into the tank. Every extra $1 pushes a build toward the surface.</p>
+          <p>$3 publishes up to 3 sites under one founder. Only optional Surface boosts move a build upward.</p>
         </div>
         <EntryModal
           viewer={viewer}
@@ -112,7 +113,11 @@ export function SurfacePodium({
               </span>
               <div className="surface-product">
                 <Link href={`/listing/${listing.id}`}>{listing.productName}</Link>
-                <span>@{listing.xHandle} <BadgeCheck size={12} /></span>
+                <span>
+                  @{listing.xHandle} {listing.aiSpendVerification === "api" ? <BadgeCheck size={12} /> : <AtSign size={12} />}
+                  {listing.aiSpendVerification === "api" ? " · API verified" : " · founder reported"}
+                  {listing.products.length > 1 ? ` · ${listing.products.length} sites` : ""}
+                </span>
               </div>
               <div className="surface-bid">
                 <span>SURFACE TOTAL</span>

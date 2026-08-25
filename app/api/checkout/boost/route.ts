@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { NextRequest } from "next/server";
 
 import {
   ApiError,
@@ -7,6 +8,7 @@ import {
   requirePaymentConfiguration,
 } from "@/lib/api";
 import { getDatabase } from "@/lib/db";
+import { getDataFastStripeMetadata } from "@/lib/datafast-server";
 import { getPlatformStripe } from "@/lib/platform-stripe";
 
 const boostSchema = z.object({
@@ -14,7 +16,7 @@ const boostSchema = z.object({
   amountCents: z.number().int().min(100).max(100_000).multipleOf(100),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     assertSameOrigin(request);
     requirePaymentConfiguration();
@@ -26,6 +28,7 @@ export async function POST(request: Request) {
     if (!result.rows[0]) throw new ApiError("That build is no longer in the tank.", 404);
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
+    const dataFastMetadata = getDataFastStripeMetadata(request);
     const checkout = await getPlatformStripe().checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
@@ -45,6 +48,7 @@ export async function POST(request: Request) {
         kind: "boost",
         listing_id: input.listingId,
         amount_cents: String(input.amountCents),
+        ...dataFastMetadata,
       },
       payment_intent_data: {
         metadata: {
@@ -52,6 +56,7 @@ export async function POST(request: Request) {
           kind: "boost",
           listing_id: input.listingId,
           amount_cents: String(input.amountCents),
+          ...dataFastMetadata,
         },
       },
       success_url: `${siteUrl}/payment/complete?session_id={CHECKOUT_SESSION_ID}`,

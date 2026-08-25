@@ -13,6 +13,7 @@ import {
 import { createPortal } from "react-dom";
 
 import { SubmitFlow } from "@/components/submit-flow";
+import { trackDataFast } from "@/lib/datafast";
 import type { Viewer } from "@/lib/types";
 
 const focusableSelector =
@@ -51,6 +52,11 @@ export function EntryModal({
   useEffect(() => {
     if (!open) return;
 
+    trackDataFast("entry_modal_opened", {
+      entry_cents: initialBidCents,
+      opened_from_url: defaultOpen,
+    });
+
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const focusTimer = window.setTimeout(() => closeRef.current?.focus(), 0);
@@ -65,7 +71,7 @@ export function EntryModal({
       document.removeEventListener("keydown", onDocumentKeyDown);
       document.body.style.overflow = previousOverflow;
     };
-  }, [open]);
+  }, [defaultOpen, initialBidCents, open]);
 
   function closeModal() {
     setOpen(false);
@@ -107,7 +113,7 @@ export function EntryModal({
         onKeyDown={keepFocusInside}
       >
         <div className="entry-dialog-bar">
-          <span><i /> VERIFIED ENTRY</span>
+          <span><i /> TRANSPARENT ENTRY</span>
           <strong id="entry-dialog-title">Enter the tank</strong>
           <button ref={closeRef} type="button" onClick={closeModal} aria-label="Close entry form">
             <X size={18} />
