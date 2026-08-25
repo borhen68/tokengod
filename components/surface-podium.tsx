@@ -6,6 +6,7 @@ import {
   BadgeCheck,
   BadgeDollarSign,
   Crown,
+  Eye,
   ShieldCheck,
   Waves,
 } from "lucide-react";
@@ -13,7 +14,7 @@ import Link from "next/link";
 
 import { BoostModal } from "@/components/boost-modal";
 import { EntryModal } from "@/components/entry-modal";
-import { safeExternalUrl } from "@/lib/format";
+import { ListingQuickView } from "@/components/listing-quick-view";
 import type { LeaderboardListing, Viewer } from "@/lib/types";
 
 function wholeDollar(cents: number) {
@@ -114,7 +115,13 @@ export function SurfacePodium({
                 {!logoUrl ? listing.productName.slice(0, 1).toUpperCase() : null}
               </span>
               <div className="surface-product">
-                <Link href={`/listing/${listing.id}`}>{listing.productName}</Link>
+                <ListingQuickView
+                  listing={listing}
+                  className="surface-product-trigger"
+                  ariaLabel={`Open ${listing.productName} founder profile`}
+                >
+                  {listing.productName}
+                </ListingQuickView>
                 <span>
                   @{listing.xHandle} {listing.aiSpendVerification === "api" ? <BadgeCheck size={12} /> : <AtSign size={12} />}
                   {listing.aiSpendVerification === "api" ? " · API verified" : " · founder reported"}
@@ -133,15 +140,13 @@ export function SurfacePodium({
                 defaultOpen={initialBoostId === listing.id}
                 initialError={initialBoostId === listing.id && paymentCancelled ? "Checkout canceled. Nothing was charged." : undefined}
               />
-              <a
+              <ListingQuickView
+                listing={listing}
                 className="surface-visit"
-                href={safeExternalUrl(listing.productUrl)}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Visit ${listing.productName}`}
+                ariaLabel={`Open ${listing.productName} founder profile`}
               >
-                <ArrowUpRight size={16} />
-              </a>
+                <Eye size={16} />
+              </ListingQuickView>
             </article>
           );
         })}

@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  ArrowUpRight,
   AtSign,
   BadgeCheck,
   Crown,
   Droplets,
+  Eye,
   Flame,
   Trophy,
 } from "lucide-react";
@@ -13,11 +13,11 @@ import Link from "next/link";
 import { useMemo, useState, type CSSProperties } from "react";
 
 import { ReactionControls } from "@/components/reaction-controls";
+import { ListingQuickView } from "@/components/listing-quick-view";
 import {
   formatEfficiency,
   formatMoney,
   pressureLabel,
-  safeExternalUrl,
   waterPressure,
 } from "@/lib/format";
 import {
@@ -146,7 +146,13 @@ export function Leaderboard({
                   {!logoUrl ? listing.productName.slice(0, 1).toUpperCase() : null}
                 </span>
                 <div className="founder-product">
-                  <Link href={`/listing/${listing.id}`}>{listing.productName}</Link>
+                  <ListingQuickView
+                    listing={listing}
+                    className="founder-product-trigger"
+                    ariaLabel={`Open ${listing.productName} founder profile`}
+                  >
+                    {listing.productName}
+                  </ListingQuickView>
                   <span>
                     {listing.founderName} · @{listing.xHandle}{listing.products.length > 1 ? ` · ${listing.products.length} sites` : ""}
                   </span>
@@ -200,15 +206,13 @@ export function Leaderboard({
                     );
                   }}
                 />
-                <a
+                <ListingQuickView
+                  listing={listing}
                   className="visit-product"
-                  href={safeExternalUrl(listing.productUrl)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`Visit ${listing.productName}`}
+                  ariaLabel={`Open ${listing.productName} founder profile`}
                 >
-                  Visit <ArrowUpRight size={14} />
-                </a>
+                  View <Eye size={14} />
+                </ListingQuickView>
               </div>
             </article>
           );
