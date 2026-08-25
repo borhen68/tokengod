@@ -332,6 +332,7 @@ button { border: 0; }
 .founder-product-trigger { width: fit-content; max-width: 100%; overflow: hidden; padding: 0; color: inherit; background: transparent; cursor: pointer; font-size: 15px; font-weight: 850; letter-spacing: -.025em; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
 .founder-product-trigger:hover { color: var(--blue-dark); }
 .founder-product > span { margin-top: 3px; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.founder-product > .founder-builds { color: var(--ink); font-size: 9px; font-weight: 750; }
 .founder-product > small { margin-top: 5px; display: flex; align-items: center; gap: 4px; color: #338162; font-size: 8px; font-weight: 850; letter-spacing: .055em; text-transform: uppercase; }
 .founder-product > small.is-reported { color: #69777d; }
 .money-cell, .ratio-cell { display: flex; align-items: center; flex-direction: column; text-align: center; }

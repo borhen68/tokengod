@@ -121,7 +121,8 @@ export function Leaderboard({
         {visibleListings.map((listing, index) => {
           const rank = index + 1;
           const pressure = waterPressure(listing.tokensSpentUsd, maxSpend);
-          const logoUrl = listing.avatarUrl || listing.productLogoUrl;
+          const founderImage = listing.avatarUrl;
+          const buildNames = listing.products.map((product) => product.name).join(" · ") || listing.productName;
           return (
             <article
               className={`leaderboard-row ${rank === 1 ? "is-champion" : ""}`}
@@ -140,22 +141,23 @@ export function Leaderboard({
                 </div>
                 <span
                   className="founder-avatar"
-                  style={avatarStyle(listing.productName, logoUrl)}
+                  style={avatarStyle(listing.founderName, founderImage)}
                   aria-hidden="true"
                 >
-                  {!logoUrl ? listing.productName.slice(0, 1).toUpperCase() : null}
+                  {!founderImage ? listing.founderName.slice(0, 1).toUpperCase() : null}
                 </span>
                 <div className="founder-product">
                   <ListingQuickView
                     listing={listing}
                     className="founder-product-trigger"
-                    ariaLabel={`Open ${listing.productName} founder profile`}
+                    ariaLabel={`Open ${listing.founderName} founder profile`}
                   >
-                    {listing.productName}
+                    {listing.founderName}
                   </ListingQuickView>
-                  <span>
-                    {listing.founderName} · @{listing.xHandle}{listing.products.length > 1 ? ` · ${listing.products.length} sites` : ""}
+                  <span className="founder-meta">
+                    @{listing.xHandle} · {listing.products.length} {listing.products.length === 1 ? "build" : "builds"}
                   </span>
+                  <span className="founder-builds" title={buildNames}>{buildNames}</span>
                   <small className={hasFounderReportedNumbers(listing) ? "is-reported" : ""}>
                     {hasFounderReportedNumbers(listing) ? <AtSign size={12} /> : <BadgeCheck size={12} fill="currentColor" />}
                     {listingProofLabel(listing)} · {listing.modelProvider}
@@ -209,7 +211,7 @@ export function Leaderboard({
                 <ListingQuickView
                   listing={listing}
                   className="visit-product"
-                  ariaLabel={`Open ${listing.productName} founder profile`}
+                  ariaLabel={`Open ${listing.founderName} founder profile`}
                 >
                   View <Eye size={14} />
                 </ListingQuickView>
