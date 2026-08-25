@@ -481,10 +481,10 @@ export function SubmitFlow({
               <p>Create a live restricted key with <strong>Charges: Read</strong>. We total captured USD charges minus refunds over the same 90-day window.</p>
               <label className="secret-input">
                 <span>Restricted key</span>
-                <div><LockKeyhole size={16} /><input type="password" value={stripeKey} onChange={(event) => setStripeKey(event.target.value)} placeholder="rk_live_••••••••••••" autoComplete="off" disabled={!xHandleIsValid || Boolean(stripeResult)} required /></div>
+                <div><LockKeyhole size={16} /><input type="password" value={stripeKey} onChange={(event) => setStripeKey(event.target.value)} placeholder="rk_live_••••••••••••" autoComplete="off" disabled={Boolean(stripeResult)} required /></div>
               </label>
               <div className="form-row">
-                <button className="button button-secondary" type="submit" disabled={!xHandleIsValid || !configurationReady || busy !== null || Boolean(stripeResult)}>
+                <button className="button button-secondary" type="submit" disabled={!configurationReady || busy !== null || Boolean(stripeResult)}>
                   {busy === "stripe" ? <><LoaderCircle className="spinner" size={16} /> Checking Stripe</> : stripeResult ? <><Check size={16} /> Revenue verified</> : <>Verify 90-day revenue <ArrowRight size={16} /></>}
                 </button>
                 <a className="helper-link" href="https://dashboard.stripe.com/apikeys/create" target="_blank" rel="noopener noreferrer">Create restricted key <ExternalLink size={12} /></a>
@@ -531,10 +531,10 @@ export function SubmitFlow({
                   <p>For Claude Pro/Max or ChatGPT Plus/Pro: enter what you actually paid during the last 90 completed days. This is allowed into the race, but never presented as provider-verified.</p>
                   <label className="secret-input reported-spend-input">
                     <span>90-day subscription spend · USD</span>
-                    <div><strong>$</strong><input type="number" value={reportedSpendDollars} onChange={(event) => setReportedSpendDollars(event.target.value)} placeholder="60" min="0.01" max="1000000" step="0.01" inputMode="decimal" disabled={!xHandleIsValid || Boolean(aiResult)} required /></div>
+                    <div><strong>$</strong><input type="number" value={reportedSpendDollars} onChange={(event) => setReportedSpendDollars(event.target.value)} placeholder="60" min="0.01" max="1000000" step="0.01" inputMode="decimal" disabled={Boolean(aiResult)} required /></div>
                   </label>
                   <div className="reporting-disclosure"><AtSign size={14} /><span>Your card and leaderboard row will say <strong>Founder Reported</strong>. API-verified entries win reaction-count ties.</span></div>
-                  <button className="button button-secondary" type="submit" disabled={!xHandleIsValid || !configurationReady || busy !== null || Boolean(aiResult)}>
+                  <button className="button button-secondary" type="submit" disabled={!configurationReady || busy !== null || Boolean(aiResult)}>
                     {busy === "ai" ? <><LoaderCircle className="spinner" size={16} /> Recording the burn</> : aiResult ? <><Check size={16} /> Spend recorded</> : <>Use founder-reported spend <Waves size={16} /></>}
                   </button>
                 </>
@@ -546,10 +546,10 @@ export function SubmitFlow({
                   </div>
                   <label className="secret-input">
                     <span>{provider === "anthropic" ? "Anthropic Admin API key" : "OpenAI Admin API key"}</span>
-                    <div><KeyRound size={16} /><input type="password" value={aiKey} onChange={(event) => setAiKey(event.target.value)} placeholder={provider === "anthropic" ? "sk-ant-admin••••••••" : "sk-admin-••••••••"} autoComplete="off" disabled={!xHandleIsValid || Boolean(aiResult)} required /></div>
+                    <div><KeyRound size={16} /><input type="password" value={aiKey} onChange={(event) => setAiKey(event.target.value)} placeholder={provider === "anthropic" ? "sk-ant-admin••••••••" : "sk-admin-••••••••"} autoComplete="off" disabled={Boolean(aiResult)} required /></div>
                   </label>
                   <div className="form-row ai-key-actions">
-                    <button className="button button-secondary" type="submit" disabled={!xHandleIsValid || !configurationReady || busy !== null || Boolean(aiResult)}>
+                    <button className="button button-secondary" type="submit" disabled={!configurationReady || busy !== null || Boolean(aiResult)}>
                       {busy === "ai" ? <><LoaderCircle className="spinner" size={16} /> Reading the meter</> : aiResult ? <><Check size={16} /> Spend API-verified</> : <>Verify API spend <Waves size={16} /></>}
                     </button>
                     <a className="helper-link" href={provider === "anthropic" ? "https://platform.claude.com/docs/en/manage-claude/admin-api-keys" : "https://platform.openai.com/settings/organization/admin-keys"} target="_blank" rel="noopener noreferrer">Read provider requirements <ExternalLink size={12} /></a>
