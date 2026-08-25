@@ -6,6 +6,7 @@ import {
 import Link from "next/link";
 
 import { EntryModal } from "@/components/entry-modal";
+import { CoolingBackdrop } from "@/components/cooling-backdrop";
 import { FloodTank } from "@/components/flood-tank";
 import { Leaderboard } from "@/components/leaderboard";
 import { OceanStage } from "@/components/ocean-stage";
@@ -74,6 +75,7 @@ export default async function HomePage({
         <div className="ocean-world" aria-hidden="true">
           <div className="ocean-surface"><i /><i /><i /></div>
           <div className="ocean-caustics" />
+          <CoolingBackdrop />
           <div className="ocean-ray ocean-ray-one" />
           <div className="ocean-ray ocean-ray-two" />
           <div className="ocean-bubbles">
