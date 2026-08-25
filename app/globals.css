@@ -97,39 +97,30 @@ button { border: 0; }
   animation: sonar-ping 2.3s ease-out infinite;
 }
 .ocean-cursor::after { animation-delay: -1.15s; }
-@media (hover: hover) { .hero-stage:hover .ocean-cursor { opacity: 1; } }
+@media (hover: hover) { .hero-stage:hover .ocean-cursor { opacity: .28; } }
 .ocean-world { position: absolute; z-index: -1; inset: 0; overflow: hidden; pointer-events: none; }
 .ocean-surface { height: 110px; position: absolute; top: -54px; right: -5%; left: -5%; filter: drop-shadow(0 15px 28px rgba(98,229,255,.2)); }
 .ocean-surface::after { content: ""; height: 2px; position: absolute; right: 0; bottom: 9px; left: 0; background: rgba(149,239,255,.75); box-shadow: 0 0 24px rgba(105,228,255,.7); }
-.ocean-surface i { width: 42%; height: 70px; position: absolute; bottom: -16px; border-top: 3px solid rgba(154,240,255,.7); border-radius: 50%; animation: ocean-sway 6s ease-in-out infinite alternate; }
+.ocean-surface i { width: 42%; height: 70px; position: absolute; bottom: -16px; border-top: 3px solid rgba(154,240,255,.56); border-radius: 50%; animation: ocean-sway 12s ease-in-out infinite alternate; }
 .ocean-surface i:nth-child(1) { left: -2%; }
 .ocean-surface i:nth-child(2) { left: 30%; animation-delay: -2s; }
 .ocean-surface i:nth-child(3) { right: -2%; animation-delay: -4s; }
-.ocean-caustics { position: absolute; inset: -20% -10%; opacity: .09; background-image: repeating-radial-gradient(ellipse at 50% 50%, transparent 0 42px, rgba(178,241,255,.28) 45px 47px, transparent 50px 88px); background-size: 310px 150px; transform: rotate(-8deg) scale(1.15); animation: caustic-drift 16s linear infinite; }
-.cooling-backdrop { width: 100%; height: 100%; position: absolute; inset: 0; opacity: .66; mask-image: linear-gradient(to bottom, rgba(0,0,0,.2) 5%, #000 38%, #000 92%, transparent); }
+.ocean-caustics { position: absolute; inset: -20% -10%; opacity: .035; background-image: repeating-radial-gradient(ellipse at 50% 50%, transparent 0 42px, rgba(178,241,255,.28) 45px 47px, transparent 50px 88px); background-size: 310px 150px; transform: rotate(-8deg) scale(1.15); }
+.cooling-backdrop { width: 100%; height: 100%; position: absolute; inset: 0; opacity: .3; mask-image: linear-gradient(to bottom, transparent 18%, #000 56%, #000 94%, transparent); }
 .cooling-backdrop svg { width: 100%; height: 100%; display: block; overflow: visible; }
-.cooling-heat-halo { animation: cooling-heat-pulse 3.2s ease-in-out infinite; }
-.cooling-pipe-shadow, .cooling-pipe-shell, .cooling-pipe-flow, .cooling-heat, .cooling-rack-water { fill: none; vector-effect: non-scaling-stroke; }
-.cooling-pipe-shadow { stroke: rgba(1,15,23,.62); stroke-width: 32; }
-.cooling-pipe-shell { stroke: url(#cooling-pipe-gradient); stroke-width: 20; opacity: .46; }
-.cooling-pipe-flow { stroke: rgba(174,244,255,.9); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 3 18; filter: drop-shadow(0 0 7px rgba(99,227,255,.8)); animation: coolant-flow 3.4s linear infinite; }
-.cooling-pipe-shadow-thin { stroke-width: 23; opacity: .52; }
-.cooling-pipe-shell-thin { stroke-width: 13; opacity: .34; }
-.cooling-pipe-flow-reverse { animation-direction: reverse; animation-duration: 4.8s; }
-.cooling-rack { filter: drop-shadow(0 18px 18px rgba(0,0,0,.3)); }
+.cooling-pipe-shadow, .cooling-pipe-shell, .cooling-pipe-flow, .cooling-rack-water { fill: none; vector-effect: non-scaling-stroke; }
+.cooling-pipe-shadow { stroke: rgba(1,15,23,.48); stroke-width: 24; }
+.cooling-pipe-shell { stroke: url(#cooling-pipe-gradient); stroke-width: 12; opacity: .3; }
+.cooling-pipe-flow { stroke: rgba(174,244,255,.62); stroke-width: 1.5; stroke-linecap: round; stroke-dasharray: 2 28; filter: drop-shadow(0 0 5px rgba(99,227,255,.45)); animation: coolant-flow 14s linear infinite; }
+.cooling-rack { opacity: .72; filter: drop-shadow(0 14px 16px rgba(0,0,0,.2)); }
 .cooling-rack-shell { fill: url(#rack-face-gradient); stroke: rgba(144,230,248,.38); stroke-width: 2; }
 .cooling-rack-rail { fill: rgba(3,24,34,.56); stroke: rgba(114,210,233,.2); }
 .cooling-rack-slot rect { fill: rgba(10,51,65,.74); stroke: rgba(145,229,246,.2); }
-.cooling-led { fill: var(--lime); filter: drop-shadow(0 0 4px var(--lime)); animation: cooling-led-pulse 1.8s ease-in-out infinite; }
-.cooling-led-hot { fill: var(--coral); filter: drop-shadow(0 0 5px var(--coral)); animation-delay: -.9s; }
-.cooling-rack-water { stroke: rgba(99,226,255,.84); stroke-width: 3; stroke-dasharray: 4 9; animation: coolant-flow 2.6s linear infinite; }
+.cooling-led { fill: var(--lime); filter: drop-shadow(0 0 3px rgba(189,255,91,.45)); }
+.cooling-led-hot { fill: var(--coral); filter: drop-shadow(0 0 3px rgba(255,123,99,.4)); }
+.cooling-rack-water { stroke: rgba(99,226,255,.54); stroke-width: 2; }
 .cooling-rack-port { fill: #66e2ff; stroke: rgba(222,250,255,.7); stroke-width: 2; }
 .cooling-rack-base { fill: rgba(2,15,22,.78); stroke: rgba(135,224,242,.28); }
-.cooling-heat { stroke: rgba(255,119,94,.68); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 5 13; filter: drop-shadow(0 0 7px rgba(255,91,61,.62)); animation: cooling-heat-rise 2.8s linear infinite; }
-.cooling-heat-2, .cooling-heat-4 { animation-delay: -1.4s; }
-.cooling-fan { fill: rgba(4,29,40,.5); stroke: rgba(137,229,248,.28); stroke-width: 3; transform-box: fill-box; transform-origin: center; animation: cooling-fan-spin 12s linear infinite; }
-.cooling-fan path { fill: rgba(72,199,226,.16); stroke-width: 1; }
-.cooling-current-dots { fill: #9bebff; filter: drop-shadow(0 0 7px rgba(103,228,255,.8)); animation: cooling-current-drift 4s ease-in-out infinite alternate; }
 .ocean-ray { width: 250px; height: 900px; position: absolute; top: -180px; opacity: .12; background: linear-gradient(to bottom, rgba(203,247,255,.75), transparent 72%); filter: blur(14px); transform: rotate(-18deg); clip-path: polygon(43% 0, 57% 0, 100% 100%, 0 100%); }
 .ocean-ray-one { left: 18%; }
 .ocean-ray-two { right: 16%; width: 330px; opacity: .08; transform: rotate(14deg); }
@@ -140,12 +131,6 @@ button { border: 0; }
 .ocean-bubbles i:nth-child(4) { width: 18px; height: 18px; left: 35%; animation-delay: -8s; animation-duration: 11s; }
 .ocean-bubbles i:nth-child(5) { width: 7px; height: 7px; left: 44%; animation-delay: -1s; }
 .ocean-bubbles i:nth-child(6) { width: 31px; height: 31px; left: 55%; animation-delay: -9s; animation-duration: 14s; }
-.ocean-bubbles i:nth-child(7) { width: 12px; height: 12px; left: 64%; animation-delay: -5s; }
-.ocean-bubbles i:nth-child(8) { width: 19px; height: 19px; left: 73%; animation-delay: -3s; animation-duration: 10s; }
-.ocean-bubbles i:nth-child(9) { width: 8px; height: 8px; left: 82%; animation-delay: -8s; }
-.ocean-bubbles i:nth-child(10) { width: 27px; height: 27px; left: 91%; animation-delay: -4s; animation-duration: 13s; }
-.ocean-bubbles i:nth-child(11) { width: 14px; height: 14px; left: 48%; animation-delay: -6s; }
-.ocean-bubbles i:nth-child(12) { width: 9px; height: 9px; left: 95%; animation-delay: -10s; }
 .ocean-depth { position: absolute; top: 125px; right: 20px; bottom: 100px; display: flex; justify-content: space-between; flex-direction: column; color: rgba(209,245,252,.42); font-size: 8px; font-weight: 850; letter-spacing: .12em; }
 .ocean-depth::before { content: ""; width: 23px; position: absolute; top: 5px; right: 28px; bottom: 5px; border-top: 1px solid rgba(209,245,252,.32); border-bottom: 1px solid rgba(209,245,252,.32); background: repeating-linear-gradient(to bottom, transparent 0 48px, rgba(209,245,252,.28) 49px 50px); }
 
@@ -702,13 +687,7 @@ button { border: 0; }
 @keyframes bubble-up { 0% { opacity: 0; transform: translateY(20px); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-240px); } }
 @keyframes ocean-bubble { 0% { opacity: 0; transform: translate3d(0,0,0); } 12% { opacity: .75; } 88% { opacity: .45; } 100% { opacity: 0; transform: translate3d(35px,-105vh,0); } }
 @keyframes ocean-sway { to { transform: translateX(45px) translateY(7px); } }
-@keyframes caustic-drift { to { transform: rotate(-8deg) translate3d(120px,42px,0) scale(1.15); } }
 @keyframes coolant-flow { to { stroke-dashoffset: -84; } }
-@keyframes cooling-led-pulse { 50% { opacity: .3; } }
-@keyframes cooling-heat-rise { to { stroke-dashoffset: -72; opacity: .2; } }
-@keyframes cooling-heat-pulse { 50% { opacity: .42; transform: scale(1.08); transform-origin: center; } }
-@keyframes cooling-fan-spin { to { transform: rotate(360deg); } }
-@keyframes cooling-current-drift { to { transform: translate3d(35px,-8px,0); opacity: .42; } }
 @keyframes sonar-ping { 0% { opacity: .8; transform: scale(.35); } 100% { opacity: 0; transform: scale(1.65); } }
 @keyframes modal-fade-in { from { opacity: 0; } }
 @keyframes modal-surface-in { from { opacity: 0; transform: translateY(16px) scale(.975); } }
@@ -788,7 +767,7 @@ button { border: 0; }
   .hero-proof { display: grid; gap: 9px; }
   .hero-current { margin-top: 22px; }
   .ocean-depth { display: none; }
-  .cooling-backdrop { width: 170%; left: -35%; opacity: .5; }
+  .cooling-backdrop { width: 150%; left: -25%; opacity: .2; }
   .token-reactor { height: 330px; }
   .token-reactor.is-idle { height: 280px; }
   .token-reactor.is-idle .reactor-fallback { width: 160px; height: 190px; top: 58px; }

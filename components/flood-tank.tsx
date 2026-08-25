@@ -260,7 +260,7 @@ export function FloodTank({
       const chipMaterial = new THREE.MeshBasicMaterial({ color: 0x102a38, depthTest: false });
       const tokenStates: FallingToken[] = [];
 
-      const tokenCount = hasVerifiedSpend ? 11 : 0;
+      const tokenCount = hasVerifiedSpend ? 7 : 0;
       for (let index = 0; index < tokenCount; index += 1) {
         const group = new THREE.Group();
         const material = new THREE.MeshStandardMaterial({
@@ -296,7 +296,7 @@ export function FloodTank({
         tokenStates.push({
           group,
           material,
-          speed: 0.62 + Math.random() * 0.44,
+          speed: 0.38 + Math.random() * 0.3,
           drift: Math.random() * Math.PI * 2,
           spin: 0.8 + Math.random() * 1.1,
         });
@@ -309,7 +309,7 @@ export function FloodTank({
         opacity: 0.68,
         wireframe: true,
       });
-      const bubbles = Array.from({ length: 18 }, () => {
+      const bubbles = Array.from({ length: 10 }, () => {
         const mesh = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
         const scale = 0.55 + Math.random() * 1.8;
         mesh.scale.setScalar(scale);
@@ -322,7 +322,7 @@ export function FloodTank({
         return { mesh, speed: 0.24 + Math.random() * 0.38, phase: Math.random() * 9 };
       });
 
-      const sparkCount = hasVerifiedSpend ? 70 : 0;
+      const sparkCount = hasVerifiedSpend ? 30 : 0;
       const sparkPositions = new Float32Array(sparkCount * 3);
       const sparkSpeeds = new Float32Array(sparkCount);
       function resetSpark(index: number, randomHeight = false) {

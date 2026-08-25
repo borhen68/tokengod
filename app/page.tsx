@@ -79,7 +79,7 @@ export default async function HomePage({
           <div className="ocean-ray ocean-ray-one" />
           <div className="ocean-ray ocean-ray-two" />
           <div className="ocean-bubbles">
-            {Array.from({ length: 12 }, (_, index) => <i key={index} />)}
+            {Array.from({ length: 6 }, (_, index) => <i key={index} />)}
           </div>
           <div className="ocean-depth">
             <span>0M</span><span>10M</span><span>20M</span><span>30M</span>
