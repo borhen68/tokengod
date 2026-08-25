@@ -328,6 +328,7 @@ button { border: 0; }
 .money-cell, .ratio-cell { display: flex; align-items: center; flex-direction: column; text-align: center; }
 .money-cell span, .ratio-cell span { display: flex; align-items: center; gap: 4px; color: #89969d; font-size: 9px; font-weight: 800; text-transform: uppercase; }
 .money-cell strong, .ratio-cell strong { margin-top: 5px; font-size: 17px; letter-spacing: -.04em; }
+.money-cell small { margin-top: 2px; color: #9aa5aa; font-size: 7px; text-transform: uppercase; }
 .burn-cell strong { color: #d7563e; }
 .revenue-cell strong { color: #377c24; }
 .ratio-cell strong { color: var(--blue-dark); font-size: 20px; }

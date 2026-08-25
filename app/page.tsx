@@ -50,7 +50,10 @@ export default async function HomePage({
   ].map((listing) => listing.id);
   const reactions = await getViewerReactions([...new Set(visibleListingIds)]);
   const deepestBurn = Math.max(0, ...listings.map((listing) => listing.tokensSpentUsd));
-  const topSurfaceBidCents = Math.max(200, ...listings.map((listing) => listing.bidCents));
+  const topSurfaceBidCents = Math.max(
+    200,
+    ...listings.filter((listing) => listing.isPaidEntry).map((listing) => listing.bidCents),
+  );
   const takeFirstCents = topSurfaceBidCents + 100;
   const requestedBidCents = Number(bid);
   const entryBidCents = Number.isInteger(requestedBidCents)
@@ -151,7 +154,7 @@ export default async function HomePage({
             <span className="step-number">02</span>
             <div className="step-icon"><BarChart3 size={24} /></div>
             <h3>Get your efficiency score</h3>
-            <p>Stripe-verified revenue divided by 90-day AI spend. API-verified entries win exact reaction-count ties.</p>
+            <p>Labeled revenue divided by 90-day AI spend. Stronger proof wins exact reaction-count ties.</p>
             <small>Revenue ÷ token spend</small>
           </article>
           <article className="step-roast">

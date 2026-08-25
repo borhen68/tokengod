@@ -45,7 +45,9 @@ export function SurfacePodium({
   initialBoostId?: string;
   paymentCancelled?: boolean;
 }) {
-  const surface = [...listings]
+  const surface = listings
+    .filter((listing) => listing.isPaidEntry)
+    .slice()
     .sort(
       (a, b) =>
         b.bidCents - a.bidCents

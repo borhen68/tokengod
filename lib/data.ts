@@ -1,6 +1,7 @@
 import { cache } from "react";
 
 import { getDatabase } from "@/lib/db";
+import { proofStrength } from "@/lib/proof";
 import { getSession } from "@/lib/session";
 import type {
   Board,
@@ -30,7 +31,9 @@ const listingSelect = `
     l.efficiency_score,
     l.model_provider,
     l.ai_spend_verification,
+    l.revenue_verification,
     l.bid_cents,
+    l.stripe_checkout_session_id,
     l.created_at,
     l.updated_at,
     coalesce(sum(case when r.type = 'love' then 1 else 0 end), 0) as love_count,
@@ -86,6 +89,8 @@ function normalizeRow(row: LeaderboardRow): LeaderboardListing {
     efficiencyScore: Number(row.efficiency_score),
     modelProvider: String(row.model_provider) as LeaderboardListing["modelProvider"],
     aiSpendVerification: row.ai_spend_verification === "self_reported" ? "self_reported" : "api",
+    revenueVerification: row.revenue_verification === "self_reported" ? "self_reported" : "stripe",
+    isPaidEntry: Boolean(row.stripe_checkout_session_id),
     bidCents: Number(row.bid_cents),
     loveCount: Number(row.love_count),
     laughCount: Number(row.laugh_count),
@@ -96,8 +101,7 @@ function normalizeRow(row: LeaderboardRow): LeaderboardListing {
 
 export function sortListings(listings: LeaderboardListing[], board: Board) {
   return [...listings].sort((a, b) => {
-    const verificationTieBreak = Number(b.aiSpendVerification === "api")
-      - Number(a.aiSpendVerification === "api");
+    const verificationTieBreak = proofStrength(b) - proofStrength(a);
     if (board === "respected") {
       return b.loveCount - a.loveCount || verificationTieBreak || b.efficiencyScore - a.efficiencyScore;
     }

@@ -20,6 +20,12 @@ import {
   safeExternalUrl,
   waterPressure,
 } from "@/lib/format";
+import {
+  hasFounderReportedNumbers,
+  listingProofLabel,
+  proofStrength,
+  revenueProofLabel,
+} from "@/lib/proof";
 import type {
   Board,
   LeaderboardListing,
@@ -49,8 +55,7 @@ export function Leaderboard({
   const ordered = useMemo(
     () =>
       [...listings].sort((a, b) => {
-        const verificationTieBreak = Number(b.aiSpendVerification === "api")
-          - Number(a.aiSpendVerification === "api");
+        const verificationTieBreak = proofStrength(b) - proofStrength(a);
         return board === "respected"
           ? b.loveCount - a.loveCount || verificationTieBreak || b.efficiencyScore - a.efficiencyScore
           : b.laughCount - a.laughCount || verificationTieBreak || a.efficiencyScore - b.efficiencyScore;
@@ -69,14 +74,15 @@ export function Leaderboard({
         </div>
         <p>
           {board === "respected"
-            ? "Love decides the order. API proof, then efficiency, breaks a tie."
-            : "Laughs decide the order. API proof, then worst return, breaks a tie."}
+            ? "Love decides the order. Stronger proof, then efficiency, breaks a tie."
+            : "Laughs decide the order. Stronger proof, then worst return, breaks a tie."}
         </p>
       </div>
 
       <div className="board-proof-key">
-        <span><BadgeCheck size={13} fill="currentColor" /> API spend + revenue verified</span>
+        <span><BadgeCheck size={13} fill="currentColor" /> API spend + Stripe revenue verified</span>
         <span className="is-reported"><AtSign size={13} /> AI spend founder reported · revenue verified</span>
+        <span className="is-reported"><AtSign size={13} /> Founding profile · both founder reported</span>
       </div>
 
       <div className="board-switch" role="tablist" aria-label="Leaderboard view">
@@ -146,9 +152,9 @@ export function Leaderboard({
                   <span>
                     {listing.founderName} · @{listing.xHandle}{listing.products.length > 1 ? ` · ${listing.products.length} sites` : ""}
                   </span>
-                  <small className={listing.aiSpendVerification === "self_reported" ? "is-reported" : ""}>
-                    {listing.aiSpendVerification === "api" ? <BadgeCheck size={12} fill="currentColor" /> : <AtSign size={12} />}
-                    {listing.aiSpendVerification === "api" ? "API spend verified" : "AI spend founder reported"} · {listing.modelProvider}
+                  <small className={hasFounderReportedNumbers(listing) ? "is-reported" : ""}>
+                    {hasFounderReportedNumbers(listing) ? <AtSign size={12} /> : <BadgeCheck size={12} fill="currentColor" />}
+                    {listingProofLabel(listing)} · {listing.modelProvider}
                   </small>
                 </div>
               </div>
@@ -160,6 +166,7 @@ export function Leaderboard({
               <div className="money-cell revenue-cell" data-label="Revenue">
                 <span>Revenue</span>
                 <strong>{formatMoney(listing.revenueUsd, true)}</strong>
+                <small>{revenueProofLabel(listing)}</small>
               </div>
               <div className="ratio-cell" data-label="Made per $1">
                 <strong>{formatEfficiency(listing.efficiencyScore)}</strong>

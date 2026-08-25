@@ -77,17 +77,47 @@ export async function GET(request: Request) {
     const db = getDatabase();
     const candidateId = randomUUID();
     const now = Date.now();
-    const upserted = await db.execute({
-      sql: `insert into users (id, x_handle, x_user_id, display_name, avatar_url, created_at, updated_at)
-            values (?, ?, ?, ?, ?, ?, ?)
-            on conflict(x_user_id) do update set
-              x_handle = excluded.x_handle,
-              display_name = excluded.display_name,
-              avatar_url = excluded.avatar_url,
-              updated_at = excluded.updated_at
-            returning id`,
-      args: [candidateId, xUser.username, xUser.id, xUser.name, xUser.profile_image_url ?? null, now, now],
-    });
+    const [knownProfile, submittedProfile] = await Promise.all([
+      db.execute({
+        sql: "select id from users where x_user_id = ? limit 1",
+        args: [xUser.id],
+      }),
+      db.execute({
+        sql: `select id from users
+              where lower(x_handle) = lower(?) and x_user_id like 'submitted:%'
+              order by created_at asc limit 1`,
+        args: [xUser.username],
+      }),
+    ]);
+    const knownId = knownProfile.rows[0]?.id
+      ? String(knownProfile.rows[0].id)
+      : null;
+    const submittedId = submittedProfile.rows[0]?.id
+      ? String(submittedProfile.rows[0].id)
+      : null;
+    const upserted = knownId
+      ? await db.execute({
+        sql: `update users set x_handle = ?, display_name = ?, avatar_url = ?,
+              updated_at = ? where id = ? returning id`,
+        args: [xUser.username, xUser.name, xUser.profile_image_url ?? null, now, knownId],
+      })
+      : submittedId
+      ? await db.execute({
+        sql: `update users set x_handle = ?, x_user_id = ?, display_name = ?,
+              avatar_url = ?, updated_at = ? where id = ? returning id`,
+        args: [xUser.username, xUser.id, xUser.name, xUser.profile_image_url ?? null, now, submittedId],
+      })
+      : await db.execute({
+        sql: `insert into users (id, x_handle, x_user_id, display_name, avatar_url, created_at, updated_at)
+              values (?, ?, ?, ?, ?, ?, ?)
+              on conflict(x_user_id) do update set
+                x_handle = excluded.x_handle,
+                display_name = excluded.display_name,
+                avatar_url = excluded.avatar_url,
+                updated_at = excluded.updated_at
+              returning id`,
+        args: [candidateId, xUser.username, xUser.id, xUser.name, xUser.profile_image_url ?? null, now, now],
+      });
     const id = String(upserted.rows[0].id);
 
     await createSession({

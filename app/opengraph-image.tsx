@@ -19,7 +19,7 @@ export default function OpenGraphImage() {
           <div style={{ display: "flex", flexDirection: "column", marginTop: 78, fontSize: 74, lineHeight: .98, fontWeight: 850, letterSpacing: -4 }}>
             <span>Who turned the most</span><span style={{ color: "#62ddff" }}>tokens into money?</span>
           </div>
-          <div style={{ marginTop: 28, display: "flex", color: "#a9bdca", fontSize: 23 }}>Visible AI-spend proof. Verified revenue. Public respect and public roasting.</div>
+          <div style={{ marginTop: 28, display: "flex", color: "#a9bdca", fontSize: 23 }}>Visible proof labels. Public respect and public roasting.</div>
           <div style={{ marginTop: "auto", display: "flex", gap: 12 }}>
             <span style={{ border: "1px solid rgba(191,255,91,.35)", color: "#bfff5b", borderRadius: 999, padding: "10px 15px", fontSize: 14 }}>90-DAY LABELED</span>
             <span style={{ border: "1px solid rgba(98,221,255,.28)", color: "#92ddef", borderRadius: 999, padding: "10px 15px", fontSize: 14 }}>❤️ RESPECT · 😂 ROAST</span>

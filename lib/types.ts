@@ -2,6 +2,7 @@ export type Board = "respected" | "roasted";
 export type ModelProvider = "anthropic" | "openai" | "other";
 export type ReactionType = "love" | "laugh";
 export type AiSpendVerification = "api" | "self_reported";
+export type RevenueVerification = "stripe" | "self_reported";
 
 export type ListingProduct = {
   name: string;
@@ -26,6 +27,8 @@ export type LeaderboardListing = {
   efficiencyScore: number;
   modelProvider: ModelProvider;
   aiSpendVerification: AiSpendVerification;
+  revenueVerification: RevenueVerification;
+  isPaidEntry: boolean;
   bidCents: number;
   loveCount: number;
   laughCount: number;

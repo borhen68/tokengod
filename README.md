@@ -1,6 +1,6 @@
 # TokenGod
 
-TokenGod is a transparent AI-spend efficiency leaderboard for founders. Every live listing combines a self-listed X handle, clearly labeled AI spend, Stripe-verified revenue, and authenticated public reactions.
+TokenGod is a transparent AI-spend efficiency leaderboard for founders. Every live listing combines a self-listed X handle, clearly labeled AI spend and revenue, and authenticated public reactions.
 
 ## What is implemented
 
@@ -81,7 +81,9 @@ The submission flow sends each credential once to the relevant provider, stores 
 - **Anthropic:** an organization Admin API key (`sk-ant-admin…`). TokenGod reads `GET /v1/organizations/cost_report`, includes only token costs, and converts Anthropic's reported USD cents to dollars.
 - **Stripe:** a live restricted key (`rk_live_…`) with **Charges: Read** only. TokenGod totals captured USD charges minus refunds in the same window. Multi-currency accounts are rejected in v1 instead of applying an invented exchange rate.
 
-Stripe revenue must verify for the 90-day window before publishing. AI spend can either be pulled from the provider for the same window or entered by a personal-plan user as founder-reported spend. The verification source is stored and displayed on every leaderboard row, detail page, and share card; API-verified entries win exact reaction-count ties before efficiency is considered.
+Stripe revenue must verify for the 90-day window before publishing. AI spend can either be pulled from the provider for the same window or entered by a personal-plan user as founder-reported spend. The verification source is stored and displayed on every leaderboard row, detail page, and share card; stronger proof wins exact reaction-count ties before efficiency is considered.
+
+The initial founder profile is a one-time bootstrap exception: both of its numbers are visibly labeled founder-reported and it is excluded from the paid Surface 3. Every public submission still requires Stripe revenue verification and payment.
 
 Anthropic individual accounts cannot use its Usage & Cost Admin API. Claude Console Admin keys also have broad organization access rather than a cost-only scope, so the UI discloses that risk and never presents the Admin-key route as required. OpenAI's organization cost endpoint likewise requires an Admin API key. Credentials are used for one request and are never written to Turso.
 

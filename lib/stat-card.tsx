@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 
 import { formatEfficiency, formatMoney } from "@/lib/format";
+import { hasFounderReportedNumbers, listingProofLabel } from "@/lib/proof";
 import type { LeaderboardListing } from "@/lib/types";
 
 export const statCardSize = { width: 1200, height: 630 };
@@ -20,6 +21,7 @@ export function renderStatCard(
     ? `${listing.productName.slice(0, 30)} + ${listing.products.length - 1} more`
     : listing.productName.slice(0, 42);
   const apiVerified = listing.aiSpendVerification === "api";
+  const reportedNumbers = hasFounderReportedNumbers(listing);
 
   return new ImageResponse(
     (
@@ -51,8 +53,8 @@ export function renderStatCard(
                 TOKEN<span style={{ color: "#66ddff" }}>GOD</span>
               </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, color: apiVerified ? "#bfff5b" : "#b7c2c8", border: apiVerified ? "1px solid rgba(191,255,91,.32)" : "1px solid rgba(183,194,200,.3)", borderRadius: 999, padding: "8px 13px", fontSize: 13, fontWeight: 700, letterSpacing: 1.1 }}>
-              {apiVerified ? "AI + REVENUE VERIFIED" : "AI FOUNDER REPORTED · REVENUE VERIFIED"}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: reportedNumbers ? "#b7c2c8" : "#bfff5b", border: reportedNumbers ? "1px solid rgba(183,194,200,.3)" : "1px solid rgba(191,255,91,.32)", borderRadius: 999, padding: "8px 13px", fontSize: 13, fontWeight: 700, letterSpacing: 1.1 }}>
+              {listingProofLabel(listing).toUpperCase()}
             </div>
           </div>
 

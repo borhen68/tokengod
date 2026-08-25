@@ -22,14 +22,14 @@ export const metadata: Metadata = {
     "The transparent leaderboard for what founders spent on AI and what their products made back.",
   openGraph: {
     title: "TokenGod — Who turned tokens into money?",
-    description: "AI spend with visible proof labels. Verified revenue. Public respect and public roasting.",
+    description: "AI spend and revenue with visible proof labels. Public respect and public roasting.",
     type: "website",
     siteName: "TokenGod",
   },
   twitter: {
     card: "summary_large_image",
     title: "TokenGod — Who turned tokens into money?",
-    description: "AI spend with visible proof labels. Verified revenue. Public respect and public roasting.",
+    description: "AI spend and revenue with visible proof labels. Public respect and public roasting.",
   },
 };
 
@@ -63,7 +63,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </div>
             <div className="footer-manifesto">
               <span>THE RULE</span>
-              <p>Revenue is verified. AI-spend proof is labeled. Reactions require X. The water is dramatic.</p>
+              <p>Every number shows its proof source. Reactions require X. The water is dramatic.</p>
             </div>
           </div>
           <div className="footer-bottom">
