@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 import { formatCount } from "@/lib/format";
 import type { ReactionType } from "@/lib/types";
@@ -12,29 +11,21 @@ export function ReactionControls({
   listingId,
   initialCounts,
   initialActive,
-  isAuthenticated,
   compact = false,
   onUpdate,
 }: {
   listingId: string;
   initialCounts: Counts;
   initialActive?: Partial<Record<ReactionType, boolean>>;
-  isAuthenticated: boolean;
   compact?: boolean;
   onUpdate?: (counts: Counts) => void;
 }) {
-  const router = useRouter();
   const [counts, setCounts] = useState(initialCounts);
   const [active, setActive] = useState(initialActive ?? {});
   const [busy, setBusy] = useState<ReactionType | null>(null);
   const [message, setMessage] = useState("");
 
   async function react(type: ReactionType) {
-    if (!isAuthenticated) {
-      router.push(`/auth/x?next=${encodeURIComponent(`/listing/${listingId}`)}`);
-      return;
-    }
-
     setBusy(type);
     setMessage("");
     try {

@@ -42,11 +42,9 @@ function avatarStyle(name: string, avatarUrl: string | null) {
 
 export function Leaderboard({
   initialListings,
-  isAuthenticated,
   initialReactions,
 }: {
   initialListings: LeaderboardListing[];
-  isAuthenticated: boolean;
   initialReactions: ReactionState;
 }) {
   const [board, setBoard] = useState<Board>("respected");
@@ -191,7 +189,6 @@ export function Leaderboard({
                   listingId={listing.id}
                   initialCounts={{ love: listing.loveCount, laugh: listing.laughCount }}
                   initialActive={initialReactions[listing.id]}
-                  isAuthenticated={isAuthenticated}
                   compact
                   onUpdate={(counts) => {
                     setListings((current) =>

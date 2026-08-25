@@ -2,6 +2,7 @@ import { cache } from "react";
 
 import { getDatabase } from "@/lib/db";
 import { proofStrength } from "@/lib/proof";
+import { getReactionViewerId } from "@/lib/reaction-identity";
 import { getSession } from "@/lib/session";
 import type {
   Board,
@@ -154,13 +155,13 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
 });
 
 export async function getViewerReactions(listingIds: string[]): Promise<ReactionState> {
-  const session = await getSession();
-  if (!session || listingIds.length === 0) return {};
+  const viewerId = await getReactionViewerId();
+  if (!viewerId || listingIds.length === 0) return {};
 
   const placeholders = listingIds.map(() => "?").join(",");
   const result = await getDatabase().execute({
     sql: `select listing_id, type from reactions where user_id = ? and listing_id in (${placeholders})`,
-    args: [session.id, ...listingIds],
+    args: [viewerId, ...listingIds],
   });
 
   return result.rows.reduce<ReactionState>((state, row) => {

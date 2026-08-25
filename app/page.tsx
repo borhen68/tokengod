@@ -129,7 +129,6 @@ export default async function HomePage({
         />
         <Leaderboard
           initialListings={listings}
-          isAuthenticated={Boolean(viewer)}
           initialReactions={reactions}
         />
       </div>
@@ -161,8 +160,8 @@ export default async function HomePage({
             <span className="step-number">03</span>
             <div className="step-icon"><span aria-hidden="true">😂</span></div>
             <h3>Let the timeline judge</h3>
-            <p>Share your generated card. X-authenticated people can love it, roast it, or—perfectly legally—do both.</p>
-            <small>One of each reaction per person</small>
+            <p>Share your generated card. Every visitor can love it, roast it, or—perfectly legally—do both.</p>
+            <small>One of each reaction per browser</small>
           </article>
         </div>
       </section>

@@ -1,18 +1,18 @@
 # TokenGod
 
-TokenGod is a transparent AI-spend efficiency leaderboard for founders. Every live listing combines a self-listed X handle, clearly labeled AI spend and revenue, and authenticated public reactions.
+TokenGod is a transparent AI-spend efficiency leaderboard for founders. Every live listing combines a self-listed X handle, clearly labeled AI spend and revenue, and public reactions.
 
 ## What is implemented
 
 - Two rankings from one listing pool: **Most Respected** (Love, then higher efficiency) and **Most Roasted** (Laugh, then lower efficiency)
 - Frictionless listing attribution with an X handle—no login required to submit
 - Best-effort public X profile enrichment for the founder display name and avatar
-- X OAuth 2.0 with PKCE and signed, httpOnly session cookies for reactions
+- Frictionless reactions backed by a signed, httpOnly browser identity cookie
 - Two honest AI-spend paths: organization API verification or clearly labeled founder-reported personal/subscription spend
 - OpenAI and Anthropic organization-cost verification for founders who can safely use Admin API keys
 - Stripe live revenue verification using captured USD charges minus refunds
 - Signed 30-minute verification receipts that can be claimed only once
-- Turso schema constraints for one Love and one Laugh per X user per listing
+- Turso schema constraints for one Love and one Laugh per browser identity per listing
 - Transactional reaction rate limiting at 20 actions per minute
 - Dynamic, downloadable 1200×630 cards and listing-specific social metadata
 - A $3 Stripe Checkout entry fee that includes up to 3 sites, then $1 per additional site
@@ -46,10 +46,10 @@ Then open `http://localhost:3000`.
 | `NEXT_PUBLIC_DATAFAST_DOMAIN` | Optional public override for the tracked domain; defaults to `tokengod.lol`. |
 | `TURSO_DATABASE_URL` | Turso `libsql://` database URL. |
 | `TURSO_AUTH_TOKEN` | Server-only Turso token with read/write access. |
-| `X_CLIENT_ID` | Optional X OAuth 2.0 client ID for authenticated reactions. |
-| `X_CLIENT_SECRET` | Optional X OAuth 2.0 client secret for authenticated reactions. |
+| `X_CLIENT_ID` | Optional X OAuth 2.0 client ID for account sessions; reactions do not require it. |
+| `X_CLIENT_SECRET` | Optional X OAuth 2.0 client secret for account sessions; reactions do not require it. |
 | `X_BEARER_TOKEN` | Optional app bearer token for reliable public founder-profile lookup; the public X page is used as a fallback. |
-| `SESSION_SECRET` | Random secret for login cookies when X OAuth is enabled. |
+| `SESSION_SECRET` | Random secret for login and anonymous reaction cookies. Falls back to `VERIFICATION_RECEIPT_SECRET` for reactions. |
 | `VERIFICATION_RECEIPT_SECRET` | Separate random secret of at least 32 characters. |
 | `STRIPE_SECRET_KEY` | Server-only key for TokenGod's own Stripe account; charges entry and Surface backing payments. |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret for the Stripe webhook endpoint. |
@@ -113,7 +113,7 @@ Numbered schemas are in `turso/migrations/`. Apply every unapplied migration wit
 npm run db:migrate
 ```
 
-The migration is repeat-safe. Database constraints enforce reaction uniqueness and referential integrity; the API additionally performs authentication, origin checks, receipt validation, and transactional rate limiting.
+The migration is repeat-safe. Database constraints enforce reaction uniqueness and referential integrity; the API additionally uses signed browser identities, origin checks, receipt validation, and transactional rate limiting.
 
 ## Checks
 

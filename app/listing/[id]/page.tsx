@@ -184,8 +184,8 @@ export default async function ListingPage({ params }: PageProps) {
         <aside className="verdict-panel">
           <span className="eyebrow">PUBLIC VERDICT</span>
           <h2>Respect it.<br />Roast it.<br /><span>Both is allowed.</span></h2>
-          <ReactionControls listingId={listing.id} initialCounts={{ love: listing.loveCount, laugh: listing.laughCount }} initialActive={reactions[listing.id]} isAuthenticated={Boolean(viewer)} />
-          <p><ShieldCheck size={15} /> X login required. One love and one laugh per account. Twenty actions per minute.</p>
+          <ReactionControls listingId={listing.id} initialCounts={{ love: listing.loveCount, laugh: listing.laughCount }} initialActive={reactions[listing.id]} />
+          <p><ShieldCheck size={15} /> Open to every visitor. One love and one laugh per browser. Twenty actions per minute.</p>
           <div className="water-disclaimer"><Droplets size={17} /><div><strong>About the water</strong><span>The waterline is a playful spend index—not a claim about measured physical water consumption.</span></div></div>
         </aside>
       </section>

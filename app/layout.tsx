@@ -63,7 +63,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </div>
             <div className="footer-manifesto">
               <span>THE RULE</span>
-              <p>Every number shows its proof source. Reactions require X. The water is dramatic.</p>
+              <p>Every number shows its proof source. Every visitor can react. The water is dramatic.</p>
             </div>
           </div>
           <div className="footer-bottom">
