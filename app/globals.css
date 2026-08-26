@@ -332,7 +332,11 @@ button { border: 0; }
 .founder-product-trigger { width: fit-content; max-width: 100%; overflow: hidden; padding: 0; color: inherit; background: transparent; cursor: pointer; font-size: 15px; font-weight: 850; letter-spacing: -.025em; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
 .founder-product-trigger:hover { color: var(--blue-dark); }
 .founder-product > span { margin-top: 3px; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.founder-product > .founder-builds { color: var(--ink); font-size: 9px; font-weight: 750; }
+.founder-product > .founder-builds { min-width: 0; margin-top: 4px; display: flex; align-items: center; gap: 6px; overflow: hidden; }
+.founder-build-chip { min-width: 0; display: inline-flex; align-items: center; gap: 4px; }
+.founder-build-icon { width: 16px; height: 16px; flex: 0 0 auto; display: grid; place-items: center; color: white; background-position: center; background-repeat: no-repeat; background-size: cover; border: 1px solid rgba(7,20,30,.14); border-radius: 4px; font-size: 7px; font-style: normal; font-weight: 900; }
+.founder-build-chip b { max-width: 72px; overflow: hidden; color: var(--ink); font-size: 8px; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
+.founder-build-more { flex: 0 0 auto; color: var(--muted); font-size: 8px; font-weight: 850; }
 .founder-product > small { margin-top: 5px; display: flex; align-items: center; gap: 4px; color: #338162; font-size: 8px; font-weight: 850; letter-spacing: .055em; text-transform: uppercase; }
 .founder-product > small.is-reported { color: #69777d; }
 .money-cell, .ratio-cell { display: flex; align-items: center; flex-direction: column; text-align: center; }
@@ -378,8 +382,11 @@ button { border: 0; }
 .listing-quick-title h2 { margin: 5px 0 4px; overflow: hidden; font-size: clamp(34px,5vw,52px); line-height: .95; letter-spacing: -.06em; text-overflow: ellipsis; white-space: nowrap; }
 .listing-quick-title a { width: fit-content; display: inline-flex; align-items: center; gap: 4px; color: #abd2de; font-size: 11px; }
 .listing-quick-title a:hover { color: white; }
-.listing-quick-proof { grid-column: 1/-1; width: fit-content; display: inline-flex; align-items: center; gap: 5px; color: #bfff5b; font-size: 8px; font-weight: 850; letter-spacing: .065em; text-transform: uppercase; }
+.listing-quick-hero-footer { grid-column: 1/-1; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.listing-quick-proof { width: fit-content; display: inline-flex; align-items: center; gap: 5px; color: #bfff5b; font-size: 8px; font-weight: 850; letter-spacing: .065em; text-transform: uppercase; }
 .listing-quick-proof.is-reported { color: #c4d3d8; }
+.listing-quick-share { min-height: 34px; flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 0 11px; color: var(--ink); background: var(--lime); border: 1px solid var(--ink); border-radius: 9px; box-shadow: 2px 2px 0 rgba(255,255,255,.55); font-size: 9px; font-weight: 900; }
+.listing-quick-share:hover { background: white; transform: translateY(-1px); }
 .listing-quick-scores { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--line); border-bottom: 1px solid var(--line); }
 .listing-quick-scores > div { min-height: 104px; display: flex; justify-content: center; flex-direction: column; padding: 16px 18px; background: var(--panel); }
 .listing-quick-scores span { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 8px; font-weight: 850; letter-spacing: .075em; text-transform: uppercase; }
@@ -835,6 +842,8 @@ button { border: 0; }
   .founder-avatar { width: 43px; height: 43px; }
   .founder-product > a { font-size: 14px; }
   .founder-product > span { font-size: 10px; }
+  .founder-build-chip b { display: none; }
+  .founder-build-icon { width: 19px; height: 19px; }
   .money-cell strong, .ratio-cell strong { font-size: 16px; }
   .money-cell span, .ratio-cell span { font-size: 8px; }
   .row-water-cell { grid-column: 1/-1; justify-self: start; }

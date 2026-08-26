@@ -7,6 +7,7 @@ import {
   Droplets,
   Flame,
   Layers3,
+  Share2,
   X,
 } from "lucide-react";
 import {
@@ -93,7 +94,13 @@ export function ListingQuickView({
     }
   }
 
-  const founderImage = listing.avatarUrl || listing.productLogoUrl;
+  const founderImage = listing.avatarUrl;
+  const buildLabel = listing.products.length > 1
+    ? `${listing.productName} + ${listing.products.length - 1} more`
+    : listing.productName;
+  const listingUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://tokengod.lol"}/listing/${listing.id}`;
+  const shareText = `${listing.founderName} burned ${formatMoney(listing.tokensSpentUsd)} in AI tokens, built ${buildLabel}, and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. Respect it or roast it 👇`;
+  const shareHref = `https://x.com/intent/post?${new URLSearchParams({ text: `${shareText}\n${listingUrl}` })}`;
   const modal = open ? (
     <div
       className="listing-quick-backdrop"
@@ -125,18 +132,29 @@ export function ListingQuickView({
             style={imageStyle(founderImage)}
             aria-hidden="true"
           >
-            {!founderImage ? listing.productName.slice(0, 1).toUpperCase() : null}
+            {!founderImage ? listing.founderName.slice(0, 1).toUpperCase() : null}
           </div>
           <div className="listing-quick-title">
             <span>FOUNDER PROFILE · {listing.products.length} {listing.products.length === 1 ? "BUILD" : "BUILDS"}</span>
-            <h2 id={`listing-quick-title-${listing.id}`}>{listing.productName}</h2>
+            <h2 id={`listing-quick-title-${listing.id}`}>{listing.founderName}</h2>
             <a href={`https://x.com/${listing.xHandle}`} target="_blank" rel="noopener noreferrer">
-              {listing.founderName} · @{listing.xHandle} <ArrowUpRight size={13} />
+              @{listing.xHandle} · {listing.products.length} {listing.products.length === 1 ? "build" : "builds"} <ArrowUpRight size={13} />
             </a>
           </div>
-          <div className={`listing-quick-proof ${hasFounderReportedNumbers(listing) ? "is-reported" : ""}`}>
-            {hasFounderReportedNumbers(listing) ? <AtSign size={14} /> : <BadgeCheck size={14} fill="currentColor" />}
-            {listingProofLabel(listing)}
+          <div className="listing-quick-hero-footer">
+            <div className={`listing-quick-proof ${hasFounderReportedNumbers(listing) ? "is-reported" : ""}`}>
+              {hasFounderReportedNumbers(listing) ? <AtSign size={14} /> : <BadgeCheck size={14} fill="currentColor" />}
+              {listingProofLabel(listing)}
+            </div>
+            <a
+              className="listing-quick-share"
+              href={shareHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackDataFast("listing_quick_view_shared", { listing_id: listing.id })}
+            >
+              <Share2 size={14} /> Share on X
+            </a>
           </div>
         </header>
 

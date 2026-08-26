@@ -157,7 +157,21 @@ export function Leaderboard({
                   <span className="founder-meta">
                     @{listing.xHandle} · {listing.products.length} {listing.products.length === 1 ? "build" : "builds"}
                   </span>
-                  <span className="founder-builds" title={buildNames}>{buildNames}</span>
+                  <div className="founder-builds" title={buildNames} aria-label={`Builds: ${buildNames}`}>
+                    {listing.products.slice(0, 3).map((product, productIndex) => (
+                      <span className="founder-build-chip" key={`${product.url}-${productIndex}`}>
+                        <i
+                          className="founder-build-icon"
+                          style={avatarStyle(product.name, product.logoUrl)}
+                          aria-hidden="true"
+                        >
+                          {!product.logoUrl ? product.name.slice(0, 1).toUpperCase() : null}
+                        </i>
+                        <b>{product.name}</b>
+                      </span>
+                    ))}
+                    {listing.products.length > 3 ? <span className="founder-build-more">+{listing.products.length - 3}</span> : null}
+                  </div>
                   <small className={hasFounderReportedNumbers(listing) ? "is-reported" : ""}>
                     {hasFounderReportedNumbers(listing) ? <AtSign size={12} /> : <BadgeCheck size={12} fill="currentColor" />}
                     {listingProofLabel(listing)} · {listing.modelProvider}
