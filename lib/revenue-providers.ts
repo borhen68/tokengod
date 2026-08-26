@@ -2,7 +2,6 @@ export const revenueProviders = [
   {
     id: "stripe",
     name: "Stripe",
-    mark: "S",
     color: "#635bff",
     tint: "#eeecff",
     credentialLabel: "Live restricted key",
@@ -14,9 +13,8 @@ export const revenueProviders = [
   {
     id: "polar",
     name: "Polar",
-    mark: "P",
-    color: "#5167f6",
-    tint: "#edf0ff",
+    color: "#14181d",
+    tint: "#eff1f2",
     credentialLabel: "Organization access token",
     placeholder: "polar_oat_••••••••••••",
     instructions: "Create an organization access token with orders:read. We total paid orders minus refunded amounts.",
@@ -26,7 +24,6 @@ export const revenueProviders = [
   {
     id: "lemon_squeezy",
     name: "Lemon Squeezy",
-    mark: "L",
     color: "#f59e0b",
     tint: "#fff5d9",
     credentialLabel: "API key",
@@ -38,7 +35,6 @@ export const revenueProviders = [
   {
     id: "paddle",
     name: "Paddle",
-    mark: "P",
     color: "#111111",
     tint: "#f0f0ed",
     credentialLabel: "Live API key",
@@ -50,7 +46,6 @@ export const revenueProviders = [
   {
     id: "dodo_payments",
     name: "Dodo Payments",
-    mark: "D",
     color: "#ed6534",
     tint: "#fff0e9",
     credentialLabel: "Read-only live API key",
@@ -62,9 +57,8 @@ export const revenueProviders = [
   {
     id: "easytools",
     name: "Easytools",
-    mark: "e",
-    color: "#7057ff",
-    tint: "#f0edff",
+    color: "#08a99b",
+    tint: "#e8fbf8",
     credentialLabel: "Easycart API token",
     placeholder: "Easytools API token",
     instructions: "Use your Easycart API token. We total captured transactions minus their refunded amounts.",

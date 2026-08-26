@@ -542,7 +542,8 @@ button { border: 0; }
 .revenue-provider-grid button:disabled { cursor: wait; opacity: .68; }
 .revenue-provider-grid button > strong { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .revenue-provider-grid button > svg { color: #43842f; }
-.revenue-provider-mark { width: 29px; height: 29px; display: grid; place-items: center; color: var(--provider-color); background: var(--provider-tint); border: 1px solid color-mix(in srgb,var(--provider-color) 24%,transparent); border-radius: 8px; font-size: 12px; font-weight: 950; }
+.revenue-provider-mark { width: 29px; height: 29px; display: grid; place-items: center; overflow: hidden; color: var(--provider-color); background: var(--provider-tint); border: 1px solid color-mix(in srgb,var(--provider-color) 24%,transparent); border-radius: 8px; }
+.revenue-provider-mark > svg { width: 18px; height: 18px; display: block; }
 .revenue-provider-grid + p { margin-top: 0; }
 .revenue-key-note { width: 100%; margin-bottom: 11px; display: flex; align-items: flex-start; gap: 7px; padding: 9px 11px; color: #50666e; background: var(--blue-soft); border: 1px solid rgba(8,127,164,.18); border-radius: 9px; font-size: 9px; line-height: 1.45; }
 .revenue-key-note svg { flex: 0 0 auto; color: var(--blue-dark); }
@@ -585,9 +586,10 @@ button { border: 0; }
 .product-site-card > header > div { min-width: 0; display: flex; flex: 1; flex-direction: column; }
 .product-site-card > header > div > span { color: #87969e; font-size: 7px; font-weight: 900; letter-spacing: .1em; }
 .product-site-card > header > div > strong { overflow: hidden; margin-top: 2px; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.site-cost-badge { padding: 5px 7px; color: #3e812e; background: #edf9e4; border: 1px solid #b8dda3; border-radius: 999px; font-size: 8px; font-weight: 900; }
+.site-cost-badge { min-height: 28px; display: inline-flex; align-items: center; justify-content: center; padding: 0 8px; color: #3e812e; background: #edf9e4; border: 1px solid #b8dda3; border-radius: 999px; font-size: 8px; font-weight: 900; line-height: 1; }
 .site-cost-badge.is-paid { color: #8a552b; background: #fff1d1; border-color: #e2c174; }
-.remove-site-button { width: 28px; height: 28px; display: grid; place-items: center; color: #8f4a3d; background: #fff4ef; border: 1px solid #efc0b5; border-radius: 8px; cursor: pointer; }
+.remove-site-button { width: 32px; height: 32px; display: grid; place-items: center; padding: 0; color: #8f4a3d; background: #fff4ef; border: 1px solid #efc0b5; border-radius: 8px; cursor: pointer; line-height: 1; }
+.remove-site-button > svg, .add-site-button > svg, .site-logo-preview > svg, .site-url-field button > svg { display: block; flex: 0 0 auto; }
 .add-site-button { width: 100%; min-height: 42px; display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--blue-dark); background: white; border: 1px dashed rgba(8,127,164,.45); border-radius: 10px; cursor: pointer; font-size: 10px; font-weight: 850; }
 .add-site-button:hover { background: var(--blue-soft); border-style: solid; }
 .add-site-button:disabled { opacity: .5; cursor: not-allowed; }
@@ -600,8 +602,8 @@ button { border: 0; }
 .site-url-field:focus-within { border-color: var(--blue-dark); box-shadow: 0 0 0 3px rgba(61,207,243,.14); }
 .product-form .site-url-field input { min-width: 0; flex: 1; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
 .site-logo-preview, .preview-product-logo { flex: 0 0 auto; display: grid; place-items: center; color: var(--blue-dark); background-color: var(--blue-soft); background-position: center; background-repeat: no-repeat; background-size: cover; border: 1px solid rgba(8,127,164,.18); }
-.site-logo-preview { width: 28px; height: 28px; border-radius: 8px; }
-.site-url-field button { min-height: 31px; display: inline-flex; align-items: center; gap: 4px; padding: 0 9px; color: var(--ink); background: var(--lime); border: 1px solid var(--ink); border-radius: 8px; cursor: pointer; font-size: 8px; font-weight: 900; }
+.site-logo-preview { width: 28px; height: 28px; overflow: hidden; border-radius: 8px; }
+.site-url-field button { min-height: 31px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 0 9px; color: var(--ink); background: var(--lime); border: 1px solid var(--ink); border-radius: 8px; cursor: pointer; font-size: 8px; font-weight: 900; line-height: 1; }
 .site-url-field button:disabled { opacity: .52; cursor: wait; }
 .product-form label > .site-preview-message { position: static; margin-top: 1px; color: #47727f; font-size: 8px; line-height: 1.35; }
 .publish-button { width: 100%; margin-top: 3px; }
@@ -897,6 +899,17 @@ button { border: 0; }
   .connected-account { margin: 0 15px 17px; }
   .field-pair { grid-template-columns: 1fr; }
   .revenue-provider-grid { grid-template-columns: 1fr 1fr; }
+  .revenue-provider-grid button { height: 56px; grid-template-columns: 32px minmax(0,1fr) 14px; padding: 7px 8px; }
+  .revenue-provider-mark { width: 32px; height: 32px; }
+  .revenue-provider-mark > svg { width: 19px; height: 19px; }
+  .product-site-card > header { align-items: center; }
+  .site-cost-badge { min-width: 42px; min-height: 34px; padding-inline: 9px; }
+  .remove-site-button { width: 40px; height: 40px; flex: 0 0 40px; }
+  .remove-site-button > svg { width: 17px; height: 17px; }
+  .site-url-field { min-height: 52px; }
+  .site-logo-preview { width: 32px; height: 32px; }
+  .site-url-field button { min-width: 76px; min-height: 38px; padding-inline: 10px; }
+  .add-site-button { min-height: 46px; line-height: 1; }
   .spend-source-switch { grid-template-columns: 1fr; }
   .subscription-fields { grid-template-columns: 1fr; }
   .form-row { align-items: stretch; flex-direction: column; }

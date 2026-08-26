@@ -24,6 +24,7 @@ import { FormEvent, useMemo, useRef, useState, type CSSProperties } from "react"
 
 import { trackDataFast } from "@/lib/datafast";
 import { formatEfficiency, formatMoney } from "@/lib/format";
+import { RevenueProviderIcon } from "@/components/revenue-provider-icon";
 import {
   defaultReportingPeriod,
   getReportingPeriodDefinition,
@@ -571,7 +572,7 @@ export function SubmitFlow({
                       } as CSSProperties}
                       aria-hidden="true"
                     >
-                      {candidate.mark}
+                      <RevenueProviderIcon provider={candidate.id} />
                     </span>
                     <strong>{candidate.name}</strong>
                     {revenueProvider === candidate.id ? <Check size={13} /> : null}
