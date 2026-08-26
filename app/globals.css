@@ -2093,7 +2093,7 @@ a.founder-build-chip:focus-visible {
 .board-results .leaderboard-list { margin-top: 16px; }
 .board-results .leaderboard-row,
 .board-results .leaderboard-row.is-champion {
-  min-height: 136px;
+  min-height: 154px;
   grid-template-columns: 46px 54px minmax(0, 1fr) minmax(174px, 194px);
   align-items: center;
   gap: 12px;
@@ -2118,8 +2118,8 @@ a.founder-build-chip:focus-visible {
   white-space: nowrap;
 }
 .founder-product > .founder-builds {
-  margin-top: 7px;
-  gap: 4px;
+  margin-top: 9px;
+  gap: 7px;
   overflow: visible;
 }
 .founder-builds-label {
@@ -2131,16 +2131,22 @@ a.founder-build-chip:focus-visible {
   letter-spacing: .11em;
 }
 .founder-build-chip {
-  max-width: 126px;
-  min-height: 27px;
-  padding: 3px 6px 3px 4px;
-  background: rgba(255, 255, 255, .72);
-  border: 1px solid rgba(7, 20, 30, .11);
-  border-radius: 7px;
+  flex: 1 1 138px;
+  max-width: 184px;
+  min-height: 44px;
+  gap: 8px;
+  padding: 5px 8px 5px 5px;
+  background: rgba(255, 255, 255, .9);
+  border: 1px solid rgba(7, 20, 30, .14);
+  border-radius: 10px;
 }
-.founder-build-icon { width: 19px; height: 19px; border-radius: 5px; }
-.founder-build-chip b { max-width: 76px; font-size: 8px; }
-.founder-build-chip > svg { flex: 0 0 auto; color: #89969d; }
+.founder-build-chip:only-of-type { flex-basis: 220px; max-width: 260px; }
+.founder-build-icon { width: 32px; height: 32px; border-radius: 8px; }
+.founder-build-copy { min-width: 0; display: flex; flex: 1 1 auto; flex-direction: column; gap: 2px; }
+.founder-build-chip .founder-build-copy b { max-width: 112px; font-size: 11px; font-weight: 850; }
+.founder-build-copy small { overflow: hidden; color: #7a898f; font-size: 7.5px; text-overflow: ellipsis; white-space: nowrap; }
+.founder-build-visit { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 3px; color: var(--blue-dark); font-size: 7px; font-weight: 850; text-transform: uppercase; }
+.founder-build-visit svg { flex: 0 0 auto; }
 .row-metrics {
   min-width: 0;
   margin-top: 8px;
@@ -2223,10 +2229,14 @@ a.founder-build-chip:focus-visible {
   .founder-title-line { align-items: flex-start; flex-direction: column; gap: 1px; }
   .founder-title-line .founder-product-trigger { font-size: 15px; }
   .founder-title-line .founder-meta { width: 100%; font-size: 9px; }
-  .founder-product > .founder-builds { width: 100%; flex-wrap: wrap; gap: 3px; overflow: visible; }
+  .founder-product > .founder-builds { width: 100%; flex-wrap: wrap; gap: 5px; overflow: visible; }
   .founder-builds-label { display: none; }
-  .founder-build-chip { flex: 0 1 auto; max-width: 112px; }
-  .founder-build-chip b { max-width: 61px; display: block; }
+  .founder-build-chip { min-height: 42px; flex: 1 1 105px; max-width: none; }
+  .founder-build-chip:only-of-type { flex-basis: 100%; max-width: none; }
+  .founder-build-icon { width: 30px; height: 30px; }
+  .founder-build-chip .founder-build-copy b { max-width: 92px; display: block; font-size: 10px; }
+  .founder-build-copy small { display: none; }
+  .founder-build-visit { font-size: 0; }
   .row-metrics { width: 100%; gap: 5px 11px; }
   .row-proof { flex-basis: 100%; }
   .row-ranking .surface-boost-button { min-height: 37px; }

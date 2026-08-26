@@ -46,6 +46,13 @@ function wholeDollar(cents: number) {
   return `$${Math.round(cents / 100).toLocaleString("en-US")}`;
 }
 
+function productDomain(value: string) {
+  const safeUrl = safeExternalUrl(value);
+  if (safeUrl === "#") return "Website";
+
+  return new URL(safeUrl).hostname.replace(/^www\./, "");
+}
+
 export function Leaderboard({
   initialListings,
   initialReactions,
@@ -193,6 +200,11 @@ export function Leaderboard({
                       aria-label={`Visit ${product.name}`}
                       title={`Visit ${product.name}`}
                       key={`${product.url}-${productIndex}`}
+                      onClick={() => trackDataFast("product_visit_clicked", {
+                        listing_id: listing.id,
+                        product_name: product.name,
+                        source: "leaderboard",
+                      })}
                     >
                       <i
                         className="founder-build-icon"
@@ -201,8 +213,13 @@ export function Leaderboard({
                       >
                         {!product.logoUrl ? product.name.slice(0, 1).toUpperCase() : null}
                       </i>
-                      <b>{product.name}</b>
-                      <ExternalLink size={9} aria-hidden="true" />
+                      <span className="founder-build-copy">
+                        <b>{product.name}</b>
+                        <small>{productDomain(product.url)}</small>
+                      </span>
+                      <span className="founder-build-visit">
+                        Visit <ExternalLink size={11} aria-hidden="true" />
+                      </span>
                     </a>
                   ))}
                   {listing.products.length > 3 ? (
