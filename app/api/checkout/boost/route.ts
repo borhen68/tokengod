@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
           unit_amount: input.amountCents,
           product_data: {
             name: `Back ${String(result.rows[0].product_name)} on TokenGod`,
-            description: "Every dollar adds pressure to its Surface 3 position.",
+            description: "Every dollar raises its Top Funded total and ranking.",
           },
         },
       }],

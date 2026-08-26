@@ -168,14 +168,14 @@ export function BoostModal({
           <X size={18} />
         </button>
 
-        <span className="boost-kicker"><i /> LIVE SURFACE 3</span>
+        <span className="boost-kicker"><i /> LIVE TOP FUNDED</span>
         <div className="boost-crown"><Crown size={31} fill="currentColor" /></div>
         <h2 id={`boost-title-${listing.id}`}>
-          {rank === 1 ? "Defend the surface." : `Send ${listing.productName} to #1.`}
+          {rank === 1 ? "Keep the #1 spot." : `Send ${listing.productName} to #1.`}
         </h2>
         <p>
           Back <strong>{listing.productName}</strong> by $1 or more. The full amount raises its
-          paid Surface 3 score immediately after Stripe confirms payment.
+          Top Funded score immediately after Stripe confirms payment.
         </p>
 
         <div className="boost-scoreline">
@@ -237,7 +237,7 @@ export function BoostModal({
         </button>
         <div className="boost-rule">
           <ShieldCheck size={15} />
-          <span><strong>Paid visibility only.</strong> This never changes Love, Roast, revenue, or efficiency rank.</span>
+          <span><strong>Top Funded only.</strong> This never changes Love, Roast, revenue, or efficiency.</span>
         </div>
       </div>
     </div>

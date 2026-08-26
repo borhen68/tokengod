@@ -102,6 +102,10 @@ function normalizeRow(row: LeaderboardRow): LeaderboardListing {
 
 export function sortListings(listings: LeaderboardListing[], board: Board) {
   return [...listings].sort((a, b) => {
+    if (board === "funded") {
+      return b.bidCents - a.bidCents
+        || new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    }
     const verificationTieBreak = proofStrength(b) - proofStrength(a);
     if (board === "respected") {
       return b.loveCount - a.loveCount || verificationTieBreak || b.efficiencyScore - a.efficiencyScore;

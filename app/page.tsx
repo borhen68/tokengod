@@ -1,16 +1,15 @@
 import {
   ArrowRight,
   BarChart3,
+  Check,
   KeyRound,
 } from "lucide-react";
 import Link from "next/link";
 
-import { EntryModal } from "@/components/entry-modal";
-import { CoolingBackdrop } from "@/components/cooling-backdrop";
 import { FloodTank } from "@/components/flood-tank";
+import { HeroEntry } from "@/components/hero-entry";
 import { Leaderboard } from "@/components/leaderboard";
 import { OceanStage } from "@/components/ocean-stage";
-import { SurfacePodium } from "@/components/surface-podium";
 import { isApplicationConfigured, isPaymentConfigured } from "@/lib/config";
 import {
   getLeaderboardListings,
@@ -46,102 +45,80 @@ export default async function HomePage({
     || (payment === "failed" ? "Stripe confirmed the return, but we could not finalize it. Please try again." : undefined)
     || (payment === "invalid" ? "That Stripe checkout link is invalid or expired." : undefined);
   const visibleListingIds = [
+    ...sortListings(listings, "funded").slice(0, 50),
     ...sortListings(listings, "respected").slice(0, 50),
     ...sortListings(listings, "roasted").slice(0, 50),
   ].map((listing) => listing.id);
   const reactions = await getViewerReactions([...new Set(visibleListingIds)]);
   const deepestBurn = Math.max(0, ...listings.map((listing) => listing.tokensSpentUsd));
-  const topSurfaceBidCents = Math.max(
+  const topBidCents = Math.max(
     200,
-    ...listings.filter((listing) => listing.isPaidEntry).map((listing) => listing.bidCents),
+    ...listings.map((listing) => listing.bidCents),
   );
-  const takeFirstCents = topSurfaceBidCents + 100;
+  const takeFirstCents = topBidCents + 100;
   const requestedBidCents = Number(bid);
   const entryBidCents = Number.isInteger(requestedBidCents)
     && requestedBidCents >= 300
     && requestedBidCents <= 100_000
     && requestedBidCents % 100 === 0
     ? requestedBidCents
-    : takeFirstCents;
+    : enter === "1" ? 300 : takeFirstCents;
   const configurationReady = isApplicationConfigured();
   const paymentsReady = isPaymentConfigured();
   const heroWaterLevel = deepestBurn > 0
-    ? waterPressure(deepestBurn, Math.max(25_000, deepestBurn))
+    ? waterPressure(deepestBurn, deepestBurn)
     : 0;
 
   return (
     <main>
       <OceanStage>
-        <div className="ocean-world" aria-hidden="true">
-          <div className="ocean-surface"><i /><i /><i /></div>
-          <div className="ocean-caustics" />
-          <CoolingBackdrop />
-          <div className="ocean-ray ocean-ray-one" />
-          <div className="ocean-ray ocean-ray-two" />
-          <div className="ocean-bubbles">
-            {Array.from({ length: 6 }, (_, index) => <i key={index} />)}
-          </div>
-          <div className="ocean-depth">
-            <span>0M</span><span>10M</span><span>20M</span><span>30M</span>
-          </div>
+        <div className="waterfall-scene" aria-hidden="true">
+          <i /><i /><i /><i /><i />
+          <span />
         </div>
-
         <div className="hero section-shell">
           <div className="hero-copy">
             <div className="hero-kicker">
-              <span><i /> LIVE RANKING</span>
-              <span><BarChart3 size={14} /> {listings.length} BUILDS IN THE TANK</span>
+              <span><i /> LIVE LEADERBOARD</span>
+              <span><BarChart3 size={14} /> {listings.length} {listings.length === 1 ? "FOUNDER" : "FOUNDERS"}</span>
             </div>
-            <h1>
-              Who turned the
-              <span>most tokens</span>
-              <span>into money?</span>
-            </h1>
-            <div className="hero-actions">
-              <EntryModal
-                key={enter === "1" || (!boost && Boolean(initialError)) ? `entry-open-${entryBidCents}` : "entry-closed"}
-                viewer={viewer}
-                configurationReady={configurationReady}
-                paymentsReady={paymentsReady}
-                initialBidCents={entryBidCents}
-                defaultOpen={enter === "1" || (!boost && Boolean(initialError))}
-                initialError={initialError}
-                className="button button-primary button-large"
-              >
-                Be #1 for ${takeFirstCents / 100} <ArrowRight size={18} />
-              </EntryModal>
-              <a className="text-link" href="#leaderboard">
-                See who is sinking <span aria-hidden="true">↓</span>
-              </a>
+            <HeroEntry
+              key={enter === "1" || (!boost && Boolean(initialError)) ? `entry-open-${entryBidCents}` : `entry-closed-${entryBidCents}`}
+              viewer={viewer}
+              configurationReady={configurationReady}
+              paymentsReady={paymentsReady}
+              initialBidCents={entryBidCents}
+              takeFirstCents={takeFirstCents}
+              defaultOpen={enter === "1" || (!boost && Boolean(initialError))}
+              initialError={initialError}
+            />
+            <div className="hero-rules" aria-label="Entry rules">
+              <span><Check size={14} /><b>$3 minimum</b></span>
+              <span><Check size={14} /><b>Up to 3 products</b></span>
+              <span><Check size={14} /><b>Bid + public reactions</b></span>
             </div>
+            <FloodTank spend={deepestBurn} level={heroWaterLevel} />
           </div>
-          <FloodTank spend={deepestBurn} level={heroWaterLevel} />
         </div>
       </OceanStage>
 
       <div className="section-shell">
-        <SurfacePodium
-          listings={listings}
-          viewer={viewer}
-          configurationReady={configurationReady}
-          paymentsReady={paymentsReady}
-          takeFirstCents={takeFirstCents}
-          initialBoostId={boost}
-          paymentCancelled={payment === "cancelled"}
-        />
         <Leaderboard
           initialListings={listings}
           initialReactions={reactions}
+          paymentsReady={paymentsReady}
+          initialBoostId={boost}
+          paymentCancelled={payment === "cancelled"}
         />
       </div>
 
       <section className="how-section section-shell" id="how-it-works">
         <div className="section-heading how-heading">
           <div>
-          <span className="eyebrow">PROOF, CLEARLY LABELED</span>
-          <h2>Receipts when possible. Honesty always.</h2>
+          <span className="eyebrow">HOW IT WORKS</span>
+          <h2>Simple rules. Visible proof.</h2>
           </div>
-          <p>From @handle to a native share card in under five minutes.</p>
+          <p>Publish once, earn reactions, and share a card built for X.</p>
         </div>
         <div className="how-grid">
           <article>
@@ -161,7 +138,7 @@ export default async function HomePage({
           <article className="step-roast">
             <span className="step-number">03</span>
             <div className="step-icon"><span aria-hidden="true">😂</span></div>
-            <h3>Let the timeline judge</h3>
+            <h3>Let people decide</h3>
             <p>Share your generated card. Every visitor can love it, roast it, or—perfectly legally—do both.</p>
             <small>One of each reaction per browser</small>
           </article>
@@ -171,11 +148,11 @@ export default async function HomePage({
       <section className="bottom-cta section-shell">
         <div className="cta-water" aria-hidden="true"><i /><i /><i /></div>
         <div>
-          <span className="eyebrow">YOUR MOVE, CAPTAIN</span>
-          <h2>Did the tokens print money<br />or fill the basement?</h2>
-          <p>There is only one honest way to find out.</p>
+          <span className="eyebrow">JOIN THE LEADERBOARD</span>
+          <h2>Put your AI spend<br />to the public test.</h2>
+          <p>$3 minimum. Bid for Top Funded; earn your place on Respect and Roast.</p>
         </div>
-        <Link className="button button-ink button-large" href="/?enter=1&bid=300">
+        <Link className="button button-ink button-large" href="/?enter=1">
           Enter for $3 <ArrowRight size={18} />
         </Link>
       </section>

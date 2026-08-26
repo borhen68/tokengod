@@ -1,4 +1,4 @@
-export type Board = "respected" | "roasted";
+export type Board = "funded" | "respected" | "roasted";
 export type ModelProvider = "anthropic" | "openai" | "other";
 export type ReactionType = "love" | "laugh";
 export type AiSpendVerification = "api" | "self_reported";

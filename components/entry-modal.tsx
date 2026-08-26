@@ -113,8 +113,8 @@ export function EntryModal({
         onKeyDown={keepFocusInside}
       >
         <div className="entry-dialog-bar">
-          <span><i /> TRANSPARENT ENTRY</span>
-          <strong id="entry-dialog-title">Enter the tank</strong>
+          <span>$3 ONE-TIME ENTRY</span>
+          <strong id="entry-dialog-title">Create your founder profile</strong>
           <button ref={closeRef} type="button" onClick={closeModal} aria-label="Close entry form">
             <X size={18} />
           </button>

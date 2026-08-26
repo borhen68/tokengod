@@ -19,17 +19,17 @@ export const metadata: Metadata = {
     template: "%s · TokenGod",
   },
   description:
-    "The transparent leaderboard for what founders spent on AI and what their products made back.",
+    "See what founders spent on AI, what their products made, and how the public ranks the result.",
   openGraph: {
-    title: "TokenGod — Who turned tokens into money?",
-    description: "AI spend and revenue with visible proof labels. Public respect and public roasting.",
+    title: "TokenGod — AI spend. Real revenue. Public ranking.",
+    description: "Founder results with visible proof labels, ranked by public reactions.",
     type: "website",
     siteName: "TokenGod",
   },
   twitter: {
     card: "summary_large_image",
-    title: "TokenGod — Who turned tokens into money?",
-    description: "AI spend and revenue with visible proof labels. Public respect and public roasting.",
+    title: "TokenGod — AI spend. Real revenue. Public ranking.",
+    description: "Founder results with visible proof labels, ranked by public reactions.",
   },
 };
 
@@ -53,17 +53,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <div className="footer-main">
             <div>
               <Logo />
-              <p>Proof that your AI bill was either brilliant—or extremely funny.</p>
+              <p>See what founders spent on AI and what their products made back.</p>
             </div>
             <div className="footer-links">
               <span>Explore</span>
               <Link href="/#leaderboard">Leaderboard</Link>
               <Link href="/#how-it-works">Verification</Link>
-              <Link href="/?enter=1&bid=300">Enter for $3</Link>
+              <Link href="/?enter=1">Enter for $3</Link>
             </div>
             <div className="footer-manifesto">
               <span>THE RULE</span>
-              <p>Every number shows its proof source. Every visitor can react. The water is dramatic.</p>
+              <p>$3 is the minimum Top Funded bid. Love and Roast are ranked only by public reactions.</p>
             </div>
           </div>
           <div className="footer-bottom">

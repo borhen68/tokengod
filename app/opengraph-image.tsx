@@ -16,10 +16,10 @@ export default function OpenGraphImage() {
             </span>
             TOKEN<span style={{ color: "#62ddff", marginLeft: -12 }}>GOD</span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", marginTop: 78, fontSize: 74, lineHeight: .98, fontWeight: 850, letterSpacing: -4 }}>
-            <span>Who turned the most</span><span style={{ color: "#62ddff" }}>tokens into money?</span>
+          <div style={{ display: "flex", flexDirection: "column", marginTop: 67, fontSize: 72, lineHeight: .98, fontWeight: 850, letterSpacing: -4 }}>
+            <span>AI spend.</span><span style={{ color: "#62ddff" }}>Real revenue.</span><span>Public ranking.</span>
           </div>
-          <div style={{ marginTop: 28, display: "flex", color: "#a9bdca", fontSize: 23 }}>Visible proof labels. Public respect and public roasting.</div>
+          <div style={{ marginTop: 25, display: "flex", color: "#a9bdca", fontSize: 21 }}>Founder results with visible proof labels, ranked by reactions.</div>
           <div style={{ marginTop: "auto", display: "flex", gap: 12 }}>
             <span style={{ border: "1px solid rgba(191,255,91,.35)", color: "#bfff5b", borderRadius: 999, padding: "10px 15px", fontSize: 14 }}>90-DAY LABELED</span>
             <span style={{ border: "1px solid rgba(98,221,255,.28)", color: "#92ddef", borderRadius: 999, padding: "10px 15px", fontSize: 14 }}>❤️ RESPECT · 😂 ROAST</span>
@@ -30,7 +30,7 @@ export default function OpenGraphImage() {
           <div style={{ position: "absolute", left: 42, right: 42, top: 70, display: "flex", flexDirection: "column", gap: 13 }}>
             {[0, 1, 2].map((item) => <div key={item} style={{ height: 72, display: "flex", alignItems: "center", padding: 14, gap: 8, borderRadius: 10, border: "1px solid rgba(255,255,255,.38)", background: "#101f2a" }}><span style={{ width: 10, height: 10, borderRadius: 99, background: item === 2 ? "#ff816d" : "#bfff5b", display: "flex" }} /><span style={{ width: 75, height: 5, borderRadius: 99, background: "#657b89", display: "flex" }} /></div>)}
           </div>
-          <span style={{ position: "absolute", bottom: 24, left: 38, color: "#e6fbff", fontWeight: 800, fontSize: 14, letterSpacing: 1, display: "flex" }}>COOLING PANIC 72%</span>
+          <span style={{ position: "absolute", bottom: 24, left: 36, color: "#e6fbff", fontWeight: 800, fontSize: 13, letterSpacing: 1, display: "flex" }}>AI SPEND WATERLINE · 72%</span>
         </div>
       </div>
     ),

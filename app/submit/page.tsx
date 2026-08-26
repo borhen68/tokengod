@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function SubmitPage() {
-  redirect("/?enter=1&bid=300");
+  redirect("/?enter=1");
 }

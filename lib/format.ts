@@ -48,9 +48,8 @@ export function waterPressure(spend: number, maxSpend: number) {
 }
 
 export function pressureLabel(percent: number) {
-  if (percent > 82) return "Server room flooded";
-  if (percent > 62) return "Bring a life jacket";
-  if (percent > 38) return "Cooling bill rising";
-  return "Barely a puddle";
+  if (percent > 82) return "Very high spend";
+  if (percent > 62) return "High spend";
+  if (percent > 38) return "Moderate spend";
+  return "Lower spend";
 }
-

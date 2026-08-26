@@ -3,22 +3,20 @@
 import {
   AtSign,
   BadgeCheck,
-  Crown,
   Droplets,
   Eye,
   Flame,
   Trophy,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState } from "react";
 
+import { BoostModal } from "@/components/boost-modal";
 import { ReactionControls } from "@/components/reaction-controls";
 import { ListingQuickView } from "@/components/listing-quick-view";
 import {
   formatEfficiency,
   formatMoney,
-  pressureLabel,
-  waterPressure,
 } from "@/lib/format";
 import {
   hasFounderReportedNumbers,
@@ -40,19 +38,33 @@ function avatarStyle(name: string, avatarUrl: string | null) {
   };
 }
 
+function wholeDollar(cents: number) {
+  return `$${Math.round(cents / 100).toLocaleString("en-US")}`;
+}
+
 export function Leaderboard({
   initialListings,
   initialReactions,
+  paymentsReady,
+  initialBoostId,
+  paymentCancelled,
 }: {
   initialListings: LeaderboardListing[];
   initialReactions: ReactionState;
+  paymentsReady: boolean;
+  initialBoostId?: string;
+  paymentCancelled?: boolean;
 }) {
-  const [board, setBoard] = useState<Board>("respected");
+  const [board, setBoard] = useState<Board>("funded");
   const [listings, setListings] = useState(initialListings);
 
   const ordered = useMemo(
     () =>
       [...listings].sort((a, b) => {
+        if (board === "funded") {
+          return b.bidCents - a.bidCents
+            || new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        }
         const verificationTieBreak = proofStrength(b) - proofStrength(a);
         return board === "respected"
           ? b.loveCount - a.loveCount || verificationTieBreak || b.efficiencyScore - a.efficiencyScore
@@ -61,66 +73,82 @@ export function Leaderboard({
     [board, listings],
   );
   const visibleListings = ordered.slice(0, 50);
-  const maxSpend = Math.max(1, ...listings.map((listing) => listing.tokensSpentUsd));
 
   return (
     <section className="board-section" id="leaderboard">
-      <div className="section-heading board-heading">
-        <div>
-          <span className="eyebrow">THE PUBLIC VERDICT</span>
-          <h2>{board === "respected" ? "Builders we respect." : "Budgets we need to discuss."}</h2>
-        </div>
-        <p>
-          {board === "respected"
-            ? "Love decides the order. Stronger proof, then efficiency, breaks a tie."
-            : "Laughs decide the order. Stronger proof, then worst return, breaks a tie."}
-        </p>
-      </div>
+      <div className="board-layout">
+        <aside className="board-sidebar">
+          <span className="eyebrow">LEADERBOARD</span>
+          <h2>Public verdict</h2>
+          <p>One founder pool, three transparent ways to rank it.</p>
+          <div className="board-switch" role="tablist" aria-label="Leaderboard view">
+          <button
+            className={board === "funded" ? "is-active" : ""}
+            type="button"
+            role="tab"
+            aria-selected={board === "funded"}
+            onClick={() => setBoard("funded")}
+          >
+            <span aria-hidden="true">⚡</span>
+            Top Funded
+            <small>by bid</small>
+          </button>
+          <button
+            className={board === "respected" ? "is-active" : ""}
+            type="button"
+            role="tab"
+            aria-selected={board === "respected"}
+            onClick={() => setBoard("respected")}
+          >
+            <span aria-hidden="true">❤️</span>
+            Most Respected
+            <small>by love votes</small>
+          </button>
+          <button
+            className={board === "roasted" ? "is-active" : ""}
+            type="button"
+            role="tab"
+            aria-selected={board === "roasted"}
+            onClick={() => setBoard("roasted")}
+          >
+            <span aria-hidden="true">😂</span>
+            Most Roasted
+            <small>by laugh votes</small>
+          </button>
+          </div>
+          <div className="board-proof-key">
+            <span><BadgeCheck size={13} fill="currentColor" /> API + Stripe verified</span>
+            <span className="is-reported"><AtSign size={13} /> Founder reported</span>
+          </div>
+        </aside>
 
-      <div className="board-proof-key">
-        <span><BadgeCheck size={13} fill="currentColor" /> API spend + Stripe revenue verified</span>
-        <span className="is-reported"><AtSign size={13} /> AI spend founder reported · revenue verified</span>
-        <span className="is-reported"><AtSign size={13} /> Founding profile · both founder reported</span>
-      </div>
+        <div className="board-results">
+          <header className="board-results-heading">
+            <div>
+              <span>{board === "funded" ? "⚡ TOP FUNDED" : board === "respected" ? "❤️ MOST RESPECTED" : "😂 MOST ROASTED"}</span>
+              <h2>{board === "funded" ? "Highest bids right now" : board === "respected" ? "Founders earning respect" : "Spending under scrutiny"}</h2>
+            </div>
+            <p>
+              {board === "funded"
+                ? "$3 minimum. Each extra dollar moves a founder higher."
+                : board === "respected"
+                ? "Love votes decide the order. Proof and efficiency break ties."
+                : "Laugh votes decide the order. Proof and lowest return break ties."}
+            </p>
+          </header>
 
-      <div className="board-switch" role="tablist" aria-label="Leaderboard view">
-        <button
-          className={board === "respected" ? "is-active" : ""}
-          type="button"
-          role="tab"
-          aria-selected={board === "respected"}
-          onClick={() => setBoard("respected")}
-        >
-          <span aria-hidden="true">❤️</span>
-          Most Respected
-          <small>high signal</small>
-        </button>
-        <button
-          className={board === "roasted" ? "is-active" : ""}
-          type="button"
-          role="tab"
-          aria-selected={board === "roasted"}
-          onClick={() => setBoard("roasted")}
-        >
-          <span aria-hidden="true">😂</span>
-          Most Roasted
-          <small>high spend, low tide</small>
-        </button>
-      </div>
+          <div className="board-column-labels" aria-hidden="true">
+            <span>Founder + products</span>
+            <span>AI burn</span>
+            <span>Revenue</span>
+            <span>Return</span>
+            <span>Bid</span>
+            <span>{board === "funded" ? "Action" : "Vote"}</span>
+          </div>
 
-      <div className="board-column-labels" aria-hidden="true">
-        <span>Rank / builder</span>
-        <span>AI burn</span>
-        <span>Revenue</span>
-        <span>Made per $1</span>
-        <span>Cooling panic</span>
-        <span>The verdict</span>
-      </div>
-
-      <div className="leaderboard-list">
+          <div className="leaderboard-list">
         {visibleListings.map((listing, index) => {
           const rank = index + 1;
-          const pressure = waterPressure(listing.tokensSpentUsd, maxSpend);
           const founderImage = listing.avatarUrl;
           const buildNames = listing.products.map((product) => product.name).join(" · ") || listing.productName;
           return (
@@ -128,12 +156,6 @@ export function Leaderboard({
               className={`leaderboard-row ${rank === 1 ? "is-champion" : ""}`}
               key={listing.id}
             >
-              {rank === 1 ? (
-                <div className="champion-ribbon">
-                  <Crown size={13} fill="currentColor" />
-                  {board === "respected" ? "THE GOLDEN FLOATIE" : "DEEPEST IN THE TANK"}
-                </div>
-              ) : null}
               <div className="rank-and-founder">
                 <div className={`rank-badge rank-${Math.min(rank, 4)}`}>
                   {rank <= 3 ? <Trophy size={13} /> : null}
@@ -192,36 +214,38 @@ export function Leaderboard({
                 <strong>{formatEfficiency(listing.efficiencyScore)}</strong>
                 <span>made / $1</span>
               </div>
-              <div className="row-water-cell" data-label="Cooling panic">
-                <div
-                  className="mini-water-meter"
-                  title={pressureLabel(pressure)}
-                  style={{ "--meter-level": `${pressure}%` } as CSSProperties}
-                >
-                  <span style={{ height: `${pressure}%` }} />
-                  <i />
-                </div>
-                <div>
-                  <strong>{pressure}%</strong>
-                  <span><Droplets size={12} /> {pressureLabel(pressure)}</span>
-                </div>
+              <div className="bid-cell" data-label="Bid">
+                <span>TOTAL BID</span>
+                <strong>{wholeDollar(listing.bidCents)}</strong>
+                <small>{rank === 1 && board === "funded" ? "current #1" : "one-time total"}</small>
               </div>
               <div className="verdict-cell">
-                <ReactionControls
-                  listingId={listing.id}
-                  initialCounts={{ love: listing.loveCount, laugh: listing.laughCount }}
-                  initialActive={initialReactions[listing.id]}
-                  compact
-                  onUpdate={(counts) => {
-                    setListings((current) =>
-                      current.map((item) =>
-                        item.id === listing.id
-                          ? { ...item, loveCount: counts.love, laughCount: counts.laugh }
-                          : item,
-                      ),
-                    );
-                  }}
-                />
+                {board === "funded" ? (
+                  <BoostModal
+                    listing={listing}
+                    rank={rank}
+                    leaderBidCents={ordered[0]?.bidCents ?? 200}
+                    paymentsReady={paymentsReady}
+                    defaultOpen={initialBoostId === listing.id}
+                    initialError={initialBoostId === listing.id && paymentCancelled ? "Checkout canceled. Nothing was charged." : undefined}
+                  />
+                ) : (
+                  <ReactionControls
+                    listingId={listing.id}
+                    initialCounts={{ love: listing.loveCount, laugh: listing.laughCount }}
+                    initialActive={initialReactions[listing.id]}
+                    compact
+                    onUpdate={(counts) => {
+                      setListings((current) =>
+                        current.map((item) =>
+                          item.id === listing.id
+                            ? { ...item, loveCount: counts.love, laughCount: counts.laugh }
+                            : item,
+                        ),
+                      );
+                    }}
+                  />
+                )}
                 <ListingQuickView
                   listing={listing}
                   className="visit-product"
@@ -233,16 +257,18 @@ export function Leaderboard({
             </article>
           );
         })}
-      </div>
+          </div>
 
-      {!ordered.length ? (
-        <div className="empty-board">
-          <Droplets size={30} />
-          <h3>The tank is bone-dry.</h3>
-          <p>Enter the first build and claim every number-one spot at once.</p>
-          <Link className="button button-primary" href="/?enter=1&bid=300">Be first in for $3</Link>
+          {!ordered.length ? (
+            <div className="empty-board">
+              <Droplets size={30} />
+              <h3>The tank is empty.</h3>
+              <p>Enter the first founder profile and take the first rank.</p>
+              <Link className="button button-primary" href="/?enter=1">Enter for $3</Link>
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      </div>
     </section>
   );
 }

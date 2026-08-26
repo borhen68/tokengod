@@ -89,7 +89,7 @@ export function renderStatCard(
 
         <div style={{ width: 280, height: "100%", marginLeft: "auto", display: "flex", flexDirection: "column", position: "relative" }}>
           <div style={{ display: "flex", justifyContent: "space-between", color: "#8da6b8", fontSize: 13, letterSpacing: 1, marginBottom: 10 }}>
-            <span>COOLING PANIC</span><span style={{ color: "#66ddff", fontWeight: 800 }}>{level}%</span>
+            <span>AI SPEND WATERLINE</span><span style={{ color: "#66ddff", fontWeight: 800 }}>{level}%</span>
           </div>
           <div style={{ height: 468, width: "100%", border: "2px solid rgba(138,203,225,.38)", borderRadius: 28, display: "flex", position: "relative", overflow: "hidden", background: "rgba(255,255,255,.035)" }}>
             <div style={{ position: "absolute", left: 45, right: 45, top: 76, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -108,7 +108,7 @@ export function renderStatCard(
               <span style={{ position: "absolute", top: 118, left: 46, width: 11, height: 11, borderRadius: 99, border: "2px solid rgba(227,249,255,.7)", display: "flex" }} />
             </div>
             <div style={{ position: "absolute", left: 0, right: 0, bottom: 20, display: "flex", justifyContent: "center", color: "#e6fbff", fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>
-              THE TANK IS A METAPHOR
+              RELATIVE 90-DAY SPEND
             </div>
           </div>
         </div>
@@ -118,7 +118,9 @@ export function renderStatCard(
       ...statCardSize,
       emoji: "twemoji",
       headers: {
-        "Cache-Control": "no-store",
+        "Cache-Control": options?.download
+          ? "private, no-store"
+          : "public, max-age=0, s-maxage=31536000, stale-while-revalidate=86400",
         ...(options?.download
           ? { "Content-Disposition": `attachment; filename="tokengod-${listing.id}.png"` }
           : {}),

@@ -44,7 +44,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const listing = await getListing(id);
   if (!listing) return { title: "Listing not found" };
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://tokengod.lol").replace(/\/$/, "");
+  const pageUrl = `${siteUrl}/listing/${listing.id}`;
   const card = `${siteUrl}/api/listings/${listing.id}/card?v=${encodeURIComponent(listing.updatedAt)}`;
   const buildLabel = listing.products.length > 1
     ? `${listing.productName} + ${listing.products.length - 1} more`
@@ -56,9 +57,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${listing.productName} by @${listing.xHandle}`,
     description,
-    alternates: { canonical: `/listing/${listing.id}` },
-    openGraph: { title: `${listing.productName} · TokenGod`, description, images: [{ url: card, width: 1200, height: 630 }] },
-    twitter: { card: "summary_large_image", title: `${listing.productName} · TokenGod`, description, images: [card] },
+    alternates: { canonical: pageUrl },
+    openGraph: {
+      title: `${listing.productName} · TokenGod`,
+      description,
+      url: pageUrl,
+      siteName: "TokenGod",
+      type: "website",
+      images: [{
+        url: card,
+        width: 1200,
+        height: 630,
+        type: "image/png",
+        alt: `${listing.founderName}'s AI spend and revenue card`,
+      }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${listing.productName} · TokenGod`,
+      description,
+      creator: `@${listing.xHandle}`,
+      images: [{ url: card, alt: `${listing.founderName}'s AI spend and revenue card` }],
+    },
   };
 }
 
@@ -79,7 +99,8 @@ export default async function ListingPage({ params }: PageProps) {
   const maxSpend = Math.max(1, ...allListings.map((item) => item.tokensSpentUsd));
   const pressure = waterPressure(listing.tokensSpentUsd, maxSpend);
   const ownerImage = listing.avatarUrl || listing.productLogoUrl;
-  const pageUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/listing/${listing.id}`;
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://tokengod.lol").replace(/\/$/, "");
+  const pageUrl = `${siteUrl}/listing/${listing.id}?v=${encodeURIComponent(listing.updatedAt)}`;
   const buildLabel = listing.products.length > 1
     ? `${listing.productName} + ${listing.products.length - 1} more`
     : listing.productName;
@@ -93,7 +114,7 @@ export default async function ListingPage({ params }: PageProps) {
     ? `${overtaker.productName} just passed me on ${droppedBoard}. Beat ${formatEfficiency(overtaker.efficiencyScore)} per $1? Let’s see it 👀`
     : normalShare;
   const shareText = viewer?.id === listing.ownerUserId && droppedBoard ? reclaimShare : normalShare;
-  const shareHref = `https://x.com/intent/post?${new URLSearchParams({ text: `${shareText}\n${pageUrl}` })}`;
+  const shareHref = `https://x.com/intent/post?${new URLSearchParams({ text: shareText, url: pageUrl })}`;
 
   return (
     <main className="listing-page section-shell">
@@ -128,7 +149,7 @@ export default async function ListingPage({ params }: PageProps) {
         <article><span><Flame size={15} /> AI token burn</span><strong>{formatMoney(listing.tokensSpentUsd)}</strong><small>{listing.modelProvider} · {listing.aiSpendVerification === "api" ? "API verified" : "founder reported"}</small></article>
         <article><span>Revenue made</span><strong>{formatMoney(listing.revenueUsd)}</strong><small>{revenueProofLabel(listing)}</small></article>
         <article className="efficiency-highlight"><span>Efficiency score</span><strong>{formatEfficiency(listing.efficiencyScore)}</strong><small>made per $1 spent</small></article>
-        <article className="detail-water"><div className="detail-water-gauge"><i style={{ height: `${pressure}%` }} /></div><div><span><Droplets size={14} /> Cooling panic</span><strong>{pressure}%</strong><small>{pressureLabel(pressure)}</small></div></article>
+        <article className="detail-water"><div className="detail-water-gauge"><i style={{ height: `${pressure}%` }} /></div><div><span><Droplets size={14} /> AI spend waterline</span><strong>{pressure}%</strong><small>{pressureLabel(pressure)}</small></div></article>
       </section>
 
       {listing.products.length > 1 ? (
@@ -170,7 +191,7 @@ export default async function ListingPage({ params }: PageProps) {
 
       <section className="listing-content-grid">
         <div className="card-panel">
-          <header><div><span className="eyebrow">SHAREABLE RECEIPT</span><h2>The card that starts the fight.</h2></div>{hasFounderReportedNumbers(listing) ? <AtSign size={20} /> : <BadgeCheck size={20} />}</header>
+          <header><div><span className="eyebrow">SHAREABLE RECEIPT</span><h2>Share the numbers.</h2></div>{hasFounderReportedNumbers(listing) ? <AtSign size={20} /> : <BadgeCheck size={20} />}</header>
           <div className="stat-card-image">
             <Image src={`/api/listings/${listing.id}/card?v=${encodeURIComponent(listing.updatedAt)}`} alt={`TokenGod stat card for ${listing.productName}`} width={1200} height={630} unoptimized priority />
           </div>

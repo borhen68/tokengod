@@ -24,7 +24,7 @@ export async function Header() {
         <nav className="desktop-nav" aria-label="Main navigation">
           <Link href="/#leaderboard">Leaderboard</Link>
           <Link href="/#how-it-works">How it works</Link>
-          <Link href="/?enter=1&bid=300">Get ranked</Link>
+          <Link href="/?enter=1">Get ranked</Link>
         </nav>
         <div className="header-actions">
           {viewer ? (
@@ -44,7 +44,6 @@ export async function Header() {
             viewer={viewer}
             configurationReady={isApplicationConfigured()}
             paymentsReady={isPaymentConfigured()}
-            initialBidCents={300}
             className="button button-primary header-cta"
           >
             Enter for $3

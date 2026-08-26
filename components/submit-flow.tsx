@@ -5,9 +5,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BadgeCheck,
-  BadgeDollarSign,
   Check,
-  Crown,
   ExternalLink,
   Globe2,
   KeyRound,
@@ -135,10 +133,7 @@ export function SubmitFlow({
   const [busy, setBusy] = useState<"stripe" | "ai" | "publish" | null>(null);
   const [error, setError] = useState(initialError || "");
   const [sites, setSites] = useState<SiteDraft[]>(() => [emptySite("primary")]);
-  const [bidCents, setBidCents] = useState(() =>
-    Math.min(100_000, Math.max(300, Math.round(initialBidCents / 100) * 100)),
-  );
-  const [customBoostDollars, setCustomBoostDollars] = useState("");
+  const bidCents = Math.min(100_000, Math.max(300, Math.round(initialBidCents / 100) * 100));
 
   const normalizedXHandle = xHandle.trim().replace(/^@/, "");
   const xHandleIsValid = /^[A-Za-z0-9_]{1,15}$/.test(normalizedXHandle);
@@ -168,11 +163,6 @@ export function SubmitFlow({
     : 4;
   const tankStyle = { "--water-level": `${waterLevel}%` } as CSSProperties;
   const Root = variant === "modal" ? "div" : "main";
-  const entryChoices = [...new Set(
-    [300, 400, 600, 800, initialBidCents]
-      .map((value) => Math.min(100_000, Math.max(300, Math.round(value / 100) * 100))),
-  )]
-    .sort((a, b) => a - b);
 
   function wholeDollar(cents: number) {
     return `$${Math.round(cents / 100).toLocaleString("en-US")}`;
@@ -399,9 +389,9 @@ export function SubmitFlow({
       ) : null}
       <div className="submit-intro">
         <div>
-          <span className="eyebrow">ENTER THE TRANSPARENT RACE</span>
-          <h1>Show the burn.<br /><span>Prove the outcome.</span></h1>
-          <p>$3, up to 3 product sites, verified revenue, and one honestly labeled AI-spend score.</p>
+          <span className="eyebrow">$3 ONE-TIME ENTRY</span>
+          <h1>Show the spend.<br /><span>Prove the return.</span></h1>
+          <p>One founder profile, up to three products, and a shareable card. Your bid ranks Top Funded; reactions rank Respect and Roast.</p>
         </div>
         <div className="privacy-seal">
           <ShieldCheck size={25} />
@@ -697,60 +687,30 @@ export function SubmitFlow({
 
               <div className="entry-price-panel">
                 <div className="entry-price-head">
-                  <span><BadgeDollarSign size={18} /></span>
-                  <div><strong>$3 publishes up to 3 sites</strong><small>One founder profile and rank. Extra sites cost $1 each.</small></div>
+                  <div><strong>Leaderboard bid</strong><small>$3 minimum · founder profile + up to 3 products</small></div>
+                  <b>{wholeDollar(bidCents)}</b>
+                </div>
+                <div className="entry-price-rule">
+                  <span>Base entry</span>
+                  <strong>$3</strong>
+                </div>
+                {bidCents > 300 ? (
+                  <div className="entry-price-rule">
+                    <span>Top Funded bid</span>
+                    <strong>+{wholeDollar(bidCents - 300)}</strong>
+                  </div>
+                ) : null}
+                {extraSiteCount ? (
+                  <div className="entry-price-rule">
+                    <span>{extraSiteCount} extra product{extraSiteCount === 1 ? "" : "s"} × $1</span>
+                    <strong>+{wholeDollar(siteFeeCents)}</strong>
+                  </div>
+                ) : null}
+                <div className="entry-price-total">
+                  <span>Total due today</span>
                   <b>{wholeDollar(checkoutTotalCents)}</b>
                 </div>
-                <div className="entry-price-options" role="group" aria-label="Entry and surface amount">
-                  {entryChoices.map((choice) => (
-                    <button
-                      className={choice === bidCents && !customBoostDollars ? "is-active" : ""}
-                      type="button"
-                      key={choice}
-                      onClick={() => {
-                        setBidCents(choice);
-                        setCustomBoostDollars("");
-                      }}
-                    >
-                      <strong>{choice === 300 ? "$3 entry" : `+$${(choice - 300) / 100}`}</strong>
-                      <span>
-                        {choice === 300
-                          ? "earned boards only"
-                          : choice === Math.round(initialBidCents / 100) * 100 && initialBidCents > 300
-                            ? `${wholeDollar(choice)} total · target #1`
-                            : `${wholeDollar(choice)} total`}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-                <label className="entry-custom-boost">
-                  <span>Custom surface boost</span>
-                  <div>
-                    <span>+$</span>
-                    <input
-                      type="number"
-                      min="1"
-                      max="997"
-                      step="1"
-                      inputMode="numeric"
-                      placeholder="10"
-                      value={customBoostDollars}
-                      onChange={(event) => {
-                        const value = event.target.value;
-                        setCustomBoostDollars(value);
-                        const dollars = Number(value);
-                        if (Number.isInteger(dollars) && dollars >= 1 && dollars <= 997) {
-                          setBidCents(300 + dollars * 100);
-                        }
-                      }}
-                    />
-                    <b>+ $3 entry{siteFeeCents ? ` + ${wholeDollar(siteFeeCents)} sites` : ""} = {wholeDollar(checkoutTotalCents)}</b>
-                  </div>
-                </label>
-                {extraSiteCount ? (
-                  <div className="site-fee-line"><span>{extraSiteCount} extra site{extraSiteCount === 1 ? "" : "s"} × $1</span><strong>+{wholeDollar(siteFeeCents)}</strong></div>
-                ) : null}
-                <p><Crown size={13} /> Only entry and boost dollars move Surface 3. Site fees never change rank.</p>
+                <p><ShieldCheck size={13} /> Your bid sets Top Funded rank. Love and Roast rankings are controlled only by public reactions.</p>
               </div>
 
               <button className="button button-primary publish-button" type="submit" disabled={!xHandleIsValid || !sitesAreReady || !stripeResult || !aiResult || !configurationReady || !paymentsReady || busy !== null}>

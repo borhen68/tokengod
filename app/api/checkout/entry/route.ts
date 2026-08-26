@@ -109,8 +109,8 @@ export async function POST(request: NextRequest) {
         product_data: {
           name: `TokenGod entry — ${primaryProduct.name}`,
           description: input.bidCents === 300
-            ? `Leaderboard entry · ${Math.min(products.length, 3)} site${products.length === 1 ? "" : "s"} included`
-            : `Leaderboard entry + $${((input.bidCents - 300) / 100).toFixed(0)} Surface boost`,
+            ? `Leaderboard entry · ${Math.min(products.length, 3)} product${products.length === 1 ? "" : "s"} included`
+            : `Leaderboard entry + $${((input.bidCents - 300) / 100).toFixed(0)} Top Funded bid`,
         },
       },
     }];
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
           unit_amount: 100,
           product_data: {
             name: "Additional TokenGod site",
-            description: "Site 4+ · does not affect Surface rank",
+            description: "Site 4+ · does not affect Top Funded rank",
           },
         },
       });

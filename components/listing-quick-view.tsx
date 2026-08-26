@@ -98,9 +98,10 @@ export function ListingQuickView({
   const buildLabel = listing.products.length > 1
     ? `${listing.productName} + ${listing.products.length - 1} more`
     : listing.productName;
-  const listingUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://tokengod.lol"}/listing/${listing.id}`;
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://tokengod.lol").replace(/\/$/, "");
+  const listingUrl = `${siteUrl}/listing/${listing.id}?v=${encodeURIComponent(listing.updatedAt)}`;
   const shareText = `${listing.founderName} burned ${formatMoney(listing.tokensSpentUsd)} in AI tokens, built ${buildLabel}, and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. Respect it or roast it 👇`;
-  const shareHref = `https://x.com/intent/post?${new URLSearchParams({ text: `${shareText}\n${listingUrl}` })}`;
+  const shareHref = `https://x.com/intent/post?${new URLSearchParams({ text: shareText, url: listingUrl })}`;
   const modal = open ? (
     <div
       className="listing-quick-backdrop"
