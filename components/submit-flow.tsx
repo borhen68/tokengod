@@ -132,6 +132,7 @@ export function SubmitFlow({
   const [revenueProvider, setRevenueProvider] = useState<RevenueProvider>("stripe");
   const [spendVerification, setSpendVerification] = useState<SpendVerification>("self_reported");
   const [anonymousEntry, setAnonymousEntry] = useState(false);
+  const [activeStep, setActiveStep] = useState<1 | 2 | 3 | 4>(1);
   const [xHandle, setXHandle] = useState(viewer?.xHandle ?? "");
   const [xProfile, setXProfile] = useState<XProfileResult | null>(() =>
     viewer
@@ -176,6 +177,16 @@ export function SubmitFlow({
     reportingPeriod,
   );
   const selectedRevenueProvider = getRevenueProvider(revenueProvider);
+  const maxUnlockedStep = revenueResult && aiResult
+    ? 4
+    : revenueResult
+      ? 3
+      : identityIsReady
+        ? 2
+        : 1;
+  const previewProofLabel = revenueResult && aiResult
+    ? `${aiResult.verificationMethod === "api" ? "AI VERIFIED" : "AI REPORTED"} · ${selectedRevenueProvider.name.toUpperCase()} VERIFIED`
+    : `${Number(Boolean(revenueResult)) + Number(Boolean(aiResult))}/2 NUMBERS READY`;
 
   function getSubmissionId() {
     submissionIdRef.current ||= crypto.randomUUID();
@@ -250,6 +261,7 @@ export function SubmitFlow({
       });
       setRevenueResult(result);
       setRevenueKey("");
+      if (variant === "modal") setActiveStep(3);
       trackDataFast("revenue_verified", {
         provider: revenueProvider,
         reporting_period: reportingPeriod,
@@ -281,6 +293,7 @@ export function SubmitFlow({
       });
       setAiResult(result);
       setAiKey("");
+      if (variant === "modal") setActiveStep(4);
       trackDataFast("ai_spend_api_verified", {
         provider,
         reporting_period: reportingPeriod,
@@ -309,6 +322,7 @@ export function SubmitFlow({
         period: reportingPeriod,
       });
       setAiResult(result);
+      if (variant === "modal") setActiveStep(4);
       trackDataFast("ai_spend_reported", {
         provider: subscriptionSelection.plan.provider,
         plan: subscriptionSelection.plan.id,
@@ -338,6 +352,7 @@ export function SubmitFlow({
     setRevenueResult(null);
     setAiResult(null);
     setError("");
+    if (variant === "modal" && activeStep > 2) setActiveStep(2);
   }
 
   function updateSite(id: string, patch: Partial<SiteDraft>) {
@@ -453,17 +468,37 @@ export function SubmitFlow({
       {variant === "page" ? (
         <Link className="back-link" href="/"><ArrowLeft size={15} /> Back to the tank</Link>
       ) : null}
-      <div className="submit-intro">
-        <div>
-          <span className="eyebrow">$3 ONE-TIME ENTRY</span>
-          <h1>Show the spend.<br /><span>Prove the return.</span></h1>
-          <p>One founder profile, up to three products, and a shareable card. Your bid ranks Top Funded; reactions rank Respect and Roast.</p>
+      {variant === "modal" ? (
+        <div className="submit-modal-intro">
+          <div className="submit-modal-copy">
+            <span>GET RANKED IN FOUR STEPS</span>
+            <h1>Show the spend. <em>Prove the return.</em></h1>
+            <p>Your product gets the spotlight. You decide whether your identity does.</p>
+            <div>
+              <span><Check size={13} /> Up to 3 products</span>
+              <span><Check size={13} /> Share card included</span>
+              <span><ShieldCheck size={13} /> Credentials never stored</span>
+            </div>
+          </div>
+          <div className="submit-modal-ticket" aria-label="$3 one-time entry">
+            <span>ONE-TIME ENTRY</span>
+            <strong>$3</strong>
+            <small>No subscription</small>
+          </div>
         </div>
-        <div className="privacy-seal">
-          <ShieldCheck size={25} />
-          <div><strong>Trust is visible</strong><span>API spend is verified. Personal-plan spend is clearly marked Founder Reported.</span></div>
+      ) : (
+        <div className="submit-intro">
+          <div>
+            <span className="eyebrow">$3 ONE-TIME ENTRY</span>
+            <h1>Show the spend.<br /><span>Prove the return.</span></h1>
+            <p>One founder profile, up to three products, and a shareable card. Your bid ranks Top Funded; reactions rank Respect and Roast.</p>
+          </div>
+          <div className="privacy-seal">
+            <ShieldCheck size={25} />
+            <div><strong>Trust is visible</strong><span>API spend is verified. Personal-plan spend is clearly marked Founder Reported.</span></div>
+          </div>
         </div>
-      </div>
+      )}
 
       {!configurationReady ? (
         <div className="setup-notice" role="status">
@@ -479,42 +514,67 @@ export function SubmitFlow({
       ) : null}
       {error ? <div className="submit-error" role="alert">{error}</div> : null}
 
-      <section className="reporting-window-panel" aria-labelledby="reporting-window-title">
-        <div className="reporting-window-copy">
-          <CalendarRange size={18} />
-          <div>
-            <span>REPORTING WINDOW</span>
-            <strong id="reporting-window-title">Use one period for both numbers</strong>
-          </div>
-        </div>
-        <div className="reporting-period-switch" role="group" aria-label="Reporting window">
-          {reportingPeriods.map((period) => (
+      {variant === "modal" ? (
+        <nav className="submit-progress" aria-label="Submission progress">
+          {([
+            [1, "Identity", "Choose", identityIsReady],
+            [2, "Revenue", "Verify", Boolean(revenueResult)],
+            [3, "AI spend", "Measure", Boolean(aiResult)],
+            [4, "Product", "Publish", false],
+          ] as const).map(([number, label, action, complete]) => (
             <button
-              className={reportingPeriod === period.id ? "is-active" : ""}
+              className={`${activeStep === number ? "is-active" : ""} ${complete ? "is-complete" : ""}`}
               type="button"
-              aria-pressed={reportingPeriod === period.id}
-              disabled={busy !== null}
-              onClick={() => chooseReportingPeriod(period.id)}
-              key={period.id}
+              disabled={number > maxUnlockedStep}
+              aria-current={activeStep === number ? "step" : undefined}
+              onClick={() => setActiveStep(number)}
+              key={number}
             >
-              <strong>{period.label}</strong>
-              <small>{period.shortLabel}</small>
+              <span>{complete ? <Check size={14} /> : number}</span>
+              <span><strong>{label}</strong><small>{action}</small></span>
             </button>
           ))}
-        </div>
-        <p>{periodDefinition.description}. Revenue and AI spend must use this exact window.</p>
-      </section>
+        </nav>
+      ) : null}
+
+      {variant === "page" || activeStep === 2 || activeStep === 3 ? (
+        <section className="reporting-window-panel" aria-labelledby="reporting-window-title">
+          <div className="reporting-window-copy">
+            <CalendarRange size={18} />
+            <div>
+              <span>REPORTING WINDOW</span>
+              <strong id="reporting-window-title">Use one period for both numbers</strong>
+            </div>
+          </div>
+          <div className="reporting-period-switch" role="group" aria-label="Reporting window">
+            {reportingPeriods.map((period) => (
+              <button
+                className={reportingPeriod === period.id ? "is-active" : ""}
+                type="button"
+                aria-pressed={reportingPeriod === period.id}
+                disabled={busy !== null}
+                onClick={() => chooseReportingPeriod(period.id)}
+                key={period.id}
+              >
+                <strong>{period.label}</strong>
+                <small>{period.shortLabel}</small>
+              </button>
+            ))}
+          </div>
+          <p>{periodDefinition.description}. Revenue and AI spend must use this exact window.</p>
+        </section>
+      ) : null}
 
       <div className="submit-layout">
         <div className="submit-steps">
-          <section className={`submit-card ${identityIsReady ? "is-complete" : ""}`}>
+          <section className={`submit-card ${identityIsReady ? "is-complete" : ""} ${variant === "modal" ? activeStep === 1 ? "is-active-step" : "is-hidden-step" : ""}`}>
             <header>
               <StepState done={identityIsReady} number="1" />
               <div><span>IDENTITY</span><h2>Choose how you appear</h2></div>
               {identityIsReady ? <span className="verified-pill"><Check size={14} /> {anonymousEntry ? "Anonymous" : "Ready"}</span> : null}
             </header>
             <div className="step-body">
-              <p>Use your public X identity for recognition, or hide it completely. Your revenue and AI-spend proof stays visible either way.</p>
+              <p>Choose public credit or private identity. Your product stays clickable and your proof label stays visible either way.</p>
               <div className="identity-mode-switch" role="group" aria-label="Public identity choice">
                 <button
                   className={!anonymousEntry ? "is-active" : ""}
@@ -532,7 +592,7 @@ export function SubmitFlow({
                   onClick={() => chooseIdentityMode(true)}
                 >
                   <EyeOff size={17} />
-                  <span><strong>Stay anonymous</strong><small>No identity shown publicly</small></span>
+                  <span><strong>Stay anonymous</strong><small>Hide identity, keep product public</small></span>
                 </button>
               </div>
               {!anonymousEntry ? (
@@ -566,7 +626,7 @@ export function SubmitFlow({
               ) : (
                 <div className="anonymous-profile-preview">
                   <span aria-hidden="true"><EyeOff size={17} /></span>
-                  <div><strong>Anonymous builder</strong><small>No name, photo, or X link will be published.</small></div>
+                  <div><strong>Anonymous builder</strong><small>Your product, rank, and proof stay public.</small></div>
                   <ShieldCheck size={16} />
                 </div>
               )}
@@ -589,10 +649,20 @@ export function SubmitFlow({
               ) : !anonymousEntry && xProfileMessage ? (
                 <div className="x-profile-status">{xProfileMessage}</div>
               ) : null}
+              {variant === "modal" ? (
+                <button
+                  className="button button-primary modal-continue-button"
+                  type="button"
+                  disabled={!identityIsReady}
+                  onClick={() => setActiveStep(2)}
+                >
+                  Continue to revenue <ArrowRight size={16} />
+                </button>
+              ) : null}
             </div>
           </section>
 
-          <section className={`submit-card ${revenueResult ? "is-complete" : ""}`}>
+          <section className={`submit-card ${revenueResult ? "is-complete" : ""} ${variant === "modal" ? activeStep === 2 ? "is-active-step" : "is-hidden-step" : ""}`}>
             <header>
               <StepState done={Boolean(revenueResult)} number="2" />
               <div><span>THE OUTCOME</span><h2>Verify revenue</h2></div>
@@ -642,7 +712,7 @@ export function SubmitFlow({
             </form>
           </section>
 
-          <section className={`submit-card ${aiResult ? "is-complete" : ""}`}>
+          <section className={`submit-card ${aiResult ? "is-complete" : ""} ${variant === "modal" ? activeStep === 3 ? "is-active-step" : "is-hidden-step" : ""}`}>
             <header>
               <StepState done={Boolean(aiResult)} number="3" />
               <div><span>THE BURN</span><h2>Measure AI spend</h2></div>
@@ -765,7 +835,7 @@ export function SubmitFlow({
             </form>
           </section>
 
-          <section className={`submit-card ${sitesAreReady ? "has-content" : ""}`}>
+          <section className={`submit-card ${sitesAreReady ? "has-content" : ""} ${variant === "modal" ? activeStep === 4 ? "is-active-step" : "is-hidden-step" : ""}`}>
             <header>
               <StepState done={sitesAreReady} number="4" />
               <div><span>YOUR BUILDS + ENTRY</span><h2>Add up to 3 sites for the same $3</h2></div>
@@ -888,9 +958,9 @@ export function SubmitFlow({
         </div>
 
         <aside className="submit-preview" style={tankStyle}>
-          <span className="preview-label">YOUR LIVE CARD</span>
+          <span className="preview-label"><span>YOUR LIVE PROOF CARD</span>{variant === "modal" ? <em>STEP {activeStep} / 4</em> : null}</span>
           <div className="preview-card">
-            <div className="preview-brand"><Waves size={18} /><strong>TOKEN<span>GOD</span></strong><small>{spendVerification === "api" ? `API + ${selectedRevenueProvider.name.toUpperCase()} VERIFIED` : `AI CLAIM · ${selectedRevenueProvider.name.toUpperCase()} VERIFIED`}</small></div>
+            <div className="preview-brand"><Waves size={18} /><strong>TOKEN<span>GOD</span></strong><small>{previewProofLabel}</small></div>
             <div className="preview-copy">
               <span>{anonymousEntry ? "Anonymous builder" : `@${normalizedXHandle || "yourhandle"}`} burned</span>
               <strong className={aiResult ? "" : "is-pending"}>{aiResult ? formatMoney(aiResult.amountUsd) : "WAITING"}</strong>
@@ -912,6 +982,15 @@ export function SubmitFlow({
             <div className="preview-water"><i /><i /><i /></div>
           </div>
           <div className="preview-caption"><BadgeCheck size={14} /> This becomes a downloadable 1200×630 card.</div>
+          {variant === "modal" ? (
+            <div className="preview-value-note">
+              {anonymousEntry ? <EyeOff size={17} /> : <ExternalLink size={17} />}
+              <div>
+                <strong>{anonymousEntry ? "Anonymous, not invisible." : "Turn proof into product traffic."}</strong>
+                <span>{anonymousEntry ? "Your name stays private. Your product remains visible, clickable, and ranked." : "Your founder identity, product link, and proof travel together."}</span>
+              </div>
+            </div>
+          ) : null}
           <div className="window-note"><strong>{periodDefinition.label} · one fair window.</strong><span>{periodDefinition.description}. Reported and API-verified spend use the same date range.</span></div>
         </aside>
       </div>

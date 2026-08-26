@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Waves, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   type KeyboardEvent,
@@ -113,8 +113,8 @@ export function EntryModal({
         onKeyDown={keepFocusInside}
       >
         <div className="entry-dialog-bar">
-          <span>$3 ONE-TIME ENTRY</span>
-          <strong id="entry-dialog-title">Create your founder profile</strong>
+          <span><Waves size={15} /> TOKEN GOD · $3 ONCE</span>
+          <strong id="entry-dialog-title">Build your public proof</strong>
           <button ref={closeRef} type="button" onClick={closeModal} aria-label="Close entry form">
             <X size={18} />
           </button>
