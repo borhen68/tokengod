@@ -1990,6 +1990,63 @@ a.founder-build-chip:focus-visible {
   .token-waterfall > footer { bottom: 7px; }
 }
 
+/* Public DataFast proof: live traffic is visible instead of being a private claim. */
+.hero-kicker .public-traffic-badge {
+  min-height: 31px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 11px;
+  color: #c9dbe2;
+  background: rgba(3, 24, 34, .58);
+  border: 1px solid rgba(208, 244, 252, .24);
+  border-radius: 999px;
+  backdrop-filter: blur(9px);
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: color .16s ease, border-color .16s ease, background .16s ease, transform .16s ease;
+}
+.hero-kicker .public-traffic-badge:hover {
+  color: #fff;
+  background: rgba(3, 24, 34, .78);
+  border-color: rgba(189, 255, 91, .58);
+  transform: translateY(-1px);
+}
+.hero-kicker .public-traffic-badge i {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  background: #35c874;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(53, 200, 116, .13), 0 0 12px rgba(53, 200, 116, .48);
+  animation: pulse 1.8s infinite;
+}
+.hero-kicker .public-traffic-badge strong {
+  color: #71e69f;
+  font-size: 11px;
+  font-weight: 900;
+}
+.hero-kicker .public-traffic-badge b { font-weight: 700; }
+.hero-kicker .public-traffic-badge small { color: #718a95; font-size: 12px; }
+.hero-kicker .public-traffic-badge em {
+  color: #f4fbfd;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
+}
+
+@media (max-width: 540px) {
+  .hero-kicker .public-traffic-badge {
+    max-width: 100%;
+    min-height: 34px;
+    padding-inline: 10px;
+    font-size: 9px;
+  }
+  .hero-kicker .public-traffic-badge strong { font-size: 10px; }
+  .hero-kicker .public-traffic-badge em { font-size: 9px; }
+}
+
 /* Outbid-style rows: one clear story instead of a dense metrics table. */
 .board-results .leaderboard-list { margin-top: 16px; }
 .board-results .leaderboard-row,

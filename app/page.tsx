@@ -9,6 +9,7 @@ import Link from "next/link";
 import { HeroEntry } from "@/components/hero-entry";
 import { Leaderboard } from "@/components/leaderboard";
 import { OceanStage } from "@/components/ocean-stage";
+import { PublicTrafficBadge } from "@/components/public-traffic-badge";
 import { TokenWaterfall } from "@/components/token-waterfall";
 import { isApplicationConfigured, isPaymentConfigured } from "@/lib/config";
 import {
@@ -76,7 +77,7 @@ export default async function HomePage({
           <TokenWaterfall spend={deepestBurn} />
           <div className="hero-copy">
             <div className="hero-kicker">
-              <span><i /> LIVE LEADERBOARD</span>
+              <PublicTrafficBadge />
               <span><BarChart3 size={14} /> {listings.length} {listings.length === 1 ? "FOUNDER" : "FOUNDERS"}</span>
             </div>
             <HeroEntry
