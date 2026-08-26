@@ -25,6 +25,7 @@ import {
   listingProofLabel,
   proofStrength,
 } from "@/lib/proof";
+import { getReportingPeriodDefinition } from "@/lib/reporting-period";
 import type {
   Board,
   LeaderboardListing,
@@ -206,12 +207,12 @@ export function Leaderboard({
                   ) : null}
                 </div>
                 <div className="row-metrics">
-                  <span className="row-metric is-burn"><small><Flame size={11} /> AI burn</small><strong>{formatMoney(listing.tokensSpentUsd, true)}</strong></span>
+                  <span className="row-metric is-burn"><small><Flame size={11} /> AI burn · {getReportingPeriodDefinition(listing.reportingPeriod).shortLabel}</small><strong>{formatMoney(listing.tokensSpentUsd, true)}</strong></span>
                   <span className="row-metric is-revenue"><small>Revenue</small><strong>{formatMoney(listing.revenueUsd, true)}</strong></span>
                   <span className="row-metric is-return"><small>Return</small><strong>{formatEfficiency(listing.efficiencyScore)} / $1</strong></span>
                   <span className={`row-proof ${hasFounderReportedNumbers(listing) ? "is-reported" : ""}`}>
                     {hasFounderReportedNumbers(listing) ? <AtSign size={11} /> : <BadgeCheck size={11} fill="currentColor" />}
-                    {listingProofLabel(listing)}
+                    {listingProofLabel(listing)} · {getReportingPeriodDefinition(listing.reportingPeriod).shortLabel}
                   </span>
                 </div>
               </div>

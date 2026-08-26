@@ -30,6 +30,7 @@ export async function verifyStripeRevenue(
 
   let startingAfter: string | null = null;
   let totalCents = 0;
+  let complete = false;
 
   for (let pageIndex = 0; pageIndex < 100; pageIndex += 1) {
     const url = new URL("https://api.stripe.com/v1/charges");
@@ -69,10 +70,25 @@ export async function verifyStripeRevenue(
     }
 
     const finalCharge = body.data?.at(-1);
-    if (!body.has_more || !finalCharge) break;
+    if (!body.has_more) {
+      complete = true;
+      break;
+    }
+    if (!finalCharge) {
+      throw new ProviderVerificationError(
+        "Stripe did not return the cursor needed to finish verification.",
+        502,
+      );
+    }
     startingAfter = finalCharge.id;
+  }
+
+  if (!complete) {
+    throw new ProviderVerificationError(
+      "Stripe returned more than 10,000 charges for this window. Choose a shorter reporting window.",
+      422,
+    );
   }
 
   return Math.round(totalCents) / 100;
 }
-

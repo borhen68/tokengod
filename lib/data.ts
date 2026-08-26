@@ -3,6 +3,7 @@ import { cache } from "react";
 import { getDatabase } from "@/lib/db";
 import { proofStrength } from "@/lib/proof";
 import { getReactionViewerId } from "@/lib/reaction-identity";
+import { inferReportingPeriod } from "@/lib/reporting-period";
 import { getSession } from "@/lib/session";
 import type {
   Board,
@@ -33,6 +34,8 @@ const listingSelect = `
     l.model_provider,
     l.ai_spend_verification,
     l.revenue_verification,
+    l.verification_period_start,
+    l.verification_period_end,
     l.bid_cents,
     l.stripe_checkout_session_id,
     l.created_at,
@@ -74,6 +77,13 @@ function normalizeProducts(row: LeaderboardRow): ListingProduct[] {
 }
 
 function normalizeRow(row: LeaderboardRow): LeaderboardListing {
+  const verificationPeriodStart = new Date(
+    Number(row.verification_period_start),
+  ).toISOString();
+  const verificationPeriodEnd = new Date(
+    Number(row.verification_period_end),
+  ).toISOString();
+
   return {
     id: String(row.id),
     ownerUserId: String(row.owner_user_id),
@@ -91,6 +101,12 @@ function normalizeRow(row: LeaderboardRow): LeaderboardListing {
     modelProvider: String(row.model_provider) as LeaderboardListing["modelProvider"],
     aiSpendVerification: row.ai_spend_verification === "self_reported" ? "self_reported" : "api",
     revenueVerification: row.revenue_verification === "self_reported" ? "self_reported" : "stripe",
+    reportingPeriod: inferReportingPeriod(
+      verificationPeriodStart,
+      verificationPeriodEnd,
+    ),
+    verificationPeriodStart,
+    verificationPeriodEnd,
     isPaidEntry: Boolean(row.stripe_checkout_session_id),
     bidCents: Number(row.bid_cents),
     loveCount: Number(row.love_count),

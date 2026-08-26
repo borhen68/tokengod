@@ -128,7 +128,7 @@ export default async function HomePage({
             <span className="step-number">02</span>
             <div className="step-icon"><BarChart3 size={24} /></div>
             <h3>Get your efficiency score</h3>
-            <p>Labeled revenue divided by 90-day AI spend. Stronger proof wins exact reaction-count ties.</p>
+            <p>Revenue divided by AI spend from the same selected window. Stronger proof wins exact reaction-count ties.</p>
             <small>Revenue ÷ token spend</small>
           </article>
           <article className="step-roast">

@@ -1,6 +1,11 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 
+import {
+  defaultReportingPeriod,
+  getReportingWindow,
+  type ReportingPeriod,
+} from "@/lib/reporting-period";
 import type { VerificationReceiptPayload } from "@/lib/types";
 
 const receiptSchema = z.object({
@@ -27,17 +32,10 @@ function receiptSecret() {
   return secret;
 }
 
-export function getVerificationWindow() {
-  const periodEnd = new Date();
-  periodEnd.setUTCHours(0, 0, 0, 0);
-
-  const periodStart = new Date(periodEnd);
-  periodStart.setUTCDate(periodStart.getUTCDate() - 90);
-
-  return {
-    periodStart: periodStart.toISOString(),
-    periodEnd: periodEnd.toISOString(),
-  };
+export function getVerificationWindow(
+  period: ReportingPeriod = defaultReportingPeriod,
+) {
+  return getReportingWindow(period);
 }
 
 export function issueVerificationReceipt(

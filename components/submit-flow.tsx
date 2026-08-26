@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BadgeCheck,
+  CalendarRange,
   Check,
   ExternalLink,
   Globe2,
@@ -24,10 +25,15 @@ import { FormEvent, useMemo, useRef, useState, type CSSProperties } from "react"
 import { trackDataFast } from "@/lib/datafast";
 import { formatEfficiency, formatMoney } from "@/lib/format";
 import {
+  defaultReportingPeriod,
+  getReportingPeriodDefinition,
+  getSubscriptionMonthLimit,
+  reportingPeriods,
+  type ReportingPeriod,
+} from "@/lib/reporting-period";
+import {
   calculateSubscriptionSpend,
-  subscriptionBillingMonths,
   subscriptionPlans,
-  type SubscriptionBillingMonths,
   type SubscriptionPlanId,
 } from "@/lib/subscription-plans";
 import type { Viewer } from "@/lib/types";
@@ -39,6 +45,7 @@ type VerificationResult = {
   amountUsd: number;
   periodStart: string;
   periodEnd: string;
+  period: ReportingPeriod;
   verificationMethod: SpendVerification;
 };
 type SitePreviewResult = {
@@ -126,8 +133,9 @@ export function SubmitFlow({
   const [xProfileMessage, setXProfileMessage] = useState("");
   const [stripeKey, setStripeKey] = useState("");
   const [aiKey, setAiKey] = useState("");
+  const [reportingPeriod, setReportingPeriod] = useState<ReportingPeriod>(defaultReportingPeriod);
   const [subscriptionPlanId, setSubscriptionPlanId] = useState<SubscriptionPlanId>("claude-pro");
-  const [subscriptionMonths, setSubscriptionMonths] = useState<SubscriptionBillingMonths>(3);
+  const [subscriptionMonths, setSubscriptionMonths] = useState(3);
   const [stripeResult, setStripeResult] = useState<VerificationResult | null>(null);
   const [aiResult, setAiResult] = useState<VerificationResult | null>(null);
   const [busy, setBusy] = useState<"stripe" | "ai" | "publish" | null>(null);
@@ -146,7 +154,17 @@ export function SubmitFlow({
   const extraSiteCount = Math.max(0, sites.length - 3);
   const siteFeeCents = extraSiteCount * 100;
   const checkoutTotalCents = bidCents + siteFeeCents;
-  const subscriptionSelection = calculateSubscriptionSpend(subscriptionPlanId, subscriptionMonths);
+  const periodDefinition = getReportingPeriodDefinition(reportingPeriod);
+  const subscriptionMonthLimit = getSubscriptionMonthLimit(reportingPeriod);
+  const subscriptionMonthOptions = Array.from(
+    { length: subscriptionMonthLimit },
+    (_, index) => index + 1,
+  );
+  const subscriptionSelection = calculateSubscriptionSpend(
+    subscriptionPlanId,
+    subscriptionMonths,
+    reportingPeriod,
+  );
 
   function getSubmissionId() {
     submissionIdRef.current ||= crypto.randomUUID();
@@ -204,11 +222,12 @@ export function SubmitFlow({
       const result = await postJson<VerificationResult>("/api/verify/stripe", {
         apiKey: stripeKey,
         submissionId: getSubmissionId(),
+        period: reportingPeriod,
       });
       setStripeResult(result);
       setStripeKey("");
       trackDataFast("revenue_verified", {
-        period_days: 90,
+        reporting_period: reportingPeriod,
       });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Stripe verification failed.");
@@ -225,12 +244,13 @@ export function SubmitFlow({
       const result = await postJson<VerificationResult>(`/api/verify/${provider}`, {
         apiKey: aiKey,
         submissionId: getSubmissionId(),
+        period: reportingPeriod,
       });
       setAiResult(result);
       setAiKey("");
       trackDataFast("ai_spend_api_verified", {
         provider,
-        period_days: 90,
+        reporting_period: reportingPeriod,
       });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "AI spend verification failed.");
@@ -253,6 +273,7 @@ export function SubmitFlow({
         planId: subscriptionSelection.plan.id,
         months: subscriptionSelection.months,
         submissionId: getSubmissionId(),
+        period: reportingPeriod,
       });
       setAiResult(result);
       trackDataFast("ai_spend_reported", {
@@ -260,7 +281,7 @@ export function SubmitFlow({
         plan: subscriptionSelection.plan.id,
         months: subscriptionSelection.months,
         amount_usd: subscriptionSelection.amountUsd,
-        period_days: 90,
+        reporting_period: reportingPeriod,
       });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "AI spend could not be recorded.");
@@ -273,6 +294,16 @@ export function SubmitFlow({
     setSpendVerification(next);
     setAiResult(null);
     setAiKey("");
+    setError("");
+  }
+
+  function chooseReportingPeriod(next: ReportingPeriod) {
+    if (next === reportingPeriod) return;
+    const nextMonthLimit = getSubscriptionMonthLimit(next);
+    setReportingPeriod(next);
+    setSubscriptionMonths((current) => Math.min(current, nextMonthLimit));
+    setStripeResult(null);
+    setAiResult(null);
     setError("");
   }
 
@@ -413,6 +444,32 @@ export function SubmitFlow({
       ) : null}
       {error ? <div className="submit-error" role="alert">{error}</div> : null}
 
+      <section className="reporting-window-panel" aria-labelledby="reporting-window-title">
+        <div className="reporting-window-copy">
+          <CalendarRange size={18} />
+          <div>
+            <span>REPORTING WINDOW</span>
+            <strong id="reporting-window-title">Use one period for both numbers</strong>
+          </div>
+        </div>
+        <div className="reporting-period-switch" role="group" aria-label="Reporting window">
+          {reportingPeriods.map((period) => (
+            <button
+              className={reportingPeriod === period.id ? "is-active" : ""}
+              type="button"
+              aria-pressed={reportingPeriod === period.id}
+              disabled={busy !== null}
+              onClick={() => chooseReportingPeriod(period.id)}
+              key={period.id}
+            >
+              <strong>{period.label}</strong>
+              <small>{period.shortLabel}</small>
+            </button>
+          ))}
+        </div>
+        <p>{periodDefinition.description}. Stripe revenue and AI spend must use this exact window.</p>
+      </section>
+
       <div className="submit-layout">
         <div className="submit-steps">
           <section className={`submit-card ${xHandleIsValid ? "is-complete" : ""}`}>
@@ -476,17 +533,17 @@ export function SubmitFlow({
             <header>
               <StepState done={Boolean(stripeResult)} number="2" />
               <div><span>THE OUTCOME</span><h2>Verify Stripe revenue</h2></div>
-              {stripeResult ? <span className="verified-pill"><BadgeCheck size={14} /> {formatMoney(stripeResult.amountUsd)}</span> : null}
+              {stripeResult ? <span className="verified-pill"><BadgeCheck size={14} /> {periodDefinition.shortLabel} · {formatMoney(stripeResult.amountUsd)}</span> : null}
             </header>
             <form className="step-body" onSubmit={verifyStripe}>
-              <p>Create a live restricted key with <strong>Charges: Read</strong>. We total captured USD charges minus refunds over the same 90-day window.</p>
+              <p>Create a live restricted key with <strong>Charges: Read</strong>. We total captured USD charges minus refunds over the selected {periodDefinition.label.toLowerCase()} window.</p>
               <label className="secret-input">
                 <span>Restricted key</span>
                 <div><LockKeyhole size={16} /><input type="password" value={stripeKey} onChange={(event) => setStripeKey(event.target.value)} placeholder="rk_live_••••••••••••" autoComplete="off" disabled={Boolean(stripeResult)} required /></div>
               </label>
               <div className="form-row">
                 <button className="button button-secondary" type="submit" disabled={!configurationReady || busy !== null || Boolean(stripeResult)}>
-                  {busy === "stripe" ? <><LoaderCircle className="spinner" size={16} /> Checking Stripe</> : stripeResult ? <><Check size={16} /> Revenue verified</> : <>Verify 90-day revenue <ArrowRight size={16} /></>}
+                  {busy === "stripe" ? <><LoaderCircle className="spinner" size={16} /> Checking Stripe</> : stripeResult ? <><Check size={16} /> Revenue verified</> : <>Verify revenue · {periodDefinition.shortLabel} <ArrowRight size={16} /></>}
                 </button>
                 <a className="helper-link" href="https://dashboard.stripe.com/apikeys/create" target="_blank" rel="noopener noreferrer">Create restricted key <ExternalLink size={12} /></a>
               </div>
@@ -500,7 +557,7 @@ export function SubmitFlow({
               {aiResult ? (
                 <span className={`verified-pill ${aiResult.verificationMethod === "self_reported" ? "is-reported" : ""}`}>
                   {aiResult.verificationMethod === "api" ? <BadgeCheck size={14} /> : <AtSign size={14} />}
-                  {aiResult.verificationMethod === "api" ? "API verified" : "Reported"} · {formatMoney(aiResult.amountUsd)}
+                  {aiResult.verificationMethod === "api" ? "API verified" : "Reported"} · {periodDefinition.shortLabel} · {formatMoney(aiResult.amountUsd)}
                 </span>
               ) : null}
             </header>
@@ -525,7 +582,7 @@ export function SubmitFlow({
               </div>
               {spendVerification === "self_reported" ? (
                 <>
-                  <p>Choose your subscription and how many completed billing months you paid during the last 90 days. TokenGod calculates the burn automatically.</p>
+                  <p>Choose your subscription and how many completed billing months you paid {reportingPeriod === "all" ? "since January 2020" : `during the last ${periodDefinition.label.toLowerCase()}`}. TokenGod calculates the burn automatically.</p>
                   <div className="subscription-fields">
                     <label className="subscription-field">
                       <span>Subscription plan</span>
@@ -544,26 +601,43 @@ export function SubmitFlow({
                       </select>
                     </label>
                     <label className="subscription-field">
-                      <span>Months paid in the last 90 days</span>
-                      <select
-                        value={subscriptionMonths}
-                        onChange={(event) => {
-                          setSubscriptionMonths(Number(event.target.value) as SubscriptionBillingMonths);
-                          setAiResult(null);
-                          setError("");
-                        }}
-                        disabled={busy !== null}
-                      >
-                        {subscriptionBillingMonths.map((months) => (
-                          <option value={months} key={months}>{months} {months === 1 ? "month" : "months"}</option>
-                        ))}
-                      </select>
+                      <span>Months paid · max {subscriptionMonthLimit}</span>
+                      {reportingPeriod === "all" ? (
+                        <input
+                          type="number"
+                          min={1}
+                          max={subscriptionMonthLimit}
+                          step={1}
+                          value={subscriptionMonths}
+                          onChange={(event) => {
+                            setSubscriptionMonths(Number(event.target.value));
+                            setAiResult(null);
+                            setError("");
+                          }}
+                          disabled={busy !== null}
+                          inputMode="numeric"
+                        />
+                      ) : (
+                        <select
+                          value={subscriptionMonths}
+                          onChange={(event) => {
+                            setSubscriptionMonths(Number(event.target.value));
+                            setAiResult(null);
+                            setError("");
+                          }}
+                          disabled={busy !== null}
+                        >
+                          {subscriptionMonthOptions.map((months) => (
+                            <option value={months} key={months}>{months} {months === 1 ? "month" : "months"}</option>
+                          ))}
+                        </select>
+                      )}
                     </label>
                   </div>
                   {subscriptionSelection ? (
                     <div className="subscription-total" aria-live="polite">
                       <div>
-                        <span>Calculated 90-day burn</span>
+                        <span>Calculated {periodDefinition.label} burn</span>
                         <small>{subscriptionSelection.months} × ${subscriptionSelection.plan.monthlyUsd}/month · {subscriptionSelection.plan.name}</small>
                       </div>
                       <strong>{formatMoney(subscriptionSelection.amountUsd)}</strong>
@@ -746,7 +820,7 @@ export function SubmitFlow({
             <div className="preview-water"><i /><i /><i /></div>
           </div>
           <div className="preview-caption"><BadgeCheck size={14} /> This becomes a downloadable 1200×630 card.</div>
-          <div className="window-note"><strong>One fair window.</strong><span>90 completed UTC days, ending yesterday. Reported and API-verified spend use the same date range.</span></div>
+          <div className="window-note"><strong>{periodDefinition.label} · one fair window.</strong><span>{periodDefinition.description}. Reported and API-verified spend use the same date range.</span></div>
         </aside>
       </div>
     </Root>

@@ -26,8 +26,9 @@ export async function verifyOpenAICost(
 
   let page: string | null = null;
   let total = 0;
+  let complete = false;
 
-  for (let pageIndex = 0; pageIndex < 20; pageIndex += 1) {
+  for (let pageIndex = 0; pageIndex < 100; pageIndex += 1) {
     const url = new URL("https://api.openai.com/v1/organization/costs");
     url.searchParams.set(
       "start_time",
@@ -38,7 +39,7 @@ export async function verifyOpenAICost(
       String(Math.floor(new Date(periodEnd).getTime() / 1000)),
     );
     url.searchParams.set("bucket_width", "1d");
-    url.searchParams.set("limit", "31");
+    url.searchParams.set("limit", "180");
     if (page) url.searchParams.set("page", page);
 
     const response = await fetch(url, {
@@ -65,10 +66,25 @@ export async function verifyOpenAICost(
       }
     }
 
-    if (!body.has_more || !body.next_page) break;
+    if (!body.has_more) {
+      complete = true;
+      break;
+    }
+    if (!body.next_page) {
+      throw new ProviderVerificationError(
+        "OpenAI did not return the cursor needed to finish verification.",
+        502,
+      );
+    }
     page = body.next_page;
+  }
+
+  if (!complete) {
+    throw new ProviderVerificationError(
+      "OpenAI returned more history than TokenGod could safely verify. Choose a shorter window.",
+      422,
+    );
   }
 
   return Math.round(total * 100) / 100;
 }
-

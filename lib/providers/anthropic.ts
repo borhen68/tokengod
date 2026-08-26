@@ -28,8 +28,9 @@ export async function verifyAnthropicCost(
 
   let page: string | null = null;
   let total = 0;
+  let complete = false;
 
-  for (let pageIndex = 0; pageIndex < 20; pageIndex += 1) {
+  for (let pageIndex = 0; pageIndex < 120; pageIndex += 1) {
     const url = new URL(
       "https://api.anthropic.com/v1/organizations/cost_report",
     );
@@ -69,8 +70,24 @@ export async function verifyAnthropicCost(
       }
     }
 
-    if (!body.has_more || !body.next_page) break;
+    if (!body.has_more) {
+      complete = true;
+      break;
+    }
+    if (!body.next_page) {
+      throw new ProviderVerificationError(
+        "Anthropic did not return the cursor needed to finish verification.",
+        502,
+      );
+    }
     page = body.next_page;
+  }
+
+  if (!complete) {
+    throw new ProviderVerificationError(
+      "Anthropic returned more history than TokenGod could safely verify. Choose a shorter window.",
+      422,
+    );
   }
 
   // Anthropic reports decimal strings in the currency's lowest unit (USD cents).

@@ -6,12 +6,12 @@ export function TokenWaterfall({ spend }: { spend: number }) {
   return (
     <aside
       className="token-waterfall"
-      aria-label={`${formatMoney(spend)} is the highest 90-day AI spend on the leaderboard`}
+      aria-label={`${formatMoney(spend)} is the highest listed AI spend on the leaderboard`}
     >
       <header className="token-waterfall-head">
         <span><Flame size={13} /> LIVE AI BURN</span>
         <strong>{spend > 0 ? formatMoney(spend, true) : "$0"}</strong>
-        <small>highest 90-day spend</small>
+        <small>highest listed spend</small>
       </header>
 
       <div className="token-waterfall-visual" aria-hidden="true">

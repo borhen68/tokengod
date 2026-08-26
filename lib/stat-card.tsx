@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 
 import { formatEfficiency, formatMoney } from "@/lib/format";
 import { hasFounderReportedNumbers, listingProofLabel } from "@/lib/proof";
+import { getReportingPeriodDefinition } from "@/lib/reporting-period";
 import type { LeaderboardListing } from "@/lib/types";
 
 export const statCardSize = { width: 1200, height: 630 };
@@ -22,6 +23,7 @@ export function renderStatCard(
     : listing.productName.slice(0, 42);
   const apiVerified = listing.aiSpendVerification === "api";
   const reportedNumbers = hasFounderReportedNumbers(listing);
+  const periodDefinition = getReportingPeriodDefinition(listing.reportingPeriod);
 
   return new ImageResponse(
     (
@@ -54,7 +56,7 @@ export function renderStatCard(
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, color: reportedNumbers ? "#b7c2c8" : "#bfff5b", border: reportedNumbers ? "1px solid rgba(183,194,200,.3)" : "1px solid rgba(191,255,91,.32)", borderRadius: 999, padding: "8px 13px", fontSize: 13, fontWeight: 700, letterSpacing: 1.1 }}>
-              {listingProofLabel(listing).toUpperCase()}
+              {listingProofLabel(listing).toUpperCase()} · {periodDefinition.shortLabel}
             </div>
           </div>
 
@@ -108,7 +110,7 @@ export function renderStatCard(
               <span style={{ position: "absolute", top: 118, left: 46, width: 11, height: 11, borderRadius: 99, border: "2px solid rgba(227,249,255,.7)", display: "flex" }} />
             </div>
             <div style={{ position: "absolute", left: 0, right: 0, bottom: 20, display: "flex", justifyContent: "center", color: "#e6fbff", fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>
-              RELATIVE 90-DAY SPEND
+              RELATIVE {periodDefinition.label.toUpperCase()} SPEND
             </div>
           </div>
         </div>

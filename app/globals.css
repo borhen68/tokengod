@@ -483,6 +483,20 @@ button { border: 0; }
 .setup-notice { display: flex; gap: 8px; color: #6a5431; background: #fff3cb; border: 1px solid #ead38c; }
 .submit-error { color: #9b3926; background: #fff0eb; border: 1px solid #efb9ae; }
 .setup-notice code { font-size: 11px; font-weight: 700; }
+.reporting-window-panel { margin-bottom: 16px; display: grid; grid-template-columns: minmax(220px,.8fr) minmax(420px,1.35fr); align-items: center; gap: 8px 18px; padding: 14px 16px; background: rgba(252,253,249,.94); border: 1px solid var(--line); border-radius: 15px; }
+.reporting-window-copy { min-width: 0; display: flex; align-items: center; gap: 10px; }
+.reporting-window-copy > svg { flex: 0 0 auto; color: var(--blue-dark); }
+.reporting-window-copy > div { min-width: 0; display: flex; flex-direction: column; }
+.reporting-window-copy span { color: #87969e; font-size: 8px; font-weight: 900; letter-spacing: .1em; }
+.reporting-window-copy strong { margin-top: 2px; font-size: 12px; }
+.reporting-period-switch { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; }
+.reporting-period-switch button { min-width: 0; height: 42px; display: flex; align-items: center; justify-content: center; gap: 5px; color: #687981; background: #f1f4f4; border: 1px solid transparent; border-radius: 9px; cursor: pointer; }
+.reporting-period-switch button strong { font-size: 10px; }
+.reporting-period-switch button small { color: #96a2a7; font-size: 7px; font-weight: 900; }
+.reporting-period-switch button.is-active { color: var(--ink); background: white; border-color: #789f42; box-shadow: 2px 2px 0 #9fc866; }
+.reporting-period-switch button.is-active small { color: #4f7d27; }
+.reporting-period-switch button:disabled { cursor: wait; opacity: .65; }
+.reporting-window-panel > p { grid-column: 2; margin: 0; color: var(--muted); font-size: 9px; line-height: 1.4; }
 .submit-layout { display: grid; grid-template-columns: minmax(0,1fr) 390px; align-items: start; gap: 22px; }
 .submit-steps { display: grid; gap: 12px; }
 .submit-card { overflow: hidden; background: rgba(252,253,249,.94); border: 1px solid var(--line); border-radius: 17px; }
@@ -533,9 +547,10 @@ button { border: 0; }
 .subscription-fields { width: 100%; display: grid; grid-template-columns: minmax(0,1.35fr) minmax(190px,.65fr); gap: 10px; }
 .subscription-field { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .subscription-field > span { color: #51636c; font-size: 10px; font-weight: 800; }
-.subscription-field select { width: 100%; height: 48px; padding: 0 12px; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 10px; outline: 0; cursor: pointer; font: inherit; font-size: 11px; font-weight: 750; }
-.subscription-field select:focus { border-color: var(--blue-dark); box-shadow: 0 0 0 3px rgba(61,207,243,.14); }
-.subscription-field select:disabled { cursor: wait; opacity: .65; }
+.subscription-field select, .subscription-field input { width: 100%; height: 48px; padding: 0 12px; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 10px; outline: 0; font: inherit; font-size: 11px; font-weight: 750; }
+.subscription-field select { cursor: pointer; }
+.subscription-field select:focus, .subscription-field input:focus { border-color: var(--blue-dark); box-shadow: 0 0 0 3px rgba(61,207,243,.14); }
+.subscription-field select:disabled, .subscription-field input:disabled { cursor: wait; opacity: .65; }
 .subscription-total { width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 14px; background: linear-gradient(100deg,#e8faff,#f3ffe4); border: 1px solid rgba(8,127,164,.22); border-radius: 11px; }
 .subscription-total > div { min-width: 0; display: flex; flex-direction: column; }
 .subscription-total span { color: #47636e; font-size: 8px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
@@ -864,6 +879,8 @@ button { border: 0; }
   .footer-manifesto { grid-column: auto; }
   .footer-bottom { width: calc(100% - 28px); }
   .privacy-seal { transform: none; }
+  .reporting-window-panel { grid-template-columns: 1fr; }
+  .reporting-window-panel > p { grid-column: 1; }
   .submit-card > header { padding: 15px; }
   .step-body { padding: 0 15px 17px; }
   .connected-account { margin: 0 15px 17px; }

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { apiErrorResponse, assertSameOrigin, requireSubmissionConfiguration } from "@/lib/api";
 import { verifyOpenAICost } from "@/lib/providers/openai";
 import { ProviderVerificationError } from "@/lib/providers/errors";
+import { defaultReportingPeriod, reportingPeriodIds } from "@/lib/reporting-period";
 import {
   getVerificationWindow,
   issueVerificationReceipt,
@@ -11,14 +12,17 @@ import {
 const schema = z.object({
   apiKey: z.string().min(20).max(300),
   submissionId: z.string().uuid(),
+  period: z.enum(reportingPeriodIds).default(defaultReportingPeriod),
 });
+
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
     requireSubmissionConfiguration();
-    const { apiKey, submissionId } = schema.parse(await request.json());
-    const { periodStart, periodEnd } = getVerificationWindow();
+    const { apiKey, submissionId, period } = schema.parse(await request.json());
+    const { periodStart, periodEnd } = getVerificationWindow(period);
     const amountUsd = await verifyOpenAICost(apiKey.trim(), periodStart, periodEnd);
     const result = issueVerificationReceipt({
       kind: "tokens",
@@ -35,6 +39,7 @@ export async function POST(request: Request) {
       amountUsd: result.payload.amountUsd,
       periodStart,
       periodEnd,
+      period,
       verificationMethod: result.payload.verificationMethod,
     });
   } catch (error) {

@@ -23,6 +23,8 @@ import { createPortal } from "react-dom";
 import { trackDataFast } from "@/lib/datafast";
 import { formatEfficiency, formatMoney, safeExternalUrl } from "@/lib/format";
 import { hasFounderReportedNumbers, listingProofLabel, revenueProofLabel } from "@/lib/proof";
+import { getReportingPeriodDefinition } from "@/lib/reporting-period";
+import { getSocialCacheKey } from "@/lib/social-share";
 import type { LeaderboardListing } from "@/lib/types";
 
 const focusableSelector =
@@ -99,8 +101,9 @@ export function ListingQuickView({
     ? `${listing.productName} + ${listing.products.length - 1} more`
     : listing.productName;
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://tokengod.lol").replace(/\/$/, "");
-  const listingUrl = `${siteUrl}/listing/${listing.id}?v=${encodeURIComponent(listing.updatedAt)}`;
-  const shareText = `${listing.founderName} burned ${formatMoney(listing.tokensSpentUsd)} in AI tokens, built ${buildLabel}, and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. Respect it or roast it 👇`;
+  const listingUrl = `${siteUrl}/listing/${listing.id}?v=${encodeURIComponent(getSocialCacheKey(listing.updatedAt))}`;
+  const periodLabel = getReportingPeriodDefinition(listing.reportingPeriod).label.toLowerCase();
+  const shareText = `${listing.founderName} burned ${formatMoney(listing.tokensSpentUsd)} in AI tokens over ${periodLabel}, built ${buildLabel}, and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. Respect it or roast it 👇`;
   const shareHref = `https://x.com/intent/post?${new URLSearchParams({ text: shareText, url: listingUrl })}`;
   const modal = open ? (
     <div
@@ -145,7 +148,7 @@ export function ListingQuickView({
           <div className="listing-quick-hero-footer">
             <div className={`listing-quick-proof ${hasFounderReportedNumbers(listing) ? "is-reported" : ""}`}>
               {hasFounderReportedNumbers(listing) ? <AtSign size={14} /> : <BadgeCheck size={14} fill="currentColor" />}
-              {listingProofLabel(listing)}
+              {listingProofLabel(listing)} · {getReportingPeriodDefinition(listing.reportingPeriod).shortLabel}
             </div>
             <a
               className="listing-quick-share"
@@ -160,8 +163,8 @@ export function ListingQuickView({
         </header>
 
         <div className="listing-quick-scores">
-          <div><span><Flame size={13} /> AI burn</span><strong>{formatMoney(listing.tokensSpentUsd, true)}</strong><small>{listing.aiSpendVerification === "api" ? "API verified" : "founder reported"}</small></div>
-          <div><span>Revenue</span><strong>{formatMoney(listing.revenueUsd, true)}</strong><small>{revenueProofLabel(listing)}</small></div>
+          <div><span><Flame size={13} /> AI burn</span><strong>{formatMoney(listing.tokensSpentUsd, true)}</strong><small>{listing.aiSpendVerification === "api" ? "API verified" : "founder reported"} · {periodLabel}</small></div>
+          <div><span>Revenue</span><strong>{formatMoney(listing.revenueUsd, true)}</strong><small>{revenueProofLabel(listing)} · {periodLabel}</small></div>
           <div><span>Made per $1</span><strong>{formatEfficiency(listing.efficiencyScore)}</strong><small>efficiency score</small></div>
           <div><span><Droplets size={13} /> Verdict</span><strong>{listing.loveCount} ❤️ · {listing.laughCount} 😂</strong><small>live reactions</small></div>
         </div>

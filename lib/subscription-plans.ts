@@ -1,3 +1,9 @@
+import {
+  defaultReportingPeriod,
+  getSubscriptionMonthLimit,
+  type ReportingPeriod,
+} from "@/lib/reporting-period";
+
 export const subscriptionPlanIds = [
   "claude-pro",
   "claude-max-5x",
@@ -24,20 +30,26 @@ export const subscriptionPlans: readonly SubscriptionPlan[] = [
   { id: "chatgpt-pro", name: "ChatGPT Pro", provider: "openai", monthlyUsd: 200 },
 ];
 
-export const subscriptionBillingMonths = [1, 2, 3] as const;
-export type SubscriptionBillingMonths = (typeof subscriptionBillingMonths)[number];
-
 export function getSubscriptionPlan(planId: string) {
   return subscriptionPlans.find((plan) => plan.id === planId) ?? null;
 }
 
-export function calculateSubscriptionSpend(planId: string, months: number) {
+export function calculateSubscriptionSpend(
+  planId: string,
+  months: number,
+  period: ReportingPeriod = defaultReportingPeriod,
+) {
   const plan = getSubscriptionPlan(planId);
-  if (!plan || !Number.isInteger(months) || months < 1 || months > 3) return null;
+  if (
+    !plan
+    || !Number.isInteger(months)
+    || months < 1
+    || months > getSubscriptionMonthLimit(period)
+  ) return null;
 
   return {
     plan,
-    months: months as SubscriptionBillingMonths,
+    months,
     amountUsd: plan.monthlyUsd * months,
   };
 }

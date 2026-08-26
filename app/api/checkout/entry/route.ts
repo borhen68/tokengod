@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       throw new ApiError("The verification windows do not match. Reconnect both accounts.", 400);
     }
     if (tokens.amountUsd <= 0) {
-      throw new ApiError("AI spend must be greater than zero for the 90-day window.", 400);
+      throw new ApiError("AI spend must be greater than zero for the selected reporting window.", 400);
     }
 
     const products = input.products.map((product) => ({

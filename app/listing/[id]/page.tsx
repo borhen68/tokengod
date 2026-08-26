@@ -36,6 +36,8 @@ import {
   listingProofLabel,
   revenueProofLabel,
 } from "@/lib/proof";
+import { getReportingPeriodDefinition } from "@/lib/reporting-period";
+import { getSocialCacheKey } from "@/lib/social-share";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -46,13 +48,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://tokengod.lol").replace(/\/$/, "");
   const pageUrl = `${siteUrl}/listing/${listing.id}`;
-  const card = `${siteUrl}/api/listings/${listing.id}/card?v=${encodeURIComponent(listing.updatedAt)}`;
+  const shareCacheKey = getSocialCacheKey(listing.updatedAt);
+  const card = `${siteUrl}/api/listings/${listing.id}/card?v=${encodeURIComponent(shareCacheKey)}`;
   const buildLabel = listing.products.length > 1
     ? `${listing.productName} + ${listing.products.length - 1} more`
     : listing.productName;
   const spendProof = listing.aiSpendVerification === "api" ? "API-verified" : "founder-reported";
   const revenueProof = listing.revenueVerification === "stripe" ? "verified" : "founder-reported";
-  const description = `${listing.founderName} ${spendProof} ${formatMoney(listing.tokensSpentUsd)} in AI spend, built ${buildLabel}, and made ${formatMoney(listing.revenueUsd)} in ${revenueProof} revenue.`;
+  const periodLabel = getReportingPeriodDefinition(listing.reportingPeriod).label.toLowerCase();
+  const description = `${listing.founderName} ${spendProof} ${formatMoney(listing.tokensSpentUsd)} in AI spend over ${periodLabel}, built ${buildLabel}, and made ${formatMoney(listing.revenueUsd)} in ${revenueProof} revenue.`;
 
   return {
     title: `${listing.productName} by @${listing.xHandle}`,
@@ -100,13 +104,15 @@ export default async function ListingPage({ params }: PageProps) {
   const pressure = waterPressure(listing.tokensSpentUsd, maxSpend);
   const ownerImage = listing.avatarUrl || listing.productLogoUrl;
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://tokengod.lol").replace(/\/$/, "");
-  const pageUrl = `${siteUrl}/listing/${listing.id}?v=${encodeURIComponent(listing.updatedAt)}`;
+  const shareCacheKey = getSocialCacheKey(listing.updatedAt);
+  const pageUrl = `${siteUrl}/listing/${listing.id}?v=${encodeURIComponent(shareCacheKey)}`;
   const buildLabel = listing.products.length > 1
     ? `${listing.productName} + ${listing.products.length - 1} more`
     : listing.productName;
   const spendDisclosure = listing.aiSpendVerification === "api" ? "API-verified AI spend" : "founder-reported AI spend";
   const revenueDisclosure = listing.revenueVerification === "stripe" ? "Stripe revenue verified" : "founder-reported revenue";
-  const normalShare = `I spent ${formatMoney(listing.tokensSpentUsd)} on AI to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; ${revenueDisclosure}. Respect it or roast it 👇`;
+  const periodDefinition = getReportingPeriodDefinition(listing.reportingPeriod);
+  const normalShare = `I spent ${formatMoney(listing.tokensSpentUsd)} on AI over ${periodDefinition.label.toLowerCase()} to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; ${revenueDisclosure}. Respect it or roast it 👇`;
 
   const droppedBoard = respectedRank > 10 ? "Most Respected" : roastedRank > 10 ? "Most Roasted" : null;
   const overtaker = droppedBoard === "Most Respected" ? respected[9] : droppedBoard === "Most Roasted" ? roasted[9] : null;
@@ -124,7 +130,7 @@ export default async function ListingPage({ params }: PageProps) {
         <div className="listing-main-copy">
           <div className={`verified-line ${hasFounderReportedNumbers(listing) ? "is-reported" : ""}`}>
             {hasFounderReportedNumbers(listing) ? <AtSign size={16} /> : <BadgeCheck size={16} fill="currentColor" />}
-            {listingProofLabel(listing).toUpperCase()} · 90 DAYS
+            {listingProofLabel(listing).toUpperCase()} · {periodDefinition.label.toUpperCase()}
           </div>
           <h1>{listing.productName}</h1>
           <p>{listing.productDescription}</p>
@@ -146,8 +152,8 @@ export default async function ListingPage({ params }: PageProps) {
       </section>
 
       <section className="listing-scoreboard">
-        <article><span><Flame size={15} /> AI token burn</span><strong>{formatMoney(listing.tokensSpentUsd)}</strong><small>{listing.modelProvider} · {listing.aiSpendVerification === "api" ? "API verified" : "founder reported"}</small></article>
-        <article><span>Revenue made</span><strong>{formatMoney(listing.revenueUsd)}</strong><small>{revenueProofLabel(listing)}</small></article>
+        <article><span><Flame size={15} /> AI token burn</span><strong>{formatMoney(listing.tokensSpentUsd)}</strong><small>{periodDefinition.label} · {listing.modelProvider} · {listing.aiSpendVerification === "api" ? "API verified" : "founder reported"}</small></article>
+        <article><span>Revenue made</span><strong>{formatMoney(listing.revenueUsd)}</strong><small>{periodDefinition.label} · {revenueProofLabel(listing)}</small></article>
         <article className="efficiency-highlight"><span>Efficiency score</span><strong>{formatEfficiency(listing.efficiencyScore)}</strong><small>made per $1 spent</small></article>
         <article className="detail-water"><div className="detail-water-gauge"><i style={{ height: `${pressure}%` }} /></div><div><span><Droplets size={14} /> AI spend waterline</span><strong>{pressure}%</strong><small>{pressureLabel(pressure)}</small></div></article>
       </section>
@@ -193,7 +199,7 @@ export default async function ListingPage({ params }: PageProps) {
         <div className="card-panel">
           <header><div><span className="eyebrow">SHAREABLE RECEIPT</span><h2>Share the numbers.</h2></div>{hasFounderReportedNumbers(listing) ? <AtSign size={20} /> : <BadgeCheck size={20} />}</header>
           <div className="stat-card-image">
-            <Image src={`/api/listings/${listing.id}/card?v=${encodeURIComponent(listing.updatedAt)}`} alt={`TokenGod stat card for ${listing.productName}`} width={1200} height={630} unoptimized priority />
+            <Image src={`/api/listings/${listing.id}/card?v=${encodeURIComponent(shareCacheKey)}`} alt={`TokenGod stat card for ${listing.productName}`} width={1200} height={630} unoptimized priority />
           </div>
           <div className="card-actions">
             <a className="button button-primary" href={shareHref} target="_blank" rel="noopener noreferrer"><Share2 size={16} /> {viewer?.id === listing.ownerUserId && droppedBoard ? "Reclaim your spot" : "Share on X"}</a>

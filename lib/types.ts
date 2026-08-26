@@ -1,3 +1,5 @@
+import type { ReportingPeriod } from "@/lib/reporting-period";
+
 export type Board = "funded" | "respected" | "roasted";
 export type ModelProvider = "anthropic" | "openai" | "other";
 export type ReactionType = "love" | "laugh";
@@ -28,6 +30,9 @@ export type LeaderboardListing = {
   modelProvider: ModelProvider;
   aiSpendVerification: AiSpendVerification;
   revenueVerification: RevenueVerification;
+  reportingPeriod: ReportingPeriod;
+  verificationPeriodStart: string;
+  verificationPeriodEnd: string;
   isPaidEntry: boolean;
   bidCents: number;
   loveCount: number;

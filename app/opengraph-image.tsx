@@ -21,7 +21,7 @@ export default function OpenGraphImage() {
           </div>
           <div style={{ marginTop: 25, display: "flex", color: "#a9bdca", fontSize: 21 }}>Founder results with visible proof labels, ranked by reactions.</div>
           <div style={{ marginTop: "auto", display: "flex", gap: 12 }}>
-            <span style={{ border: "1px solid rgba(191,255,91,.35)", color: "#bfff5b", borderRadius: 999, padding: "10px 15px", fontSize: 14 }}>90-DAY LABELED</span>
+            <span style={{ border: "1px solid rgba(191,255,91,.35)", color: "#bfff5b", borderRadius: 999, padding: "10px 15px", fontSize: 14 }}>MATCHED WINDOWS</span>
             <span style={{ border: "1px solid rgba(98,221,255,.28)", color: "#92ddef", borderRadius: 999, padding: "10px 15px", fontSize: 14 }}>❤️ RESPECT · 😂 ROAST</span>
           </div>
         </div>
