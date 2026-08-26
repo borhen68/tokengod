@@ -14,6 +14,7 @@ import {
   Share2,
   ShieldCheck,
   Trophy,
+  UserRound,
 } from "lucide-react";
 
 import { ReactionControls } from "@/components/reaction-controls";
@@ -62,7 +63,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = `${listing.founderName} ${spendProof} ${formatMoney(listing.tokensSpentUsd)} in AI spend over ${periodLabel}, built ${buildLabel}, and made ${formatMoney(listing.revenueUsd)} in ${revenueProof} revenue.`;
 
   return {
-    title: `${listing.productName} by @${listing.xHandle}`,
+    title: listing.isAnonymous
+      ? `${listing.productName} by an anonymous builder`
+      : `${listing.productName} by @${listing.xHandle}`,
     description,
     alternates: { canonical: pageUrl },
     openGraph: {
@@ -83,7 +86,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       card: "summary_large_image",
       title: `${listing.productName} · TokenGod`,
       description,
-      creator: `@${listing.xHandle}`,
+      ...(listing.isAnonymous ? {} : { creator: `@${listing.xHandle}` }),
       images: [{ url: card, alt: `${listing.founderName}'s AI spend and revenue card` }],
     },
   };
@@ -105,7 +108,7 @@ export default async function ListingPage({ params }: PageProps) {
   const roastedRank = roasted.findIndex((item) => item.id === listing.id) + 1;
   const maxSpend = Math.max(1, ...allListings.map((item) => item.tokensSpentUsd));
   const pressure = waterPressure(listing.tokensSpentUsd, maxSpend);
-  const ownerImage = listing.avatarUrl || listing.productLogoUrl;
+  const ownerImage = listing.isAnonymous ? null : listing.avatarUrl || listing.productLogoUrl;
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://tokengod.lol").replace(/\/$/, "");
   const shareCacheKey = getSocialCacheKey(listing.updatedAt);
   const pageUrl = `${siteUrl}/listing/${listing.id}?v=${encodeURIComponent(shareCacheKey)}`;
@@ -117,7 +120,9 @@ export default async function ListingPage({ params }: PageProps) {
     ? "founder-reported revenue"
     : `${getRevenueProvider(listing.revenueVerification).name} revenue verified`;
   const periodDefinition = getReportingPeriodDefinition(listing.reportingPeriod);
-  const normalShare = `I spent ${formatMoney(listing.tokensSpentUsd)} on AI over ${periodDefinition.label.toLowerCase()} to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; ${revenueDisclosure}. Respect it or roast it 👇`;
+  const normalShare = listing.isAnonymous
+    ? `An anonymous builder spent ${formatMoney(listing.tokensSpentUsd)} on AI over ${periodDefinition.label.toLowerCase()} to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; ${revenueDisclosure}. Respect it or roast it 👇`
+    : `I spent ${formatMoney(listing.tokensSpentUsd)} on AI over ${periodDefinition.label.toLowerCase()} to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; ${revenueDisclosure}. Respect it or roast it 👇`;
 
   const droppedBoard = respectedRank > 10 ? "Most Respected" : roastedRank > 10 ? "Most Roasted" : null;
   const overtaker = droppedBoard === "Most Respected" ? respected[9] : droppedBoard === "Most Roasted" ? roasted[9] : null;
@@ -144,9 +149,16 @@ export default async function ListingPage({ params }: PageProps) {
               className={ownerImage ? "has-product-logo" : ""}
               style={ownerImage ? { backgroundImage: `url(${JSON.stringify(ownerImage)})` } : undefined}
             >
-              {!ownerImage ? listing.productName.slice(0, 1).toUpperCase() : null}
+              {listing.isAnonymous
+                ? <UserRound size={20} />
+                : !ownerImage ? listing.productName.slice(0, 1).toUpperCase() : null}
             </span>
-            <div><strong>{listing.founderName}</strong><a href={`https://x.com/${listing.xHandle}`} target="_blank" rel="noopener noreferrer">@{listing.xHandle}</a></div>
+            <div>
+              <strong>{listing.founderName}</strong>
+              {listing.isAnonymous
+                ? <span className="listing-owner-private">Identity hidden</span>
+                : <a href={`https://x.com/${listing.xHandle}`} target="_blank" rel="noopener noreferrer">@{listing.xHandle}</a>}
+            </div>
             <a className="visit-listing" href={safeExternalUrl(listing.productUrl)} target="_blank" rel="noopener noreferrer">Visit product <ArrowUpRight size={15} /></a>
           </div>
         </div>

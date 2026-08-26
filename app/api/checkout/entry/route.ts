@@ -9,6 +9,10 @@ import {
   requirePaymentConfiguration,
   requireSubmissionConfiguration,
 } from "@/lib/api";
+import {
+  ANONYMOUS_FOUNDER_NAME,
+  anonymousFounderHandle,
+} from "@/lib/anonymous-founder";
 import { getDatabase } from "@/lib/db";
 import { getDataFastStripeMetadata } from "@/lib/datafast-server";
 import { getPlatformStripe } from "@/lib/platform-stripe";
@@ -32,14 +36,20 @@ const productSchema = z.object({
 
 const entrySchema = z.object({
   submissionId: z.string().uuid(),
-  xHandle: z.string().trim().max(16).transform((value) => value.replace(/^@/, "")).refine(
-    (value) => /^[A-Za-z0-9_]{1,15}$/.test(value),
-    { message: "Enter a valid X handle using letters, numbers, or underscores." },
-  ),
+  anonymous: z.boolean().optional().default(false),
+  xHandle: z.string().trim().max(16).optional().default("").transform((value) => value.replace(/^@/, "")),
   products: z.array(productSchema).min(1).max(20),
   tokenReceipt: z.string().min(40),
   revenueReceipt: z.string().min(40),
   bidCents: z.number().int().min(300).max(100_000).multipleOf(100),
+}).superRefine((value, context) => {
+  if (!value.anonymous && !/^[A-Za-z0-9_]{1,15}$/.test(value.xHandle)) {
+    context.addIssue({
+      code: "custom",
+      path: ["xHandle"],
+      message: "Enter a valid X handle using letters, numbers, or underscores.",
+    });
+  }
 });
 
 export async function POST(request: NextRequest) {
@@ -81,16 +91,22 @@ export async function POST(request: NextRequest) {
     const extraSiteCount = Math.max(0, products.length - 3);
     const siteFeeCents = extraSiteCount * 100;
     const checkoutTotalCents = input.bidCents + siteFeeCents;
+    const storedXHandle = input.anonymous
+      ? anonymousFounderHandle(input.submissionId)
+      : input.xHandle;
 
     const db = getDatabase();
     const existing = await db.execute({
-      sql: "select stripe_checkout_session_id, status, listing_id from pending_submissions where id = ? limit 1",
+      sql: "select stripe_checkout_session_id, status, listing_id, x_handle from pending_submissions where id = ? limit 1",
       args: [input.submissionId],
     });
     if (existing.rows[0]?.status === "completed" && existing.rows[0].listing_id) {
       return Response.json({ listingId: String(existing.rows[0].listing_id) });
     }
     if (existing.rows[0]?.stripe_checkout_session_id) {
+      if (String(existing.rows[0].x_handle) !== storedXHandle) {
+        throw new ApiError("This checkout was created with a different identity choice. Refresh and verify again.", 409);
+      }
       const checkout = await getPlatformStripe().checkout.sessions.retrieve(
         String(existing.rows[0].stripe_checkout_session_id),
       );
@@ -98,7 +114,9 @@ export async function POST(request: NextRequest) {
       return Response.json({ url: checkout.url });
     }
 
-    const founderProfile = await lookupPublicXProfile(input.xHandle);
+    const founderProfile = input.anonymous
+      ? null
+      : await lookupPublicXProfile(input.xHandle);
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
     const dataFastMetadata = getDataFastStripeMetadata(request);
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [{
@@ -140,6 +158,7 @@ export async function POST(request: NextRequest) {
         site_fee_cents: String(siteFeeCents),
         ai_spend_verification: tokens.verificationMethod,
         revenue_provider: revenue.provider,
+        identity_visibility: input.anonymous ? "anonymous" : "public",
         ...dataFastMetadata,
       },
       payment_intent_data: {
@@ -151,6 +170,7 @@ export async function POST(request: NextRequest) {
           site_fee_cents: String(siteFeeCents),
           ai_spend_verification: tokens.verificationMethod,
           revenue_provider: revenue.provider,
+          identity_visibility: input.anonymous ? "anonymous" : "public",
           ...dataFastMetadata,
         },
       },
@@ -179,9 +199,11 @@ export async function POST(request: NextRequest) {
             ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', null, ?, ?)`,
       args: [
         input.submissionId,
-        input.xHandle,
-        founderProfile?.name || `@${input.xHandle}`,
-        founderProfile?.avatarUrl || null,
+        storedXHandle,
+        input.anonymous
+          ? ANONYMOUS_FOUNDER_NAME
+          : founderProfile?.name || `@${input.xHandle}`,
+        input.anonymous ? null : founderProfile?.avatarUrl || null,
         primaryProduct.name,
         primaryProduct.url,
         primaryProduct.description,

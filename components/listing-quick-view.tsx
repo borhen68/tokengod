@@ -8,6 +8,7 @@ import {
   Flame,
   Layers3,
   Share2,
+  UserRound,
   X,
 } from "lucide-react";
 import {
@@ -96,7 +97,7 @@ export function ListingQuickView({
     }
   }
 
-  const founderImage = listing.avatarUrl;
+  const founderImage = listing.isAnonymous ? null : listing.avatarUrl;
   const buildLabel = listing.products.length > 1
     ? `${listing.productName} + ${listing.products.length - 1} more`
     : listing.productName;
@@ -136,14 +137,20 @@ export function ListingQuickView({
             style={imageStyle(founderImage)}
             aria-hidden="true"
           >
-            {!founderImage ? listing.founderName.slice(0, 1).toUpperCase() : null}
+            {listing.isAnonymous
+              ? <UserRound size={28} />
+              : !founderImage ? listing.founderName.slice(0, 1).toUpperCase() : null}
           </div>
           <div className="listing-quick-title">
             <span>FOUNDER PROFILE · {listing.products.length} {listing.products.length === 1 ? "BUILD" : "BUILDS"}</span>
             <h2 id={`listing-quick-title-${listing.id}`}>{listing.founderName}</h2>
-            <a href={`https://x.com/${listing.xHandle}`} target="_blank" rel="noopener noreferrer">
-              @{listing.xHandle} · {listing.products.length} {listing.products.length === 1 ? "build" : "builds"} <ArrowUpRight size={13} />
-            </a>
+            {listing.isAnonymous ? (
+              <span className="listing-quick-anonymous">Identity hidden · {listing.products.length} {listing.products.length === 1 ? "build" : "builds"}</span>
+            ) : (
+              <a href={`https://x.com/${listing.xHandle}`} target="_blank" rel="noopener noreferrer">
+                @{listing.xHandle} · {listing.products.length} {listing.products.length === 1 ? "build" : "builds"} <ArrowUpRight size={13} />
+              </a>
+            )}
           </div>
           <div className="listing-quick-hero-footer">
             <div className={`listing-quick-proof ${hasFounderReportedNumbers(listing) ? "is-reported" : ""}`}>

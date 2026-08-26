@@ -1,5 +1,9 @@
 import { cache } from "react";
 
+import {
+  ANONYMOUS_FOUNDER_NAME,
+  isAnonymousFounderHandle,
+} from "@/lib/anonymous-founder";
 import { getDatabase } from "@/lib/db";
 import { proofStrength } from "@/lib/proof";
 import { getReactionViewerId } from "@/lib/reaction-identity";
@@ -79,6 +83,8 @@ function normalizeProducts(row: LeaderboardRow): ListingProduct[] {
 }
 
 function normalizeRow(row: LeaderboardRow): LeaderboardListing {
+  const storedXHandle = String(row.x_handle);
+  const isAnonymous = isAnonymousFounderHandle(storedXHandle);
   const verificationPeriodStart = new Date(
     Number(row.verification_period_start),
   ).toISOString();
@@ -89,9 +95,12 @@ function normalizeRow(row: LeaderboardRow): LeaderboardListing {
   return {
     id: String(row.id),
     ownerUserId: String(row.owner_user_id),
-    founderName: String(row.founder_name || `@${row.x_handle}`),
-    xHandle: String(row.x_handle),
-    avatarUrl: row.avatar_url ? String(row.avatar_url) : null,
+    founderName: isAnonymous
+      ? ANONYMOUS_FOUNDER_NAME
+      : String(row.founder_name || `@${storedXHandle}`),
+    xHandle: isAnonymous ? "" : storedXHandle,
+    avatarUrl: isAnonymous ? null : row.avatar_url ? String(row.avatar_url) : null,
+    isAnonymous,
     productName: String(row.product_name),
     productUrl: String(row.product_url),
     productDescription: String(row.product_description),

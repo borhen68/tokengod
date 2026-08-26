@@ -20,6 +20,7 @@ export type LeaderboardListing = {
   founderName: string;
   xHandle: string;
   avatarUrl: string | null;
+  isAnonymous: boolean;
   productName: string;
   productUrl: string;
   productDescription: string;

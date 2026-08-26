@@ -7,6 +7,7 @@ import {
   BadgeCheck,
   CalendarRange,
   Check,
+  EyeOff,
   ExternalLink,
   Globe2,
   KeyRound,
@@ -130,6 +131,7 @@ export function SubmitFlow({
   const [provider, setProvider] = useState<Provider>("anthropic");
   const [revenueProvider, setRevenueProvider] = useState<RevenueProvider>("stripe");
   const [spendVerification, setSpendVerification] = useState<SpendVerification>("self_reported");
+  const [anonymousEntry, setAnonymousEntry] = useState(false);
   const [xHandle, setXHandle] = useState(viewer?.xHandle ?? "");
   const [xProfile, setXProfile] = useState<XProfileResult | null>(() =>
     viewer
@@ -152,6 +154,7 @@ export function SubmitFlow({
 
   const normalizedXHandle = xHandle.trim().replace(/^@/, "");
   const xHandleIsValid = /^[A-Za-z0-9_]{1,15}$/.test(normalizedXHandle);
+  const identityIsReady = anonymousEntry || xHandleIsValid;
   const primarySite = sites[0];
   const sitesAreReady = sites.every((site, index) =>
     site.name.trim().length >= 2
@@ -195,6 +198,7 @@ export function SubmitFlow({
   }
 
   async function previewXProfile(force = false) {
+    if (anonymousEntry) return;
     const handle = normalizedXHandle;
     if (!/^[A-Za-z0-9_]{1,15}$/.test(handle)) return;
     const cacheKey = handle.toLowerCase();
@@ -220,6 +224,17 @@ export function SubmitFlow({
     } finally {
       if (sequence === xLookupSequenceRef.current) setXProfileBusy(false);
     }
+  }
+
+  function chooseIdentityMode(anonymous: boolean) {
+    if (anonymous === anonymousEntry) return;
+    setAnonymousEntry(anonymous);
+    setXProfileMessage("");
+    setXProfileBusy(false);
+    xLookupSequenceRef.current += 1;
+    trackDataFast("identity_mode_selected", {
+      identity_visibility: anonymous ? "anonymous" : "public",
+    });
   }
 
   async function verifyRevenue(event: FormEvent) {
@@ -404,11 +419,13 @@ export function SubmitFlow({
       site_fee_cents: siteFeeCents,
       total_cents: checkoutTotalCents,
       spend_source: aiResult.verificationMethod,
+      identity_visibility: anonymousEntry ? "anonymous" : "public",
     });
     try {
       const result = await postJson<{ url?: string; listingId?: string }>("/api/checkout/entry", {
         submissionId: getSubmissionId(),
-        xHandle: normalizedXHandle,
+        anonymous: anonymousEntry,
+        xHandle: anonymousEntry ? "" : normalizedXHandle,
         products: sites.map((site) => ({
           name: site.name,
           url: site.url,
@@ -490,46 +507,74 @@ export function SubmitFlow({
 
       <div className="submit-layout">
         <div className="submit-steps">
-          <section className={`submit-card ${xHandleIsValid ? "is-complete" : ""}`}>
+          <section className={`submit-card ${identityIsReady ? "is-complete" : ""}`}>
             <header>
-              <StepState done={xHandleIsValid} number="1" />
-              <div><span>ATTRIBUTION</span><h2>Add your X handle</h2></div>
-              {xHandleIsValid ? <span className="verified-pill"><Check size={14} /> Ready</span> : null}
+              <StepState done={identityIsReady} number="1" />
+              <div><span>IDENTITY</span><h2>Choose how you appear</h2></div>
+              {identityIsReady ? <span className="verified-pill"><Check size={14} /> {anonymousEntry ? "Anonymous" : "Ready"}</span> : null}
             </header>
             <div className="step-body">
-              <p>No login and no posting permission. This handle is public attribution; your money numbers are still verified directly from the providers.</p>
-              <label className="secret-input handle-input">
-                <span>X handle</span>
-                <div>
-                  <AtSign size={16} />
-                  <input
-                    type="text"
-                    value={xHandle}
-                    onChange={(event) => {
-                      setXHandle(event.target.value);
-                      setXProfile(null);
-                      setXProfileMessage("");
-                      lastProfiledHandleRef.current = "";
-                      xLookupSequenceRef.current += 1;
-                    }}
-                    onBlur={() => void previewXProfile()}
-                    placeholder="yourhandle"
-                    autoComplete="username"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    maxLength={16}
-                    aria-invalid={Boolean(xHandle) && !xHandleIsValid}
-                  />
+              <p>Use your public X identity for recognition, or hide it completely. Your revenue and AI-spend proof stays visible either way.</p>
+              <div className="identity-mode-switch" role="group" aria-label="Public identity choice">
+                <button
+                  className={!anonymousEntry ? "is-active" : ""}
+                  type="button"
+                  aria-pressed={!anonymousEntry}
+                  onClick={() => chooseIdentityMode(false)}
+                >
+                  <AtSign size={17} />
+                  <span><strong>Use my X</strong><small>Name, photo and @handle</small></span>
+                </button>
+                <button
+                  className={anonymousEntry ? "is-active is-anonymous" : ""}
+                  type="button"
+                  aria-pressed={anonymousEntry}
+                  onClick={() => chooseIdentityMode(true)}
+                >
+                  <EyeOff size={17} />
+                  <span><strong>Stay anonymous</strong><small>No identity shown publicly</small></span>
+                </button>
+              </div>
+              {!anonymousEntry ? (
+                <label className="secret-input handle-input">
+                  <span>X handle</span>
+                  <div>
+                    <AtSign size={16} />
+                    <input
+                      type="text"
+                      value={xHandle}
+                      onChange={(event) => {
+                        setXHandle(event.target.value);
+                        setXProfile(null);
+                        setXProfileMessage("");
+                        lastProfiledHandleRef.current = "";
+                        xLookupSequenceRef.current += 1;
+                      }}
+                      onBlur={() => void previewXProfile()}
+                      placeholder="yourhandle"
+                      autoComplete="username"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      maxLength={16}
+                      aria-invalid={Boolean(xHandle) && !xHandleIsValid}
+                    />
+                  </div>
+                  <small className={xHandle && !xHandleIsValid ? "is-error" : ""}>
+                    {xHandle && !xHandleIsValid ? "Use 1–15 letters, numbers, or underscores." : "You can include or omit the @. No login or posting permission."}
+                  </small>
+                </label>
+              ) : (
+                <div className="anonymous-profile-preview">
+                  <span aria-hidden="true"><EyeOff size={17} /></span>
+                  <div><strong>Anonymous builder</strong><small>No name, photo, or X link will be published.</small></div>
+                  <ShieldCheck size={16} />
                 </div>
-                <small className={xHandle && !xHandleIsValid ? "is-error" : ""}>
-                  {xHandle && !xHandleIsValid ? "Use 1–15 letters, numbers, or underscores." : "You can include or omit the @."}
-                </small>
-              </label>
-              {xProfileBusy ? (
+              )}
+              {!anonymousEntry && xProfileBusy ? (
                 <div className="x-profile-status" role="status">
                   <LoaderCircle className="spinner" size={15} /> Finding the public X profile…
                 </div>
-              ) : xProfile?.found ? (
+              ) : !anonymousEntry && xProfile?.found ? (
                 <div className="x-profile-preview">
                   <span
                     className={xProfile.avatarUrl ? "has-avatar" : ""}
@@ -541,7 +586,7 @@ export function SubmitFlow({
                   <div><strong>{xProfile.name}</strong><small>@{xProfile.handle} · public X profile</small></div>
                   <BadgeCheck size={16} />
                 </div>
-              ) : xProfileMessage ? (
+              ) : !anonymousEntry && xProfileMessage ? (
                 <div className="x-profile-status">{xProfileMessage}</div>
               ) : null}
             </div>
@@ -834,7 +879,7 @@ export function SubmitFlow({
                 <p><ShieldCheck size={13} /> Your bid sets Top Funded rank. Love and Roast rankings are controlled only by public reactions.</p>
               </div>
 
-              <button className="button button-primary publish-button" type="submit" disabled={!xHandleIsValid || !sitesAreReady || !revenueResult || !aiResult || !configurationReady || !paymentsReady || busy !== null}>
+              <button className="button button-primary publish-button" type="submit" disabled={!identityIsReady || !sitesAreReady || !revenueResult || !aiResult || !configurationReady || !paymentsReady || busy !== null}>
                 {busy === "publish" ? <><LoaderCircle className="spinner" size={17} /> Opening secure checkout</> : <>Pay {wholeDollar(checkoutTotalCents)} &amp; publish {sites.length} site{sites.length === 1 ? "" : "s"} <ArrowRight size={17} /></>}
               </button>
               <p className="publish-note"><ShieldCheck size={14} /> One-time Stripe payment. Revenue is verified; the AI-spend badge always shows its source.</p>
@@ -847,7 +892,7 @@ export function SubmitFlow({
           <div className="preview-card">
             <div className="preview-brand"><Waves size={18} /><strong>TOKEN<span>GOD</span></strong><small>{spendVerification === "api" ? `API + ${selectedRevenueProvider.name.toUpperCase()} VERIFIED` : `AI CLAIM · ${selectedRevenueProvider.name.toUpperCase()} VERIFIED`}</small></div>
             <div className="preview-copy">
-              <span>@{normalizedXHandle || "yourhandle"} burned</span>
+              <span>{anonymousEntry ? "Anonymous builder" : `@${normalizedXHandle || "yourhandle"}`} burned</span>
               <strong className={aiResult ? "" : "is-pending"}>{aiResult ? formatMoney(aiResult.amountUsd) : "WAITING"}</strong>
               <div className="preview-product-line">
                 <span

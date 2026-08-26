@@ -8,6 +8,7 @@ import {
   ExternalLink,
   Flame,
   Trophy,
+  UserRound,
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -161,10 +162,12 @@ export function Leaderboard({
               </div>
               <span
                 className="founder-avatar"
-                style={avatarStyle(listing.founderName, founderImage)}
+                style={avatarStyle(listing.founderName, listing.isAnonymous ? null : founderImage)}
                 aria-hidden="true"
               >
-                {!founderImage ? listing.founderName.slice(0, 1).toUpperCase() : null}
+                {listing.isAnonymous
+                  ? <UserRound size={20} />
+                  : !founderImage ? listing.founderName.slice(0, 1).toUpperCase() : null}
               </span>
               <div className="founder-product">
                 <div className="founder-title-line">
@@ -176,7 +179,7 @@ export function Leaderboard({
                     {listing.founderName}
                   </ListingQuickView>
                   <span className="founder-meta">
-                    @{listing.xHandle} · {listing.products.length} {listing.products.length === 1 ? "build" : "builds"}
+                    {listing.isAnonymous ? "Identity hidden" : `@${listing.xHandle}`} · {listing.products.length} {listing.products.length === 1 ? "build" : "builds"}
                   </span>
                 </div>
                 <div className="founder-builds" title={buildNames} aria-label={`Builds: ${buildNames}`}>
