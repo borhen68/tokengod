@@ -5,6 +5,7 @@ import {
   BadgeCheck,
   Droplets,
   Eye,
+  ExternalLink,
   Flame,
   Trophy,
 } from "lucide-react";
@@ -17,12 +18,12 @@ import { ListingQuickView } from "@/components/listing-quick-view";
 import {
   formatEfficiency,
   formatMoney,
+  safeExternalUrl,
 } from "@/lib/format";
 import {
   hasFounderReportedNumbers,
   listingProofLabel,
   proofStrength,
-  revenueProofLabel,
 } from "@/lib/proof";
 import type {
   Board,
@@ -137,15 +138,6 @@ export function Leaderboard({
             </p>
           </header>
 
-          <div className="board-column-labels" aria-hidden="true">
-            <span>Founder + products</span>
-            <span>AI burn</span>
-            <span>Revenue</span>
-            <span>Return</span>
-            <span>Bid</span>
-            <span>{board === "funded" ? "Action" : "Vote"}</span>
-          </div>
-
           <div className="leaderboard-list">
         {visibleListings.map((listing, index) => {
           const rank = index + 1;
@@ -156,19 +148,19 @@ export function Leaderboard({
               className={`leaderboard-row ${rank === 1 ? "is-champion" : ""}`}
               key={listing.id}
             >
-              <div className="rank-and-founder">
-                <div className={`rank-badge rank-${Math.min(rank, 4)}`}>
-                  {rank <= 3 ? <Trophy size={13} /> : null}
-                  <strong>#{rank}</strong>
-                </div>
-                <span
-                  className="founder-avatar"
-                  style={avatarStyle(listing.founderName, founderImage)}
-                  aria-hidden="true"
-                >
-                  {!founderImage ? listing.founderName.slice(0, 1).toUpperCase() : null}
-                </span>
-                <div className="founder-product">
+              <div className={`rank-badge rank-${Math.min(rank, 4)}`}>
+                {rank <= 3 ? <Trophy size={13} /> : null}
+                <strong>#{rank}</strong>
+              </div>
+              <span
+                className="founder-avatar"
+                style={avatarStyle(listing.founderName, founderImage)}
+                aria-hidden="true"
+              >
+                {!founderImage ? listing.founderName.slice(0, 1).toUpperCase() : null}
+              </span>
+              <div className="founder-product">
+                <div className="founder-title-line">
                   <ListingQuickView
                     listing={listing}
                     className="founder-product-trigger"
@@ -179,80 +171,91 @@ export function Leaderboard({
                   <span className="founder-meta">
                     @{listing.xHandle} · {listing.products.length} {listing.products.length === 1 ? "build" : "builds"}
                   </span>
-                  <div className="founder-builds" title={buildNames} aria-label={`Builds: ${buildNames}`}>
-                    {listing.products.slice(0, 3).map((product, productIndex) => (
-                      <span className="founder-build-chip" key={`${product.url}-${productIndex}`}>
-                        <i
-                          className="founder-build-icon"
-                          style={avatarStyle(product.name, product.logoUrl)}
-                          aria-hidden="true"
-                        >
-                          {!product.logoUrl ? product.name.slice(0, 1).toUpperCase() : null}
-                        </i>
-                        <b>{product.name}</b>
-                      </span>
-                    ))}
-                    {listing.products.length > 3 ? <span className="founder-build-more">+{listing.products.length - 3}</span> : null}
-                  </div>
-                  <small className={hasFounderReportedNumbers(listing) ? "is-reported" : ""}>
-                    {hasFounderReportedNumbers(listing) ? <AtSign size={12} /> : <BadgeCheck size={12} fill="currentColor" />}
-                    {listingProofLabel(listing)} · {listing.modelProvider}
-                  </small>
+                </div>
+                <div className="founder-builds" title={buildNames} aria-label={`Builds: ${buildNames}`}>
+                  <span className="founder-builds-label">BUILT</span>
+                  {listing.products.slice(0, 3).map((product, productIndex) => (
+                    <a
+                      className="founder-build-chip"
+                      href={safeExternalUrl(product.url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Visit ${product.name}`}
+                      title={`Visit ${product.name}`}
+                      key={`${product.url}-${productIndex}`}
+                    >
+                      <i
+                        className="founder-build-icon"
+                        style={avatarStyle(product.name, product.logoUrl)}
+                        aria-hidden="true"
+                      >
+                        {!product.logoUrl ? product.name.slice(0, 1).toUpperCase() : null}
+                      </i>
+                      <b>{product.name}</b>
+                      <ExternalLink size={9} aria-hidden="true" />
+                    </a>
+                  ))}
+                  {listing.products.length > 3 ? (
+                    <ListingQuickView
+                      listing={listing}
+                      className="founder-build-more"
+                      ariaLabel={`Show ${listing.products.length - 3} more products from ${listing.founderName}`}
+                    >
+                      +{listing.products.length - 3}
+                    </ListingQuickView>
+                  ) : null}
+                </div>
+                <div className="row-metrics">
+                  <span className="row-metric is-burn"><small><Flame size={11} /> AI burn</small><strong>{formatMoney(listing.tokensSpentUsd, true)}</strong></span>
+                  <span className="row-metric is-revenue"><small>Revenue</small><strong>{formatMoney(listing.revenueUsd, true)}</strong></span>
+                  <span className="row-metric is-return"><small>Return</small><strong>{formatEfficiency(listing.efficiencyScore)} / $1</strong></span>
+                  <span className={`row-proof ${hasFounderReportedNumbers(listing) ? "is-reported" : ""}`}>
+                    {hasFounderReportedNumbers(listing) ? <AtSign size={11} /> : <BadgeCheck size={11} fill="currentColor" />}
+                    {listingProofLabel(listing)}
+                  </span>
                 </div>
               </div>
-
-              <div className="money-cell burn-cell" data-label="AI burn">
-                <span><Flame size={13} /> AI burn</span>
-                <strong>{formatMoney(listing.tokensSpentUsd, true)}</strong>
-              </div>
-              <div className="money-cell revenue-cell" data-label="Revenue">
-                <span>Revenue</span>
-                <strong>{formatMoney(listing.revenueUsd, true)}</strong>
-                <small>{revenueProofLabel(listing)}</small>
-              </div>
-              <div className="ratio-cell" data-label="Made per $1">
-                <strong>{formatEfficiency(listing.efficiencyScore)}</strong>
-                <span>made / $1</span>
-              </div>
-              <div className="bid-cell" data-label="Bid">
-                <span>TOTAL BID</span>
-                <strong>{wholeDollar(listing.bidCents)}</strong>
-                <small>{rank === 1 && board === "funded" ? "current #1" : "one-time total"}</small>
-              </div>
-              <div className="verdict-cell">
-                {board === "funded" ? (
-                  <BoostModal
+              <div className="row-ranking">
+                <div className="bid-cell" data-label="Bid">
+                  <span>TOTAL BID</span>
+                  <strong>{wholeDollar(listing.bidCents)}</strong>
+                  <small>{rank === 1 && board === "funded" ? "current #1" : "one-time total"}</small>
+                </div>
+                <div className="verdict-cell">
+                  {board === "funded" ? (
+                    <BoostModal
+                      listing={listing}
+                      rank={rank}
+                      leaderBidCents={ordered[0]?.bidCents ?? 200}
+                      paymentsReady={paymentsReady}
+                      defaultOpen={initialBoostId === listing.id}
+                      initialError={initialBoostId === listing.id && paymentCancelled ? "Checkout canceled. Nothing was charged." : undefined}
+                    />
+                  ) : (
+                    <ReactionControls
+                      listingId={listing.id}
+                      initialCounts={{ love: listing.loveCount, laugh: listing.laughCount }}
+                      initialActive={initialReactions[listing.id]}
+                      compact
+                      onUpdate={(counts) => {
+                        setListings((current) =>
+                          current.map((item) =>
+                            item.id === listing.id
+                              ? { ...item, loveCount: counts.love, laughCount: counts.laugh }
+                              : item,
+                          ),
+                        );
+                      }}
+                    />
+                  )}
+                  <ListingQuickView
                     listing={listing}
-                    rank={rank}
-                    leaderBidCents={ordered[0]?.bidCents ?? 200}
-                    paymentsReady={paymentsReady}
-                    defaultOpen={initialBoostId === listing.id}
-                    initialError={initialBoostId === listing.id && paymentCancelled ? "Checkout canceled. Nothing was charged." : undefined}
-                  />
-                ) : (
-                  <ReactionControls
-                    listingId={listing.id}
-                    initialCounts={{ love: listing.loveCount, laugh: listing.laughCount }}
-                    initialActive={initialReactions[listing.id]}
-                    compact
-                    onUpdate={(counts) => {
-                      setListings((current) =>
-                        current.map((item) =>
-                          item.id === listing.id
-                            ? { ...item, loveCount: counts.love, laughCount: counts.laugh }
-                            : item,
-                        ),
-                      );
-                    }}
-                  />
-                )}
-                <ListingQuickView
-                  listing={listing}
-                  className="visit-product"
-                  ariaLabel={`Open ${listing.founderName} founder profile`}
-                >
-                  View <Eye size={14} />
-                </ListingQuickView>
+                    className="visit-product"
+                    ariaLabel={`Open ${listing.founderName} founder profile`}
+                  >
+                    View <Eye size={14} />
+                  </ListingQuickView>
+                </div>
               </div>
             </article>
           );

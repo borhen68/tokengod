@@ -6,10 +6,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { FloodTank } from "@/components/flood-tank";
 import { HeroEntry } from "@/components/hero-entry";
 import { Leaderboard } from "@/components/leaderboard";
 import { OceanStage } from "@/components/ocean-stage";
+import { TokenWaterfall } from "@/components/token-waterfall";
 import { isApplicationConfigured, isPaymentConfigured } from "@/lib/config";
 import {
   getLeaderboardListings,
@@ -17,7 +17,6 @@ import {
   getViewerReactions,
   sortListings,
 } from "@/lib/data";
-import { waterPressure } from "@/lib/format";
 
 export default async function HomePage({
   searchParams,
@@ -65,9 +64,6 @@ export default async function HomePage({
     : enter === "1" ? 300 : takeFirstCents;
   const configurationReady = isApplicationConfigured();
   const paymentsReady = isPaymentConfigured();
-  const heroWaterLevel = deepestBurn > 0
-    ? waterPressure(deepestBurn, deepestBurn)
-    : 0;
 
   return (
     <main>
@@ -77,6 +73,7 @@ export default async function HomePage({
           <span />
         </div>
         <div className="hero section-shell">
+          <TokenWaterfall spend={deepestBurn} />
           <div className="hero-copy">
             <div className="hero-kicker">
               <span><i /> LIVE LEADERBOARD</span>
@@ -97,7 +94,6 @@ export default async function HomePage({
               <span><Check size={14} /><b>Up to 3 products</b></span>
               <span><Check size={14} /><b>Bid + public reactions</b></span>
             </div>
-            <FloodTank spend={deepestBurn} level={heroWaterLevel} />
           </div>
         </div>
       </OceanStage>
