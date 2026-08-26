@@ -99,10 +99,10 @@ export async function finalizeCheckoutSession(
                 id, owner_user_id, product_name, product_url, product_description,
                 product_logo_url, products_json,
                 tokens_spent_usd, revenue_usd, efficiency_score, model_provider,
-                ai_spend_verification,
+                ai_spend_verification, revenue_provider,
                 verification_period_start, verification_period_end, verified_at,
                 created_at, updated_at, bid_cents, stripe_checkout_session_id
-              ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           listingId,
           pendingId,
@@ -116,6 +116,7 @@ export async function finalizeCheckoutSession(
           Number(pending.efficiency_score),
           String(pending.model_provider),
           pending.ai_spend_verification === "self_reported" ? "self_reported" : "api",
+          pending.revenue_provider ? String(pending.revenue_provider) : "stripe",
           Number(pending.verification_period_start),
           Number(pending.verification_period_end),
           now,

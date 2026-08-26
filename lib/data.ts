@@ -4,6 +4,7 @@ import { getDatabase } from "@/lib/db";
 import { proofStrength } from "@/lib/proof";
 import { getReactionViewerId } from "@/lib/reaction-identity";
 import { inferReportingPeriod } from "@/lib/reporting-period";
+import { isRevenueProvider } from "@/lib/revenue-providers";
 import { getSession } from "@/lib/session";
 import type {
   Board,
@@ -34,6 +35,7 @@ const listingSelect = `
     l.model_provider,
     l.ai_spend_verification,
     l.revenue_verification,
+    l.revenue_provider,
     l.verification_period_start,
     l.verification_period_end,
     l.bid_cents,
@@ -100,7 +102,9 @@ function normalizeRow(row: LeaderboardRow): LeaderboardListing {
     efficiencyScore: Number(row.efficiency_score),
     modelProvider: String(row.model_provider) as LeaderboardListing["modelProvider"],
     aiSpendVerification: row.ai_spend_verification === "self_reported" ? "self_reported" : "api",
-    revenueVerification: row.revenue_verification === "self_reported" ? "self_reported" : "stripe",
+    revenueVerification: row.revenue_verification === "self_reported"
+      ? "self_reported"
+      : isRevenueProvider(row.revenue_provider) ? row.revenue_provider : "stripe",
     reportingPeriod: inferReportingPeriod(
       verificationPeriodStart,
       verificationPeriodEnd,

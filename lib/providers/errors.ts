@@ -13,9 +13,8 @@ export async function providerErrorMessage(
   fallback: string,
 ) {
   if (response.status === 401 || response.status === 403) {
-    return `${fallback} Check that the key is read-only/admin scoped and belongs to the correct account.`;
+    return `${fallback} Check that it is a live key with permission to read payments for this account.`;
   }
   if (response.status === 429) return "The provider rate limit was reached. Try again shortly.";
   return `${fallback} The provider returned HTTP ${response.status}.`;
 }
-

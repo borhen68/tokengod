@@ -32,6 +32,11 @@ import {
   type ReportingPeriod,
 } from "@/lib/reporting-period";
 import {
+  getRevenueProvider,
+  revenueProviders,
+  type RevenueProvider,
+} from "@/lib/revenue-providers";
+import {
   calculateSubscriptionSpend,
   subscriptionPlans,
   type SubscriptionPlanId,
@@ -122,6 +127,7 @@ export function SubmitFlow({
   const lastProfiledHandleRef = useRef("");
   const xLookupSequenceRef = useRef(0);
   const [provider, setProvider] = useState<Provider>("anthropic");
+  const [revenueProvider, setRevenueProvider] = useState<RevenueProvider>("stripe");
   const [spendVerification, setSpendVerification] = useState<SpendVerification>("self_reported");
   const [xHandle, setXHandle] = useState(viewer?.xHandle ?? "");
   const [xProfile, setXProfile] = useState<XProfileResult | null>(() =>
@@ -131,14 +137,14 @@ export function SubmitFlow({
   );
   const [xProfileBusy, setXProfileBusy] = useState(false);
   const [xProfileMessage, setXProfileMessage] = useState("");
-  const [stripeKey, setStripeKey] = useState("");
+  const [revenueKey, setRevenueKey] = useState("");
   const [aiKey, setAiKey] = useState("");
   const [reportingPeriod, setReportingPeriod] = useState<ReportingPeriod>(defaultReportingPeriod);
   const [subscriptionPlanId, setSubscriptionPlanId] = useState<SubscriptionPlanId>("claude-pro");
   const [subscriptionMonths, setSubscriptionMonths] = useState(3);
-  const [stripeResult, setStripeResult] = useState<VerificationResult | null>(null);
+  const [revenueResult, setRevenueResult] = useState<VerificationResult | null>(null);
   const [aiResult, setAiResult] = useState<VerificationResult | null>(null);
-  const [busy, setBusy] = useState<"stripe" | "ai" | "publish" | null>(null);
+  const [busy, setBusy] = useState<"revenue" | "ai" | "publish" | null>(null);
   const [error, setError] = useState(initialError || "");
   const [sites, setSites] = useState<SiteDraft[]>(() => [emptySite("primary")]);
   const bidCents = Math.min(100_000, Math.max(300, Math.round(initialBidCents / 100) * 100));
@@ -165,6 +171,7 @@ export function SubmitFlow({
     subscriptionMonths,
     reportingPeriod,
   );
+  const selectedRevenueProvider = getRevenueProvider(revenueProvider);
 
   function getSubmissionId() {
     submissionIdRef.current ||= crypto.randomUUID();
@@ -172,9 +179,9 @@ export function SubmitFlow({
   }
 
   const efficiency = useMemo(() => {
-    if (!stripeResult || !aiResult || aiResult.amountUsd <= 0) return null;
-    return stripeResult.amountUsd / aiResult.amountUsd;
-  }, [aiResult, stripeResult]);
+    if (!revenueResult || !aiResult || aiResult.amountUsd <= 0) return null;
+    return revenueResult.amountUsd / aiResult.amountUsd;
+  }, [aiResult, revenueResult]);
 
   const waterLevel = aiResult
     ? Math.min(92, Math.max(12, 14 + Math.log10(aiResult.amountUsd + 1) * 19))
@@ -214,26 +221,36 @@ export function SubmitFlow({
     }
   }
 
-  async function verifyStripe(event: FormEvent) {
+  async function verifyRevenue(event: FormEvent) {
     event.preventDefault();
-    setBusy("stripe");
+    setBusy("revenue");
     setError("");
     try {
-      const result = await postJson<VerificationResult>("/api/verify/stripe", {
-        apiKey: stripeKey,
+      const result = await postJson<VerificationResult>("/api/verify/revenue", {
+        apiKey: revenueKey,
+        provider: revenueProvider,
         submissionId: getSubmissionId(),
         period: reportingPeriod,
       });
-      setStripeResult(result);
-      setStripeKey("");
+      setRevenueResult(result);
+      setRevenueKey("");
       trackDataFast("revenue_verified", {
+        provider: revenueProvider,
         reporting_period: reportingPeriod,
       });
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Stripe verification failed.");
+      setError(caught instanceof Error ? caught.message : `${selectedRevenueProvider.name} verification failed.`);
     } finally {
       setBusy(null);
     }
+  }
+
+  function chooseRevenueProvider(next: RevenueProvider) {
+    if (next === revenueProvider) return;
+    setRevenueProvider(next);
+    setRevenueResult(null);
+    setRevenueKey("");
+    setError("");
   }
 
   async function verifyAi(event: FormEvent) {
@@ -302,7 +319,7 @@ export function SubmitFlow({
     const nextMonthLimit = getSubscriptionMonthLimit(next);
     setReportingPeriod(next);
     setSubscriptionMonths((current) => Math.min(current, nextMonthLimit));
-    setStripeResult(null);
+    setRevenueResult(null);
     setAiResult(null);
     setError("");
   }
@@ -373,8 +390,8 @@ export function SubmitFlow({
 
   async function publish(event: FormEvent) {
     event.preventDefault();
-    if (!stripeResult || !aiResult) {
-      setError("Verify Stripe and AI spend before publishing.");
+    if (!revenueResult || !aiResult) {
+      setError("Verify revenue and AI spend before publishing.");
       return;
     }
 
@@ -398,7 +415,7 @@ export function SubmitFlow({
           logoUrl: site.logoUrl,
         })),
         tokenReceipt: aiResult.receipt,
-        revenueReceipt: stripeResult.receipt,
+        revenueReceipt: revenueResult.receipt,
         bidCents,
       });
       if (result.listingId) {
@@ -467,7 +484,7 @@ export function SubmitFlow({
             </button>
           ))}
         </div>
-        <p>{periodDefinition.description}. Stripe revenue and AI spend must use this exact window.</p>
+        <p>{periodDefinition.description}. Revenue and AI spend must use this exact window.</p>
       </section>
 
       <div className="submit-layout">
@@ -529,23 +546,52 @@ export function SubmitFlow({
             </div>
           </section>
 
-          <section className={`submit-card ${stripeResult ? "is-complete" : ""}`}>
+          <section className={`submit-card ${revenueResult ? "is-complete" : ""}`}>
             <header>
-              <StepState done={Boolean(stripeResult)} number="2" />
-              <div><span>THE OUTCOME</span><h2>Verify Stripe revenue</h2></div>
-              {stripeResult ? <span className="verified-pill"><BadgeCheck size={14} /> {periodDefinition.shortLabel} · {formatMoney(stripeResult.amountUsd)}</span> : null}
+              <StepState done={Boolean(revenueResult)} number="2" />
+              <div><span>THE OUTCOME</span><h2>Verify revenue</h2></div>
+              {revenueResult ? <span className="verified-pill"><BadgeCheck size={14} /> {selectedRevenueProvider.name} · {formatMoney(revenueResult.amountUsd)}</span> : null}
             </header>
-            <form className="step-body" onSubmit={verifyStripe}>
-              <p>Create a live restricted key with <strong>Charges: Read</strong>. We total captured USD charges minus refunds over the selected {periodDefinition.label.toLowerCase()} window.</p>
+            <form className="step-body" onSubmit={verifyRevenue}>
+              <div className="revenue-provider-grid" role="group" aria-label="Revenue provider">
+                {revenueProviders.map((candidate) => (
+                  <button
+                    className={revenueProvider === candidate.id ? "is-active" : ""}
+                    type="button"
+                    aria-pressed={revenueProvider === candidate.id}
+                    disabled={busy !== null}
+                    onClick={() => chooseRevenueProvider(candidate.id)}
+                    key={candidate.id}
+                  >
+                    <span
+                      className="revenue-provider-mark"
+                      style={{
+                        "--provider-color": candidate.color,
+                        "--provider-tint": candidate.tint,
+                      } as CSSProperties}
+                      aria-hidden="true"
+                    >
+                      {candidate.mark}
+                    </span>
+                    <strong>{candidate.name}</strong>
+                    {revenueProvider === candidate.id ? <Check size={13} /> : null}
+                  </button>
+                ))}
+              </div>
+              <p>{selectedRevenueProvider.instructions} Only USD activity inside the selected {periodDefinition.label.toLowerCase()} window is accepted.</p>
+              <div className="revenue-key-note">
+                <ShieldCheck size={15} />
+                <span>Your credential is sent directly to TokenGod for this one verification request, then discarded. It is never saved in Turso.</span>
+              </div>
               <label className="secret-input">
-                <span>Restricted key</span>
-                <div><LockKeyhole size={16} /><input type="password" value={stripeKey} onChange={(event) => setStripeKey(event.target.value)} placeholder="rk_live_••••••••••••" autoComplete="off" disabled={Boolean(stripeResult)} required /></div>
+                <span>{selectedRevenueProvider.credentialLabel}</span>
+                <div><LockKeyhole size={16} /><input type="password" value={revenueKey} onChange={(event) => setRevenueKey(event.target.value)} placeholder={selectedRevenueProvider.placeholder} autoComplete="off" disabled={Boolean(revenueResult)} required /></div>
               </label>
               <div className="form-row">
-                <button className="button button-secondary" type="submit" disabled={!configurationReady || busy !== null || Boolean(stripeResult)}>
-                  {busy === "stripe" ? <><LoaderCircle className="spinner" size={16} /> Checking Stripe</> : stripeResult ? <><Check size={16} /> Revenue verified</> : <>Verify revenue · {periodDefinition.shortLabel} <ArrowRight size={16} /></>}
+                <button className="button button-secondary" type="submit" disabled={!configurationReady || busy !== null || Boolean(revenueResult)}>
+                  {busy === "revenue" ? <><LoaderCircle className="spinner" size={16} /> Checking {selectedRevenueProvider.name}</> : revenueResult ? <><Check size={16} /> Revenue verified</> : <>Verify {selectedRevenueProvider.name} · {periodDefinition.shortLabel} <ArrowRight size={16} /></>}
                 </button>
-                <a className="helper-link" href="https://dashboard.stripe.com/apikeys/create" target="_blank" rel="noopener noreferrer">Create restricted key <ExternalLink size={12} /></a>
+                <a className="helper-link" href={selectedRevenueProvider.docsUrl} target="_blank" rel="noopener noreferrer">{selectedRevenueProvider.docsLabel} <ExternalLink size={12} /></a>
               </div>
             </form>
           </section>
@@ -787,7 +833,7 @@ export function SubmitFlow({
                 <p><ShieldCheck size={13} /> Your bid sets Top Funded rank. Love and Roast rankings are controlled only by public reactions.</p>
               </div>
 
-              <button className="button button-primary publish-button" type="submit" disabled={!xHandleIsValid || !sitesAreReady || !stripeResult || !aiResult || !configurationReady || !paymentsReady || busy !== null}>
+              <button className="button button-primary publish-button" type="submit" disabled={!xHandleIsValid || !sitesAreReady || !revenueResult || !aiResult || !configurationReady || !paymentsReady || busy !== null}>
                 {busy === "publish" ? <><LoaderCircle className="spinner" size={17} /> Opening secure checkout</> : <>Pay {wholeDollar(checkoutTotalCents)} &amp; publish {sites.length} site{sites.length === 1 ? "" : "s"} <ArrowRight size={17} /></>}
               </button>
               <p className="publish-note"><ShieldCheck size={14} /> One-time Stripe payment. Revenue is verified; the AI-spend badge always shows its source.</p>
@@ -798,7 +844,7 @@ export function SubmitFlow({
         <aside className="submit-preview" style={tankStyle}>
           <span className="preview-label">YOUR LIVE CARD</span>
           <div className="preview-card">
-            <div className="preview-brand"><Waves size={18} /><strong>TOKEN<span>GOD</span></strong><small>{spendVerification === "api" ? "API + STRIPE VERIFIED" : "AI CLAIM · STRIPE VERIFIED"}</small></div>
+            <div className="preview-brand"><Waves size={18} /><strong>TOKEN<span>GOD</span></strong><small>{spendVerification === "api" ? `API + ${selectedRevenueProvider.name.toUpperCase()} VERIFIED` : `AI CLAIM · ${selectedRevenueProvider.name.toUpperCase()} VERIFIED`}</small></div>
             <div className="preview-copy">
               <span>@{normalizedXHandle || "yourhandle"} burned</span>
               <strong className={aiResult ? "" : "is-pending"}>{aiResult ? formatMoney(aiResult.amountUsd) : "WAITING"}</strong>
@@ -814,7 +860,7 @@ export function SubmitFlow({
               </div>
             </div>
             <div className="preview-outcome">
-              <span>REVENUE MADE</span><strong className={stripeResult ? "" : "is-pending"}>{stripeResult ? formatMoney(stripeResult.amountUsd) : "WAITING"}</strong>
+              <span>REVENUE MADE</span><strong className={revenueResult ? "" : "is-pending"}>{revenueResult ? formatMoney(revenueResult.amountUsd) : "WAITING"}</strong>
             </div>
             <div className="preview-ratio"><span>{efficiency !== null ? formatEfficiency(efficiency) : "—"}</span><small>{efficiency !== null ? "made per $1 spent" : "efficiency after verification"}</small></div>
             <div className="preview-water"><i /><i /><i /></div>

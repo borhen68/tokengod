@@ -1,10 +1,11 @@
 import type { ReportingPeriod } from "@/lib/reporting-period";
+import type { RevenueProvider } from "@/lib/revenue-providers";
 
 export type Board = "funded" | "respected" | "roasted";
 export type ModelProvider = "anthropic" | "openai" | "other";
 export type ReactionType = "love" | "laugh";
 export type AiSpendVerification = "api" | "self_reported";
-export type RevenueVerification = "stripe" | "self_reported";
+export type RevenueVerification = RevenueProvider | "self_reported";
 
 export type ListingProduct = {
   name: string;
@@ -54,7 +55,7 @@ export type VerificationReceiptPayload = {
   version: 1;
   kind: "tokens" | "revenue";
   userId: string;
-  provider: "openai" | "anthropic" | "stripe";
+  provider: "openai" | "anthropic" | RevenueProvider;
   verificationMethod: "api" | "self_reported";
   amountUsd: number;
   periodStart: string;

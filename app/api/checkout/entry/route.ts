@@ -139,6 +139,7 @@ export async function POST(request: NextRequest) {
         site_count: String(products.length),
         site_fee_cents: String(siteFeeCents),
         ai_spend_verification: tokens.verificationMethod,
+        revenue_provider: revenue.provider,
         ...dataFastMetadata,
       },
       payment_intent_data: {
@@ -149,6 +150,7 @@ export async function POST(request: NextRequest) {
           site_count: String(products.length),
           site_fee_cents: String(siteFeeCents),
           ai_spend_verification: tokens.verificationMethod,
+          revenue_provider: revenue.provider,
           ...dataFastMetadata,
         },
       },
@@ -170,11 +172,11 @@ export async function POST(request: NextRequest) {
               product_name, product_url, product_description,
               product_logo_url, products_json,
               tokens_spent_usd, revenue_usd, efficiency_score, model_provider,
-              ai_spend_verification,
+              ai_spend_verification, revenue_provider,
               verification_period_start, verification_period_end, token_nonce,
               revenue_nonce, bid_cents, site_fee_cents, stripe_checkout_session_id, status,
               listing_id, created_at, expires_at
-            ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', null, ?, ?)`,
+            ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', null, ?, ?)`,
       args: [
         input.submissionId,
         input.xHandle,
@@ -190,6 +192,7 @@ export async function POST(request: NextRequest) {
         Math.round((revenue.amountUsd / tokens.amountUsd) * 10_000) / 10_000,
         tokens.provider,
         tokens.verificationMethod,
+        revenue.provider,
         new Date(tokens.periodStart).getTime(),
         new Date(tokens.periodEnd).getTime(),
         tokens.nonce,

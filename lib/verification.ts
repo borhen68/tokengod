@@ -6,13 +6,14 @@ import {
   getReportingWindow,
   type ReportingPeriod,
 } from "@/lib/reporting-period";
+import { revenueProviderIds } from "@/lib/revenue-providers";
 import type { VerificationReceiptPayload } from "@/lib/types";
 
 const receiptSchema = z.object({
   version: z.literal(1),
   kind: z.enum(["tokens", "revenue"]),
   userId: z.string().uuid(),
-  provider: z.enum(["openai", "anthropic", "stripe"]),
+  provider: z.enum(["openai", "anthropic", ...revenueProviderIds]),
   verificationMethod: z.enum(["api", "self_reported"]).default("api"),
   amountUsd: z.number().nonnegative().finite(),
   periodStart: z.string().datetime(),
@@ -109,7 +110,10 @@ export function verifyVerificationReceipt(
   ) {
     throw new Error("Invalid token provider.");
   }
-  if (payload.kind === "revenue" && payload.provider !== "stripe") {
+  if (
+    payload.kind === "revenue"
+    && !revenueProviderIds.includes(payload.provider as (typeof revenueProviderIds)[number])
+  ) {
     throw new Error("Invalid revenue provider.");
   }
 

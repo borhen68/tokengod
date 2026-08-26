@@ -535,6 +535,17 @@ button { border: 0; }
 .x-profile-status { margin-top: 9px; display: inline-flex; align-items: center; gap: 6px; color: #60747d; font-size: 9px; line-height: 1.4; }
 .form-row { width: 100%; margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .helper-link { display: inline-flex; align-items: center; gap: 4px; color: var(--blue-dark); font-size: 10px; font-weight: 750; }
+.revenue-provider-grid { width: 100%; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; margin-bottom: 14px; }
+.revenue-provider-grid button { min-width: 0; height: 52px; display: grid; grid-template-columns: 29px minmax(0,1fr) 14px; align-items: center; gap: 8px; padding: 7px 9px; color: #617078; background: #f4f5f2; border: 1px solid var(--line); border-radius: 11px; cursor: pointer; text-align: left; transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease, background .16s ease; }
+.revenue-provider-grid button:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(8,123,145,.38); }
+.revenue-provider-grid button.is-active { color: var(--ink); background: white; border-color: #779da6; box-shadow: 2px 2px 0 rgba(43,196,223,.32); }
+.revenue-provider-grid button:disabled { cursor: wait; opacity: .68; }
+.revenue-provider-grid button > strong { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.revenue-provider-grid button > svg { color: #43842f; }
+.revenue-provider-mark { width: 29px; height: 29px; display: grid; place-items: center; color: var(--provider-color); background: var(--provider-tint); border: 1px solid color-mix(in srgb,var(--provider-color) 24%,transparent); border-radius: 8px; font-size: 12px; font-weight: 950; }
+.revenue-provider-grid + p { margin-top: 0; }
+.revenue-key-note { width: 100%; margin-bottom: 11px; display: flex; align-items: flex-start; gap: 7px; padding: 9px 11px; color: #50666e; background: var(--blue-soft); border: 1px solid rgba(8,127,164,.18); border-radius: 9px; font-size: 9px; line-height: 1.45; }
+.revenue-key-note svg { flex: 0 0 auto; color: var(--blue-dark); }
 .provider-switch { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 13px; padding: 4px; background: var(--paper-2); border-radius: 10px; }
 .provider-switch button { height: 37px; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 7px; cursor: pointer; font-size: 11px; font-weight: 800; }
 .provider-switch button.is-active { color: var(--ink); background: white; border-color: var(--line); box-shadow: 0 3px 9px rgba(7,20,30,.06); }
@@ -885,6 +896,7 @@ button { border: 0; }
   .step-body { padding: 0 15px 17px; }
   .connected-account { margin: 0 15px 17px; }
   .field-pair { grid-template-columns: 1fr; }
+  .revenue-provider-grid { grid-template-columns: 1fr 1fr; }
   .spend-source-switch { grid-template-columns: 1fr; }
   .subscription-fields { grid-template-columns: 1fr; }
   .form-row { align-items: stretch; flex-direction: column; }
@@ -971,12 +983,12 @@ body {
 }
 .button:hover { transform: translateY(-1px); }
 .button-primary {
-  color: white;
-  background: var(--ink);
+  color: var(--ink);
+  background: var(--lime);
   border-color: var(--ink);
-  box-shadow: none;
+  box-shadow: 2px 2px 0 var(--blue-dark);
 }
-.button-primary:hover { color: var(--ink); background: var(--lime); box-shadow: none; }
+.button-primary:hover { color: white; background: var(--blue-dark); box-shadow: 2px 2px 0 var(--ink); }
 .button-large { min-height: 48px; border-radius: 10px; }
 
 .hero-stage {

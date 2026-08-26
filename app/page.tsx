@@ -8,7 +8,6 @@ import Link from "next/link";
 
 import { HeroEntry } from "@/components/hero-entry";
 import { Leaderboard } from "@/components/leaderboard";
-import { OceanStage } from "@/components/ocean-stage";
 import { PublicTrafficBadge } from "@/components/public-traffic-badge";
 import { TokenWaterfall } from "@/components/token-waterfall";
 import { isApplicationConfigured, isPaymentConfigured } from "@/lib/config";
@@ -18,6 +17,8 @@ import {
   getViewerReactions,
   sortListings,
 } from "@/lib/data";
+
+import styles from "./home.module.css";
 
 export default async function HomePage({
   searchParams,
@@ -68,36 +69,34 @@ export default async function HomePage({
 
   return (
     <main>
-      <OceanStage>
-        <div className="waterfall-scene" aria-hidden="true">
-          <i /><i /><i /><i /><i />
-          <span />
-        </div>
-        <div className="hero section-shell">
-          <TokenWaterfall spend={deepestBurn} />
-          <div className="hero-copy">
-            <div className="hero-kicker">
+      <section className={styles.heroStage}>
+        <TokenWaterfall spend={deepestBurn} />
+        <div className={`${styles.hero} section-shell`}>
+          <div className={styles.heroCopy}>
+            <div className={`${styles.heroKicker} hero-kicker`}>
               <PublicTrafficBadge />
               <span><BarChart3 size={14} /> {listings.length} {listings.length === 1 ? "FOUNDER" : "FOUNDERS"}</span>
             </div>
-            <HeroEntry
-              key={enter === "1" || (!boost && Boolean(initialError)) ? `entry-open-${entryBidCents}` : `entry-closed-${entryBidCents}`}
-              viewer={viewer}
-              configurationReady={configurationReady}
-              paymentsReady={paymentsReady}
-              initialBidCents={entryBidCents}
-              takeFirstCents={takeFirstCents}
-              defaultOpen={enter === "1" || (!boost && Boolean(initialError))}
-              initialError={initialError}
-            />
-            <div className="hero-rules" aria-label="Entry rules">
+            <div className={styles.heroEntry}>
+              <HeroEntry
+                key={enter === "1" || (!boost && Boolean(initialError)) ? `entry-open-${entryBidCents}` : `entry-closed-${entryBidCents}`}
+                viewer={viewer}
+                configurationReady={configurationReady}
+                paymentsReady={paymentsReady}
+                initialBidCents={entryBidCents}
+                takeFirstCents={takeFirstCents}
+                defaultOpen={enter === "1" || (!boost && Boolean(initialError))}
+                initialError={initialError}
+              />
+            </div>
+            <div className={`${styles.heroRules} hero-rules`} aria-label="Entry rules">
               <span><Check size={14} /><b>$3 minimum</b></span>
               <span><Check size={14} /><b>Up to 3 products</b></span>
               <span><Check size={14} /><b>Bid + public reactions</b></span>
             </div>
           </div>
         </div>
-      </OceanStage>
+      </section>
 
       <div className="section-shell">
         <Leaderboard

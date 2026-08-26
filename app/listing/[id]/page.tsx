@@ -37,6 +37,7 @@ import {
   revenueProofLabel,
 } from "@/lib/proof";
 import { getReportingPeriodDefinition } from "@/lib/reporting-period";
+import { getRevenueProvider } from "@/lib/revenue-providers";
 import { getSocialCacheKey } from "@/lib/social-share";
 
 type PageProps = { params: Promise<{ id: string }> };
@@ -54,7 +55,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? `${listing.productName} + ${listing.products.length - 1} more`
     : listing.productName;
   const spendProof = listing.aiSpendVerification === "api" ? "API-verified" : "founder-reported";
-  const revenueProof = listing.revenueVerification === "stripe" ? "verified" : "founder-reported";
+  const revenueProof = listing.revenueVerification === "self_reported"
+    ? "founder-reported"
+    : `${getRevenueProvider(listing.revenueVerification).name}-verified`;
   const periodLabel = getReportingPeriodDefinition(listing.reportingPeriod).label.toLowerCase();
   const description = `${listing.founderName} ${spendProof} ${formatMoney(listing.tokensSpentUsd)} in AI spend over ${periodLabel}, built ${buildLabel}, and made ${formatMoney(listing.revenueUsd)} in ${revenueProof} revenue.`;
 
@@ -110,7 +113,9 @@ export default async function ListingPage({ params }: PageProps) {
     ? `${listing.productName} + ${listing.products.length - 1} more`
     : listing.productName;
   const spendDisclosure = listing.aiSpendVerification === "api" ? "API-verified AI spend" : "founder-reported AI spend";
-  const revenueDisclosure = listing.revenueVerification === "stripe" ? "Stripe revenue verified" : "founder-reported revenue";
+  const revenueDisclosure = listing.revenueVerification === "self_reported"
+    ? "founder-reported revenue"
+    : `${getRevenueProvider(listing.revenueVerification).name} revenue verified`;
   const periodDefinition = getReportingPeriodDefinition(listing.reportingPeriod);
   const normalShare = `I spent ${formatMoney(listing.tokensSpentUsd)} on AI over ${periodDefinition.label.toLowerCase()} to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; ${revenueDisclosure}. Respect it or roast it 👇`;
 

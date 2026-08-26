@@ -1,4 +1,5 @@
 import type { LeaderboardListing } from "@/lib/types";
+import { getRevenueProvider } from "@/lib/revenue-providers";
 
 type ListingProof = Pick<
   LeaderboardListing,
@@ -20,19 +21,20 @@ export function listingProofLabel(listing: ListingProof) {
   if (listing.revenueVerification === "self_reported") {
     return "AI spend verified · revenue founder reported";
   }
+  const revenueProvider = getRevenueProvider(listing.revenueVerification).name;
   if (listing.aiSpendVerification === "self_reported") {
-    return "AI spend founder reported · revenue verified";
+    return `AI spend founder reported · ${revenueProvider} revenue verified`;
   }
-  return "AI spend + revenue verified";
+  return `AI spend + ${revenueProvider} revenue verified`;
 }
 
 export function revenueProofLabel(listing: ListingProof) {
-  return listing.revenueVerification === "stripe"
-    ? "Stripe · verified"
-    : "founder reported";
+  return listing.revenueVerification === "self_reported"
+    ? "founder reported"
+    : `${getRevenueProvider(listing.revenueVerification).name} · verified`;
 }
 
 export function proofStrength(listing: ListingProof) {
-  return Number(listing.revenueVerification === "stripe") * 2
+  return Number(listing.revenueVerification !== "self_reported") * 2
     + Number(listing.aiSpendVerification === "api");
 }
