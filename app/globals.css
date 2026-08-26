@@ -519,7 +519,17 @@ button { border: 0; }
 .spend-source-switch button span { margin-top: 3px; color: #829097; font-size: 8px; }
 .spend-source-switch button.is-active { color: var(--ink); background: white; border-color: #86979e; box-shadow: 2px 2px 0 #aab5b9; }
 .spend-source-switch button.is-active.is-api { background: #f4ffe8; border-color: #789f42; box-shadow: 2px 2px 0 #9fc866; }
-.reported-spend-input strong { color: var(--blue-dark); font-size: 15px; }
+.subscription-fields { width: 100%; display: grid; grid-template-columns: minmax(0,1.35fr) minmax(190px,.65fr); gap: 10px; }
+.subscription-field { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.subscription-field > span { color: #51636c; font-size: 10px; font-weight: 800; }
+.subscription-field select { width: 100%; height: 48px; padding: 0 12px; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 10px; outline: 0; cursor: pointer; font: inherit; font-size: 11px; font-weight: 750; }
+.subscription-field select:focus { border-color: var(--blue-dark); box-shadow: 0 0 0 3px rgba(61,207,243,.14); }
+.subscription-field select:disabled { cursor: wait; opacity: .65; }
+.subscription-total { width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 14px; background: linear-gradient(100deg,#e8faff,#f3ffe4); border: 1px solid rgba(8,127,164,.22); border-radius: 11px; }
+.subscription-total > div { min-width: 0; display: flex; flex-direction: column; }
+.subscription-total span { color: #47636e; font-size: 8px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.subscription-total small { margin-top: 4px; overflow: hidden; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.subscription-total > strong { flex: 0 0 auto; color: var(--blue-dark); font-size: 22px; letter-spacing: -.05em; }
 .reporting-disclosure, .admin-key-warning { width: 100%; display: flex; align-items: flex-start; gap: 7px; padding: 10px 11px; border-radius: 9px; font-size: 9px; line-height: 1.45; }
 .reporting-disclosure { color: #596a71; background: #f1f4f4; border: 1px solid #d6dddf; }
 .reporting-disclosure svg, .admin-key-warning svg { flex: 0 0 auto; }
@@ -846,6 +856,7 @@ button { border: 0; }
   .connected-account { margin: 0 15px 17px; }
   .field-pair { grid-template-columns: 1fr; }
   .spend-source-switch { grid-template-columns: 1fr; }
+  .subscription-fields { grid-template-columns: 1fr; }
   .form-row { align-items: stretch; flex-direction: column; }
   .listing-rank-stack, .listing-scoreboard { grid-template-columns: 1fr; }
   .listing-owner { flex-wrap: wrap; }

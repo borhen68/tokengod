@@ -25,6 +25,13 @@ import { FormEvent, useMemo, useRef, useState, type CSSProperties } from "react"
 
 import { trackDataFast } from "@/lib/datafast";
 import { formatEfficiency, formatMoney } from "@/lib/format";
+import {
+  calculateSubscriptionSpend,
+  subscriptionBillingMonths,
+  subscriptionPlans,
+  type SubscriptionBillingMonths,
+  type SubscriptionPlanId,
+} from "@/lib/subscription-plans";
 import type { Viewer } from "@/lib/types";
 
 type Provider = "openai" | "anthropic";
@@ -121,7 +128,8 @@ export function SubmitFlow({
   const [xProfileMessage, setXProfileMessage] = useState("");
   const [stripeKey, setStripeKey] = useState("");
   const [aiKey, setAiKey] = useState("");
-  const [reportedSpendDollars, setReportedSpendDollars] = useState("");
+  const [subscriptionPlanId, setSubscriptionPlanId] = useState<SubscriptionPlanId>("claude-pro");
+  const [subscriptionMonths, setSubscriptionMonths] = useState<SubscriptionBillingMonths>(3);
   const [stripeResult, setStripeResult] = useState<VerificationResult | null>(null);
   const [aiResult, setAiResult] = useState<VerificationResult | null>(null);
   const [busy, setBusy] = useState<"stripe" | "ai" | "publish" | null>(null);
@@ -143,6 +151,7 @@ export function SubmitFlow({
   const extraSiteCount = Math.max(0, sites.length - 3);
   const siteFeeCents = extraSiteCount * 100;
   const checkoutTotalCents = bidCents + siteFeeCents;
+  const subscriptionSelection = calculateSubscriptionSpend(subscriptionPlanId, subscriptionMonths);
 
   function getSubmissionId() {
     submissionIdRef.current ||= crypto.randomUUID();
@@ -242,9 +251,8 @@ export function SubmitFlow({
 
   async function reportAiSpend(event: FormEvent) {
     event.preventDefault();
-    const amountUsd = Number(reportedSpendDollars);
-    if (!Number.isFinite(amountUsd) || amountUsd <= 0 || amountUsd > 1_000_000) {
-      setError("Enter the amount you actually paid for AI subscriptions during the last 90 days.");
+    if (!subscriptionSelection) {
+      setError("Choose an AI subscription plan and the number of months you paid for it.");
       return;
     }
 
@@ -252,13 +260,16 @@ export function SubmitFlow({
     setError("");
     try {
       const result = await postJson<VerificationResult>("/api/verify/self-reported", {
-        amountUsd,
-        provider,
+        planId: subscriptionSelection.plan.id,
+        months: subscriptionSelection.months,
         submissionId: getSubmissionId(),
       });
       setAiResult(result);
       trackDataFast("ai_spend_reported", {
-        provider,
+        provider: subscriptionSelection.plan.provider,
+        plan: subscriptionSelection.plan.id,
+        months: subscriptionSelection.months,
+        amount_usd: subscriptionSelection.amountUsd,
         period_days: 90,
       });
     } catch (caught) {
@@ -522,24 +533,63 @@ export function SubmitFlow({
                   <span>Provider checked · gold badge</span>
                 </button>
               </div>
-              <div className="provider-switch" role="group" aria-label="AI provider">
-                <button className={provider === "anthropic" ? "is-active" : ""} type="button" onClick={() => { setProvider("anthropic"); setAiResult(null); }}>Claude / Anthropic</button>
-                <button className={provider === "openai" ? "is-active" : ""} type="button" onClick={() => { setProvider("openai"); setAiResult(null); }}>ChatGPT / OpenAI</button>
-              </div>
               {spendVerification === "self_reported" ? (
                 <>
-                  <p>For Claude Pro/Max or ChatGPT Plus/Pro: enter what you actually paid during the last 90 completed days. This is allowed into the race, but never presented as provider-verified.</p>
-                  <label className="secret-input reported-spend-input">
-                    <span>90-day subscription spend · USD</span>
-                    <div><strong>$</strong><input type="number" value={reportedSpendDollars} onChange={(event) => setReportedSpendDollars(event.target.value)} placeholder="60" min="0.01" max="1000000" step="0.01" inputMode="decimal" disabled={Boolean(aiResult)} required /></div>
-                  </label>
+                  <p>Choose your subscription and how many completed billing months you paid during the last 90 days. TokenGod calculates the burn automatically.</p>
+                  <div className="subscription-fields">
+                    <label className="subscription-field">
+                      <span>Subscription plan</span>
+                      <select
+                        value={subscriptionPlanId}
+                        onChange={(event) => {
+                          setSubscriptionPlanId(event.target.value as SubscriptionPlanId);
+                          setAiResult(null);
+                          setError("");
+                        }}
+                        disabled={busy !== null}
+                      >
+                        {subscriptionPlans.map((plan) => (
+                          <option value={plan.id} key={plan.id}>{plan.name} · ${plan.monthlyUsd}/mo</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="subscription-field">
+                      <span>Months paid in the last 90 days</span>
+                      <select
+                        value={subscriptionMonths}
+                        onChange={(event) => {
+                          setSubscriptionMonths(Number(event.target.value) as SubscriptionBillingMonths);
+                          setAiResult(null);
+                          setError("");
+                        }}
+                        disabled={busy !== null}
+                      >
+                        {subscriptionBillingMonths.map((months) => (
+                          <option value={months} key={months}>{months} {months === 1 ? "month" : "months"}</option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  {subscriptionSelection ? (
+                    <div className="subscription-total" aria-live="polite">
+                      <div>
+                        <span>Calculated 90-day burn</span>
+                        <small>{subscriptionSelection.months} × ${subscriptionSelection.plan.monthlyUsd}/month · {subscriptionSelection.plan.name}</small>
+                      </div>
+                      <strong>{formatMoney(subscriptionSelection.amountUsd)}</strong>
+                    </div>
+                  ) : null}
                   <div className="reporting-disclosure"><AtSign size={14} /><span>Your card and leaderboard row will say <strong>Founder Reported</strong>. API-verified entries win reaction-count ties.</span></div>
                   <button className="button button-secondary" type="submit" disabled={!configurationReady || busy !== null || Boolean(aiResult)}>
-                    {busy === "ai" ? <><LoaderCircle className="spinner" size={16} /> Recording the burn</> : aiResult ? <><Check size={16} /> Spend recorded</> : <>Use founder-reported spend <Waves size={16} /></>}
+                    {busy === "ai" ? <><LoaderCircle className="spinner" size={16} /> Recording the burn</> : aiResult ? <><Check size={16} /> Spend recorded</> : <>Record {formatMoney(subscriptionSelection?.amountUsd ?? 0)} subscription spend <Waves size={16} /></>}
                   </button>
                 </>
               ) : (
                 <>
+                  <div className="provider-switch" role="group" aria-label="AI provider">
+                    <button className={provider === "anthropic" ? "is-active" : ""} type="button" onClick={() => { setProvider("anthropic"); setAiResult(null); }}>Claude / Anthropic</button>
+                    <button className={provider === "openai" ? "is-active" : ""} type="button" onClick={() => { setProvider("openai"); setAiResult(null); }}>ChatGPT / OpenAI</button>
+                  </div>
                   <div className="admin-key-warning">
                     <ShieldCheck size={15} />
                     <span>{provider === "anthropic" ? "Anthropic Console Admin keys have broad organization access; individual accounts cannot create one." : "OpenAI cost reports require an organization Admin key, not a normal project key."} TokenGod uses it for one request and never stores it.</span>

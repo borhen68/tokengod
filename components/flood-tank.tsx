@@ -77,11 +77,11 @@ export function FloodTank({
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 50);
-      camera.position.set(0, 0.28, 8.45);
+      camera.position.set(0, 0.28, 9.2);
       camera.lookAt(0, -0.08, 0);
 
       const reactor = new THREE.Group();
-      reactor.position.y = -0.13;
+      reactor.position.y = 0.05;
       reactor.rotation.set(-0.05, -0.16, -0.025);
       scene.add(reactor);
 
