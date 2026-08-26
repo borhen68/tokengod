@@ -259,6 +259,8 @@ export function FloodTank({
       const coinFaceMaterial = new THREE.MeshBasicMaterial({ color: 0xffe0a6, depthTest: false });
       const chipMaterial = new THREE.MeshBasicMaterial({ color: 0x102a38, depthTest: false });
       const tokenStates: FallingToken[] = [];
+      const tokenRespawnY = chamberHeight / 2 + 0.18;
+      const tokenRespawnJitter = 0.18;
 
       const tokenCount = hasVerifiedSpend ? 7 : 0;
       for (let index = 0; index < tokenCount; index += 1) {
@@ -413,7 +415,7 @@ export function FloodTank({
           if (token.group.position.y < -1.52) {
             token.group.position.set(
               (Math.random() - 0.5) * 2.7,
-              2.1 + Math.random() * 1.7,
+              tokenRespawnY + Math.random() * tokenRespawnJitter,
               (Math.random() - 0.5) * 1.25,
             );
             token.group.scale.setScalar(1);
