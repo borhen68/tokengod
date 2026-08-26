@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { trackDataFast } from "@/lib/datafast";
 import { formatCount } from "@/lib/format";
 import type { ReactionType } from "@/lib/types";
 
@@ -49,6 +50,11 @@ export function ReactionControls({
       setCounts(nextCounts);
       setActive((current) => ({ ...current, [type]: Boolean(body.active) }));
       onUpdate?.(nextCounts);
+      trackDataFast("reaction_updated", {
+        listing_id: listingId,
+        reaction_type: type,
+        action: body.active ? "added" : "removed",
+      });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Try again.");
     } finally {

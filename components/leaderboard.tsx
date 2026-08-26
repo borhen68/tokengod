@@ -15,6 +15,7 @@ import { useMemo, useState } from "react";
 import { BoostModal } from "@/components/boost-modal";
 import { ReactionControls } from "@/components/reaction-controls";
 import { ListingQuickView } from "@/components/listing-quick-view";
+import { trackDataFast } from "@/lib/datafast";
 import {
   formatEfficiency,
   formatMoney,
@@ -76,6 +77,11 @@ export function Leaderboard({
   );
   const visibleListings = ordered.slice(0, 50);
 
+  function chooseBoard(nextBoard: Board) {
+    setBoard(nextBoard);
+    trackDataFast("leaderboard_view_changed", { board: nextBoard });
+  }
+
   return (
     <section className="board-section" id="leaderboard">
       <div className="board-layout">
@@ -89,7 +95,7 @@ export function Leaderboard({
             type="button"
             role="tab"
             aria-selected={board === "funded"}
-            onClick={() => setBoard("funded")}
+            onClick={() => chooseBoard("funded")}
           >
             <span aria-hidden="true">⚡</span>
             Top Funded
@@ -100,7 +106,7 @@ export function Leaderboard({
             type="button"
             role="tab"
             aria-selected={board === "respected"}
-            onClick={() => setBoard("respected")}
+            onClick={() => chooseBoard("respected")}
           >
             <span aria-hidden="true">❤️</span>
             Most Respected
@@ -111,7 +117,7 @@ export function Leaderboard({
             type="button"
             role="tab"
             aria-selected={board === "roasted"}
-            onClick={() => setBoard("roasted")}
+            onClick={() => chooseBoard("roasted")}
           >
             <span aria-hidden="true">😂</span>
             Most Roasted
