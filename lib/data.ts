@@ -12,16 +12,21 @@ import { isRevenueProvider } from "@/lib/revenue-providers";
 import { getSession } from "@/lib/session";
 import type {
   Board,
+  BattleVoteState,
   LeaderboardListing,
   ListingProduct,
   ReactionState,
   ReactionType,
   Viewer,
 } from "@/lib/types";
+import { getBattlePairKey, getCurrentWeekKey, getCurrentWeekStart } from "@/lib/weekly";
 
 type LeaderboardRow = Record<string, string | number | bigint | null>;
 
-const listingSelect = `
+function listingSelect() {
+  const weekStart = getCurrentWeekStart().getTime();
+  const weekKey = getCurrentWeekKey();
+  return `
   select
     l.id,
     l.owner_user_id,
@@ -42,16 +47,25 @@ const listingSelect = `
     l.revenue_provider,
     l.verification_period_start,
     l.verification_period_end,
-    l.bid_cents,
+    l.funded_cents,
+    l.entry_source,
     l.stripe_checkout_session_id,
     l.created_at,
     l.updated_at,
     coalesce(sum(case when r.type = 'love' then 1 else 0 end), 0) as love_count,
-    coalesce(sum(case when r.type = 'laugh' then 1 else 0 end), 0) as laugh_count
+    coalesce(sum(case when r.type = 'laugh' then 1 else 0 end), 0) as laugh_count,
+    coalesce(sum(case when r.type = 'love' and r.created_at >= ${weekStart} then 1 else 0 end), 0) as weekly_love_count,
+    coalesce(sum(case when r.type = 'laugh' and r.created_at >= ${weekStart} then 1 else 0 end), 0) as weekly_laugh_count,
+    (select count(*) from battle_votes bv where bv.chosen_listing_id = l.id and bv.week_key = '${weekKey}') as weekly_battle_wins,
+    (select count(*) from product_visits pv where pv.listing_id = l.id) as visit_count,
+    (select count(*) from product_visits pv where pv.listing_id = l.id and pv.created_at >= ${weekStart}) as weekly_visit_count,
+    (select count(*) + 1 from listings ranked where ranked.efficiency_score > l.efficiency_score) as efficiency_rank,
+    (select count(*) from listings) as listing_count
   from listings l
   join users u on u.id = l.owner_user_id
   left join reactions r on r.listing_id = l.id
 `;
+}
 
 function normalizeProducts(row: LeaderboardRow): ListingProduct[] {
   const fallback = {
@@ -91,6 +105,11 @@ function normalizeRow(row: LeaderboardRow): LeaderboardListing {
   const verificationPeriodEnd = new Date(
     Number(row.verification_period_end),
   ).toISOString();
+  const listingCount = Math.max(1, Number(row.listing_count));
+  const efficiencyRank = Math.max(1, Number(row.efficiency_rank));
+  const efficiencyPercentile = listingCount <= 1
+    ? 100
+    : Math.max(1, Math.round(((listingCount - efficiencyRank) / (listingCount - 1)) * 99) + 1);
 
   return {
     id: String(row.id),
@@ -120,10 +139,21 @@ function normalizeRow(row: LeaderboardRow): LeaderboardListing {
     ),
     verificationPeriodStart,
     verificationPeriodEnd,
-    isPaidEntry: Boolean(row.stripe_checkout_session_id),
-    bidCents: Number(row.bid_cents),
+    isPaidEntry: row.entry_source === "paid",
+    entrySource: row.entry_source === "launch_free"
+      ? "launch_free"
+      : row.entry_source === "seed" ? "seed" : "paid",
+    bidCents: Number(row.funded_cents),
     loveCount: Number(row.love_count),
     laughCount: Number(row.laugh_count),
+    weeklyLoveCount: Number(row.weekly_love_count),
+    weeklyLaughCount: Number(row.weekly_laugh_count),
+    weeklyBattleWins: Number(row.weekly_battle_wins),
+    visitCount: Number(row.visit_count),
+    weeklyVisitCount: Number(row.weekly_visit_count),
+    efficiencyRank,
+    efficiencyPercentile,
+    listingCount,
     createdAt: new Date(Number(row.created_at)).toISOString(),
     updatedAt: new Date(Number(row.updated_at)).toISOString(),
   };
@@ -149,7 +179,7 @@ export const getLeaderboardListings = cache(
       const result = await getDatabase().execute({
         // Both boards rank the same pool differently, so load the complete MVP
         // pool and let each board select its own top 50.
-        sql: `${listingSelect} group by l.id, u.id order by l.created_at asc`,
+        sql: `${listingSelect()} group by l.id, u.id order by l.created_at asc`,
         args: [],
       });
       return result.rows.map((row) => normalizeRow(row as LeaderboardRow));
@@ -164,7 +194,7 @@ export const getListing = cache(
   async (id: string): Promise<LeaderboardListing | null> => {
     try {
       const result = await getDatabase().execute({
-        sql: `${listingSelect} where l.id = ? group by l.id, u.id limit 1`,
+        sql: `${listingSelect()} where l.id = ? group by l.id, u.id limit 1`,
         args: [id],
       });
       const row = result.rows[0];
@@ -201,6 +231,27 @@ export async function getViewerReactions(listingIds: string[]): Promise<Reaction
     const listingId = String(row.listing_id);
     state[listingId] ||= {};
     state[listingId][String(row.type) as ReactionType] = true;
+    return state;
+  }, {});
+}
+
+export async function getViewerBattleVotes(listingIds: string[]): Promise<BattleVoteState> {
+  const viewerId = await getReactionViewerId();
+  if (!viewerId || listingIds.length < 2) return {};
+
+  const placeholders = listingIds.map(() => "?").join(",");
+  const result = await getDatabase().execute({
+    sql: `select listing_a_id, listing_b_id, chosen_listing_id
+          from battle_votes
+          where viewer_id = ?
+            and week_key = ?
+            and listing_a_id in (${placeholders})
+            and listing_b_id in (${placeholders})`,
+    args: [viewerId, getCurrentWeekKey(), ...listingIds, ...listingIds],
+  });
+
+  return result.rows.reduce<BattleVoteState>((state, row) => {
+    state[getBattlePairKey(String(row.listing_a_id), String(row.listing_b_id))] = String(row.chosen_listing_id);
     return state;
   }, {});
 }

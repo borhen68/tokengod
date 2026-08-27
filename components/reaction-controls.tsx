@@ -25,10 +25,12 @@ export function ReactionControls({
   const [active, setActive] = useState(initialActive ?? {});
   const [busy, setBusy] = useState<ReactionType | null>(null);
   const [message, setMessage] = useState("");
+  const [hasError, setHasError] = useState(false);
 
   async function react(type: ReactionType) {
     setBusy(type);
     setMessage("");
+    setHasError(false);
     try {
       const response = await fetch("/api/reactions", {
         method: "POST",
@@ -39,6 +41,8 @@ export function ReactionControls({
         active?: boolean;
         loveCount?: number;
         laughCount?: number;
+        respectedRank?: number;
+        roastedRank?: number;
         error?: string;
       };
       if (!response.ok) throw new Error(body.error || "Reaction failed.");
@@ -50,12 +54,17 @@ export function ReactionControls({
       setCounts(nextCounts);
       setActive((current) => ({ ...current, [type]: Boolean(body.active) }));
       onUpdate?.(nextCounts);
+      const rank = type === "love" ? body.respectedRank : body.roastedRank;
+      setMessage(body.active
+        ? `${type === "love" ? "Respect" : "Roast"} counted${rank ? ` · now #${rank}` : ""}`
+        : `${type === "love" ? "Respect" : "Roast"} removed${rank ? ` · now #${rank}` : ""}`);
       trackDataFast("reaction_updated", {
         listing_id: listingId,
         reaction_type: type,
         action: body.active ? "added" : "removed",
       });
     } catch (error) {
+      setHasError(true);
       setMessage(error instanceof Error ? error.message : "Try again.");
     } finally {
       setBusy(null);
@@ -88,7 +97,7 @@ export function ReactionControls({
           <strong>{formatCount(counts.laugh)}</strong>
         </button>
       </div>
-      {message ? <span className="reaction-error" role="status">{message}</span> : null}
+      {message ? <span className={`reaction-feedback ${hasError ? "is-error" : ""}`} role="status">{message}</span> : null}
     </div>
   );
 }

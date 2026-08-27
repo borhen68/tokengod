@@ -1,10 +1,10 @@
 import "server-only";
 
-import { randomUUID } from "node:crypto";
 import type Stripe from "stripe";
 
 import { ApiError } from "@/lib/api";
 import { getDatabase } from "@/lib/db";
+import { materializeEntry } from "@/lib/entry-materializer";
 
 type PaymentResult = {
   kind: "entry" | "boost";
@@ -59,72 +59,49 @@ export async function finalizeCheckoutSession(
         throw new ApiError("Checkout amount does not match this submission.", 400);
       }
 
-      const used = await tx.execute({
-        sql: "select nonce from verification_claims where nonce in (?, ?) limit 1",
-        args: [String(pending.token_nonce), String(pending.revenue_nonce)],
-      });
-      if (used.rows.length) {
-        throw new ApiError("These verification receipts were already claimed.", 409);
-      }
-
-      await tx.execute({
-        sql: `insert into users (
-              id, x_handle, x_user_id, display_name, avatar_url, created_at, updated_at
-              ) values (?, ?, ?, ?, ?, ?, ?)`,
-        args: [
-          pendingId,
-          String(pending.x_handle),
-          `submitted:${pendingId}`,
-          pending.founder_name ? String(pending.founder_name) : `@${String(pending.x_handle)}`,
-          pending.founder_avatar_url ? String(pending.founder_avatar_url) : null,
-          now,
-          now,
-        ],
-      });
-      await tx.execute({
-        sql: "insert into verification_claims (nonce, user_id, kind, used_at) values (?, ?, 'tokens', ?), (?, ?, 'revenue', ?)",
-        args: [
-          String(pending.token_nonce),
-          pendingId,
-          now,
-          String(pending.revenue_nonce),
-          pendingId,
-          now,
-        ],
-      });
-
-      const listingId = randomUUID();
-      await tx.execute({
-        sql: `insert into listings (
-                id, owner_user_id, product_name, product_url, product_description,
-                product_logo_url, products_json,
-                tokens_spent_usd, revenue_usd, efficiency_score, model_provider,
-                ai_spend_verification, revenue_provider,
-                verification_period_start, verification_period_end, verified_at,
-                created_at, updated_at, bid_cents, stripe_checkout_session_id
-              ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        args: [
-          listingId,
-          pendingId,
-          String(pending.product_name),
-          String(pending.product_url),
-          String(pending.product_description),
-          pending.product_logo_url ? String(pending.product_logo_url) : null,
-          pending.products_json ? String(pending.products_json) : null,
-          Number(pending.tokens_spent_usd),
-          Number(pending.revenue_usd),
-          Number(pending.efficiency_score),
-          String(pending.model_provider),
-          pending.ai_spend_verification === "self_reported" ? "self_reported" : "api",
-          pending.revenue_provider ? String(pending.revenue_provider) : "stripe",
-          Number(pending.verification_period_start),
-          Number(pending.verification_period_end),
-          now,
-          now,
-          now,
-          Number(pending.bid_cents),
-          session.id,
-        ],
+      const storedProducts = pending.products_json
+        ? JSON.parse(String(pending.products_json)) as Array<{
+          name: string;
+          url: string;
+          description: string;
+          logoUrl?: string | null;
+        }>
+        : [{
+          name: String(pending.product_name),
+          url: String(pending.product_url),
+          description: String(pending.product_description),
+          logoUrl: pending.product_logo_url ? String(pending.product_logo_url) : null,
+        }];
+      const listingId = await materializeEntry(tx, {
+        submissionId: pendingId,
+        xHandle: String(pending.x_handle),
+        founderName: pending.founder_name
+          ? String(pending.founder_name)
+          : `@${String(pending.x_handle)}`,
+        founderAvatarUrl: pending.founder_avatar_url
+          ? String(pending.founder_avatar_url)
+          : null,
+        products: storedProducts.map((product) => ({
+          name: product.name,
+          url: product.url,
+          description: product.description,
+          logoUrl: product.logoUrl || null,
+        })),
+        tokensSpentUsd: Number(pending.tokens_spent_usd),
+        revenueUsd: Number(pending.revenue_usd),
+        efficiencyScore: Number(pending.efficiency_score),
+        modelProvider: String(pending.model_provider) === "openai" ? "openai" : "anthropic",
+        aiSpendVerification: pending.ai_spend_verification === "self_reported" ? "self_reported" : "api",
+        revenueProvider: pending.revenue_provider ? String(pending.revenue_provider) : "stripe",
+        verificationPeriodStart: Number(pending.verification_period_start),
+        verificationPeriodEnd: Number(pending.verification_period_end),
+        tokenNonce: String(pending.token_nonce),
+        revenueNonce: String(pending.revenue_nonce),
+      }, {
+        legacyBidCents: Number(pending.bid_cents),
+        fundedCents: Number(pending.bid_cents),
+        checkoutSessionId: session.id,
+        entrySource: "paid",
       });
       await tx.execute({
         sql: "update pending_submissions set status = 'completed', listing_id = ? where id = ?",
@@ -153,8 +130,8 @@ export async function finalizeCheckoutSession(
     }
 
     const updated = await tx.execute({
-      sql: "update listings set bid_cents = bid_cents + ?, updated_at = ? where id = ?",
-      args: [amountCents, now, listingId],
+      sql: "update listings set bid_cents = bid_cents + ?, funded_cents = funded_cents + ?, updated_at = ? where id = ?",
+      args: [amountCents, amountCents, now, listingId],
     });
     if (updated.rowsAffected !== 1) {
       throw new ApiError("That build is no longer in the tank.", 404);

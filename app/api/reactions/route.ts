@@ -21,6 +21,8 @@ export async function POST(request: Request) {
     let active = false;
     let loveCount = 0;
     let laughCount = 0;
+    let respectedRank = 1;
+    let roastedRank = 1;
 
     try {
       await tx.execute({
@@ -77,13 +79,29 @@ export async function POST(request: Request) {
       });
       loveCount = Number(counts.rows[0]?.love_count ?? 0);
       laughCount = Number(counts.rows[0]?.laugh_count ?? 0);
+      const ranks = await tx.execute({
+        sql: `with scores as (
+                select l.id,
+                       coalesce(sum(case when r.type = 'love' then 1 else 0 end), 0) as loves,
+                       coalesce(sum(case when r.type = 'laugh' then 1 else 0 end), 0) as laughs
+                from listings l
+                left join reactions r on r.listing_id = l.id
+                group by l.id
+              )
+              select
+                (select count(*) + 1 from scores where loves > ?) as respected_rank,
+                (select count(*) + 1 from scores where laughs > ?) as roasted_rank`,
+        args: [loveCount, laughCount],
+      });
+      respectedRank = Number(ranks.rows[0]?.respected_rank ?? 1);
+      roastedRank = Number(ranks.rows[0]?.roasted_rank ?? 1);
       await tx.commit();
     } catch (error) {
       await tx.rollback();
       throw error;
     }
 
-    return Response.json({ active, loveCount, laughCount });
+    return Response.json({ active, loveCount, laughCount, respectedRank, roastedRank });
   } catch (error) {
     return apiErrorResponse(error);
   }

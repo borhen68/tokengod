@@ -62,7 +62,7 @@ export function renderStatCard(
 
           <div style={{ display: "flex", flexDirection: "column", marginTop: 52 }}>
             <div style={{ display: "flex", color: "#8da6b8", fontSize: 24, marginBottom: 9 }}>
-              {listing.isAnonymous ? "Anonymous builder" : `@${listing.xHandle}`} {apiVerified ? "burned" : "reports spending"}
+              {listing.isAnonymous ? "Private founder" : `@${listing.xHandle}`} {apiVerified ? "burned" : "reports spending"}
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
               <span style={{ color: "#f5fbff", fontSize: 84, lineHeight: 1, fontWeight: 850, letterSpacing: -5 }}>

@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { EntryModal } from "@/components/entry-modal";
 import { HeroEntry } from "@/components/hero-entry";
 import { Leaderboard } from "@/components/leaderboard";
 import { PublicTrafficBadge } from "@/components/public-traffic-badge";
@@ -17,6 +18,7 @@ import {
   getViewerReactions,
   sortListings,
 } from "@/lib/data";
+import { getLaunchOffer } from "@/lib/launch-offer";
 
 import styles from "./home.module.css";
 
@@ -28,17 +30,20 @@ export default async function HomePage({
     bid?: string | string[];
     boost?: string | string[];
     error?: string | string[];
+    free?: string | string[];
     payment?: string | string[];
   }>;
 }) {
-  const [listings, viewer, query] = await Promise.all([
+  const [listings, viewer, query, launchOffer] = await Promise.all([
     getLeaderboardListings(),
     getViewer(),
     searchParams,
+    getLaunchOffer(),
   ]);
   const enter = Array.isArray(query.enter) ? query.enter[0] : query.enter;
   const bid = Array.isArray(query.bid) ? query.bid[0] : query.bid;
   const boost = Array.isArray(query.boost) ? query.boost[0] : query.boost;
+  const free = Array.isArray(query.free) ? query.free[0] : query.free;
   const payment = Array.isArray(query.payment) ? query.payment[0] : query.payment;
   const queryError = Array.isArray(query.error) ? query.error[0] : query.error;
   const initialError = queryError
@@ -50,7 +55,8 @@ export default async function HomePage({
     ...sortListings(listings, "respected").slice(0, 50),
     ...sortListings(listings, "roasted").slice(0, 50),
   ].map((listing) => listing.id);
-  const reactions = await getViewerReactions([...new Set(visibleListingIds)]);
+  const uniqueListingIds = [...new Set(visibleListingIds)];
+  const reactions = await getViewerReactions(uniqueListingIds);
   const deepestBurn = Math.max(0, ...listings.map((listing) => listing.tokensSpentUsd));
   const topBidCents = Math.max(
     200,
@@ -85,6 +91,8 @@ export default async function HomePage({
                 paymentsReady={paymentsReady}
                 initialBidCents={entryBidCents}
                 takeFirstCents={takeFirstCents}
+                launchOffer={launchOffer}
+                defaultLaunchFree={free === "1"}
                 defaultOpen={enter === "1" || (!boost && Boolean(initialError))}
                 initialError={initialError}
               />
@@ -96,6 +104,21 @@ export default async function HomePage({
             </div>
           </div>
         </div>
+        {launchOffer.remaining > 0 ? (
+          <EntryModal
+            viewer={viewer}
+            configurationReady={configurationReady}
+            paymentsReady={paymentsReady}
+            initialBidCents={300}
+            launchOffer={launchOffer}
+            preferLaunchFree
+            className={styles.launchToast}
+          >
+            <span>{launchOffer.remaining}</span>
+            <strong>free {launchOffer.remaining === 1 ? "spot" : "spots"} left</strong>
+            <ArrowRight size={14} aria-hidden="true" />
+          </EntryModal>
+        ) : null}
       </section>
 
       <div className="section-shell">

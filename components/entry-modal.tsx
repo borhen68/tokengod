@@ -14,6 +14,7 @@ import { createPortal } from "react-dom";
 
 import { SubmitFlow } from "@/components/submit-flow";
 import { trackDataFast } from "@/lib/datafast";
+import type { LaunchOffer } from "@/lib/launch-offer";
 import type { Viewer } from "@/lib/types";
 
 const focusableSelector =
@@ -28,6 +29,8 @@ export function EntryModal({
   configurationReady,
   paymentsReady,
   initialBidCents = 300,
+  launchOffer,
+  preferLaunchFree = false,
   defaultOpen = false,
   initialError,
   className,
@@ -37,6 +40,8 @@ export function EntryModal({
   configurationReady: boolean;
   paymentsReady: boolean;
   initialBidCents?: number;
+  launchOffer: LaunchOffer;
+  preferLaunchFree?: boolean;
   defaultOpen?: boolean;
   initialError?: string;
   className?: string;
@@ -113,7 +118,7 @@ export function EntryModal({
         onKeyDown={keepFocusInside}
       >
         <div className="entry-dialog-bar">
-          <span><Waves size={15} /> TOKEN GOD · $3 ONCE</span>
+          <span><Waves size={15} /> TOKEN GOD · {preferLaunchFree && launchOffer.remaining > 0 ? `${launchOffer.remaining} FREE PASSES LEFT` : "$3 ONCE"}</span>
           <strong id="entry-dialog-title">Build your public proof</strong>
           <button ref={closeRef} type="button" onClick={closeModal} aria-label="Close entry form">
             <X size={18} />
@@ -125,6 +130,8 @@ export function EntryModal({
             configurationReady={configurationReady}
             paymentsReady={paymentsReady}
             initialBidCents={initialBidCents}
+            launchOffer={launchOffer}
+            preferLaunchFree={preferLaunchFree}
             initialError={initialError}
             variant="modal"
           />

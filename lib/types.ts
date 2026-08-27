@@ -6,6 +6,7 @@ export type ModelProvider = "anthropic" | "openai" | "other";
 export type ReactionType = "love" | "laugh";
 export type AiSpendVerification = "api" | "self_reported";
 export type RevenueVerification = RevenueProvider | "self_reported";
+export type EntrySource = "paid" | "launch_free" | "seed";
 
 export type ListingProduct = {
   name: string;
@@ -36,9 +37,18 @@ export type LeaderboardListing = {
   verificationPeriodStart: string;
   verificationPeriodEnd: string;
   isPaidEntry: boolean;
+  entrySource: EntrySource;
   bidCents: number;
   loveCount: number;
   laughCount: number;
+  weeklyLoveCount: number;
+  weeklyLaughCount: number;
+  weeklyBattleWins: number;
+  visitCount: number;
+  weeklyVisitCount: number;
+  efficiencyRank: number;
+  efficiencyPercentile: number;
+  listingCount: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -51,6 +61,7 @@ export type Viewer = {
 };
 
 export type ReactionState = Record<string, Partial<Record<ReactionType, boolean>>>;
+export type BattleVoteState = Record<string, string>;
 
 export type VerificationReceiptPayload = {
   version: 1;

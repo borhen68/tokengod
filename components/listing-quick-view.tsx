@@ -21,8 +21,9 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
+import { TrackedProductLink } from "@/components/tracked-product-link";
 import { trackDataFast } from "@/lib/datafast";
-import { formatEfficiency, formatMoney, safeExternalUrl } from "@/lib/format";
+import { formatEfficiency, formatMoney, formatOrdinal } from "@/lib/format";
 import { hasFounderReportedNumbers, listingProofLabel, revenueProofLabel } from "@/lib/proof";
 import { getReportingPeriodDefinition } from "@/lib/reporting-period";
 import { getSocialCacheKey } from "@/lib/social-share";
@@ -172,8 +173,13 @@ export function ListingQuickView({
         <div className="listing-quick-scores">
           <div><span><Flame size={13} /> AI burn</span><strong>{formatMoney(listing.tokensSpentUsd, true)}</strong><small>{listing.aiSpendVerification === "api" ? "API verified" : "founder reported"} · {periodLabel}</small></div>
           <div><span>Revenue</span><strong>{formatMoney(listing.revenueUsd, true)}</strong><small>{revenueProofLabel(listing)} · {periodLabel}</small></div>
-          <div><span>Made per $1</span><strong>{formatEfficiency(listing.efficiencyScore)}</strong><small>efficiency score</small></div>
+          <div><span>Made per $1</span><strong>{formatEfficiency(listing.efficiencyScore)}</strong><small>#{listing.efficiencyRank}/{listing.listingCount} · {formatOrdinal(listing.efficiencyPercentile)} percentile</small></div>
           <div><span><Droplets size={13} /> Verdict</span><strong>{listing.loveCount} ❤️ · {listing.laughCount} 😂</strong><small>live reactions</small></div>
+        </div>
+
+        <div className="listing-quick-impact">
+          <span><strong>{listing.visitCount.toLocaleString()}</strong> product visits sent</span>
+          <span><strong>{listing.weeklyVisitCount.toLocaleString()}</strong> visits this week</span>
         </div>
 
         <section className="listing-quick-sites">
@@ -183,10 +189,11 @@ export function ListingQuickView({
           </header>
           <div>
             {listing.products.map((product, index) => (
-              <a
-                href={safeExternalUrl(product.url)}
-                target="_blank"
-                rel="noopener noreferrer"
+              <TrackedProductLink
+                listingId={listing.id}
+                productName={product.name}
+                productUrl={product.url}
+                source="quick_view"
                 key={`${product.url}-${index}`}
               >
                 <span
@@ -202,7 +209,7 @@ export function ListingQuickView({
                   {product.description ? <p>{product.description}</p> : null}
                 </div>
                 <b>Visit <ArrowUpRight size={14} /></b>
-              </a>
+              </TrackedProductLink>
             ))}
           </div>
         </section>

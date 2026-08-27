@@ -25,6 +25,7 @@ import { FormEvent, useMemo, useRef, useState, type CSSProperties } from "react"
 
 import { trackDataFast } from "@/lib/datafast";
 import { formatEfficiency, formatMoney } from "@/lib/format";
+import type { LaunchOffer } from "@/lib/launch-offer";
 import { RevenueProviderIcon } from "@/components/revenue-provider-icon";
 import {
   defaultReportingPeriod,
@@ -113,6 +114,8 @@ export function SubmitFlow({
   configurationReady,
   paymentsReady,
   initialBidCents = 300,
+  launchOffer,
+  preferLaunchFree = false,
   initialError,
   variant = "page",
 }: {
@@ -120,6 +123,8 @@ export function SubmitFlow({
   configurationReady: boolean;
   paymentsReady: boolean;
   initialBidCents?: number;
+  launchOffer: LaunchOffer;
+  preferLaunchFree?: boolean;
   initialError?: string;
   variant?: "page" | "modal";
 }) {
@@ -164,7 +169,8 @@ export function SubmitFlow({
   );
   const extraSiteCount = Math.max(0, sites.length - 3);
   const siteFeeCents = extraSiteCount * 100;
-  const checkoutTotalCents = bidCents + siteFeeCents;
+  const launchEligible = preferLaunchFree && launchOffer.remaining > 0 && bidCents === 300 && sites.length <= 3;
+  const checkoutTotalCents = launchEligible ? 0 : bidCents + siteFeeCents;
   const periodDefinition = getReportingPeriodDefinition(reportingPeriod);
   const subscriptionMonthLimit = getSubscriptionMonthLimit(reportingPeriod);
   const subscriptionMonthOptions = Array.from(
@@ -428,7 +434,7 @@ export function SubmitFlow({
 
     setBusy("publish");
     setError("");
-    trackDataFast("entry_checkout_started", {
+    trackDataFast(launchEligible ? "launch_free_claim_started" : "entry_checkout_started", {
       site_count: sites.length,
       entry_cents: bidCents,
       site_fee_cents: siteFeeCents,
@@ -450,8 +456,15 @@ export function SubmitFlow({
         tokenReceipt: aiResult.receipt,
         revenueReceipt: revenueResult.receipt,
         bidCents,
+        claimLaunchFree: launchEligible,
       });
       if (result.listingId) {
+        if (launchEligible) {
+          trackDataFast("launch_free_profile_published", {
+            listing_id: result.listingId,
+            remaining_before_claim: launchOffer.remaining,
+          });
+        }
         router.push(`/listing/${result.listingId}`);
         return;
       }
@@ -480,16 +493,16 @@ export function SubmitFlow({
               <span><ShieldCheck size={13} /> Credentials never stored</span>
             </div>
           </div>
-          <div className="submit-modal-ticket" aria-label="$3 one-time entry">
-            <span>ONE-TIME ENTRY</span>
-            <strong>$3</strong>
-            <small>No subscription</small>
+          <div className={`submit-modal-ticket ${launchEligible ? "is-launch-free" : ""}`} aria-label={launchEligible ? `${launchOffer.remaining} free launch passes left` : "$3 minimum one-time entry"}>
+            <span>{launchEligible ? "FOUNDING FIVE" : "ONE-TIME ENTRY"}</span>
+            <strong>{launchEligible ? "$0" : "$3+"}</strong>
+            <small>{launchEligible ? `${launchOffer.remaining} passes left` : "No subscription"}</small>
           </div>
         </div>
       ) : (
         <div className="submit-intro">
           <div>
-            <span className="eyebrow">$3 ONE-TIME ENTRY</span>
+            <span className="eyebrow">{preferLaunchFree && launchOffer.remaining > 0 ? `FOUNDING FIVE · ${launchOffer.remaining} FREE LEFT` : "$3 ONE-TIME ENTRY"}</span>
             <h1>Show the spend.<br /><span>Prove the return.</span></h1>
             <p>One founder profile, up to three products, and a shareable card. Your bid ranks Top Funded; reactions rank Respect and Roast.</p>
           </div>
@@ -506,7 +519,7 @@ export function SubmitFlow({
           Add the Turso and receipt-secret environment variables from <code>.env.example</code> to enable verification.
         </div>
       ) : null}
-      {!paymentsReady ? (
+      {!paymentsReady && !launchEligible ? (
         <div className="setup-notice" role="status">
           <strong>Checkout setup needed</strong>
           Add the TokenGod Stripe secret key from <code>.env.example</code> to accept entry and extra-site payments.
@@ -626,7 +639,7 @@ export function SubmitFlow({
               ) : (
                 <div className="anonymous-profile-preview">
                   <span aria-hidden="true"><EyeOff size={17} /></span>
-                  <div><strong>Anonymous builder</strong><small>Your product, rank, and proof stay public.</small></div>
+                  <div><strong>Private founder</strong><small>Your product, rank, and proof stay public.</small></div>
                   <ShieldCheck size={16} />
                 </div>
               )}
@@ -838,12 +851,12 @@ export function SubmitFlow({
           <section className={`submit-card ${sitesAreReady ? "has-content" : ""} ${variant === "modal" ? activeStep === 4 ? "is-active-step" : "is-hidden-step" : ""}`}>
             <header>
               <StepState done={sitesAreReady} number="4" />
-              <div><span>YOUR BUILDS + ENTRY</span><h2>Add up to 3 sites for the same $3</h2></div>
+              <div><span>YOUR BUILDS + ENTRY</span><h2>{preferLaunchFree && launchOffer.remaining > 0 ? "Add up to 3 sites with your free pass" : "Add up to 3 sites for the same $3"}</h2></div>
             </header>
             <form className="step-body product-form" onSubmit={publish}>
               <div className="site-bundle-note">
                 <Layers3 size={16} />
-                <span><strong>{Math.min(sites.length, 3)}/3 included{extraSiteCount ? ` · ${extraSiteCount} paid extra` : ""}</strong> · Site 4 and beyond add $1 each. Every site shares one founder score and one leaderboard position.</span>
+                <span><strong>{Math.min(sites.length, 3)}/3 included{extraSiteCount ? ` · ${extraSiteCount} paid extra` : ""}</strong> · {preferLaunchFree && launchOffer.remaining > 0 ? "A launch pass covers up to 3 sites. Site 4 switches this submission to the paid entry." : "Site 4 and beyond add $1 each."} Every site shares one founder score.</span>
               </div>
 
               <div className="product-sites">
@@ -923,16 +936,23 @@ export function SubmitFlow({
 
               <div className="entry-price-panel">
                 <div className="entry-price-head">
-                  <div><strong>Leaderboard bid</strong><small>$3 minimum · founder profile + up to 3 products</small></div>
-                  <b>{wholeDollar(bidCents)}</b>
+                  <div><strong>{launchEligible ? "Founding Five launch pass" : "Leaderboard entry"}</strong><small>{launchEligible ? `${launchOffer.remaining} free passes remain at this moment` : "$3 minimum · founder profile + up to 3 products"}</small></div>
+                  <b>{wholeDollar(checkoutTotalCents)}</b>
                 </div>
-                <div className="entry-price-rule">
-                  <span>Base entry</span>
-                  <strong>$3</strong>
-                </div>
-                {bidCents > 300 ? (
+                {launchEligible ? (
+                  <div className="entry-price-rule is-launch-credit">
+                    <span>Base founder profile</span>
+                    <strong><s>$3</s> FREE</strong>
+                  </div>
+                ) : (
                   <div className="entry-price-rule">
-                    <span>Top Funded bid</span>
+                    <span>Base entry</span>
+                    <strong>$3</strong>
+                  </div>
+                )}
+                {!launchEligible && bidCents > 300 ? (
+                  <div className="entry-price-rule">
+                    <span>Top Funded backing</span>
                     <strong>+{wholeDollar(bidCents - 300)}</strong>
                   </div>
                 ) : null}
@@ -943,16 +963,16 @@ export function SubmitFlow({
                   </div>
                 ) : null}
                 <div className="entry-price-total">
-                  <span>Total due today</span>
+                  <span>{launchEligible ? "Due today" : "Total due today"}</span>
                   <b>{wholeDollar(checkoutTotalCents)}</b>
                 </div>
-                <p><ShieldCheck size={13} /> Your bid sets Top Funded rank. Love and Roast rankings are controlled only by public reactions.</p>
+                <p><ShieldCheck size={13} /> {launchEligible ? "Your profile starts with $0 paid backing. Proof, weekly votes, and reactions earn every non-paid rank." : "Paid backing sets Top Funded rank only. It never buys Respect, Roast, or efficiency standing."}</p>
               </div>
 
-              <button className="button button-primary publish-button" type="submit" disabled={!identityIsReady || !sitesAreReady || !revenueResult || !aiResult || !configurationReady || !paymentsReady || busy !== null}>
-                {busy === "publish" ? <><LoaderCircle className="spinner" size={17} /> Opening secure checkout</> : <>Pay {wholeDollar(checkoutTotalCents)} &amp; publish {sites.length} site{sites.length === 1 ? "" : "s"} <ArrowRight size={17} /></>}
+              <button className="button button-primary publish-button" type="submit" disabled={!identityIsReady || !sitesAreReady || !revenueResult || !aiResult || !configurationReady || (!launchEligible && !paymentsReady) || busy !== null}>
+                {busy === "publish" ? <><LoaderCircle className="spinner" size={17} /> {launchEligible ? "Claiming launch pass" : "Opening secure checkout"}</> : <>{launchEligible ? "Publish free" : `Pay ${wholeDollar(checkoutTotalCents)} & publish`} {sites.length} site{sites.length === 1 ? "" : "s"} <ArrowRight size={17} /></>}
               </button>
-              <p className="publish-note"><ShieldCheck size={14} /> One-time Stripe payment. Revenue is verified; the AI-spend badge always shows its source.</p>
+              <p className="publish-note"><ShieldCheck size={14} /> {launchEligible ? "No card required. The pass is claimed only after every proof check succeeds." : "One-time Stripe payment."} Revenue and AI-spend proof labels stay visible.</p>
             </form>
           </section>
         </div>
@@ -962,7 +982,7 @@ export function SubmitFlow({
           <div className="preview-card">
             <div className="preview-brand"><Waves size={18} /><strong>TOKEN<span>GOD</span></strong><small>{previewProofLabel}</small></div>
             <div className="preview-copy">
-              <span>{anonymousEntry ? "Anonymous builder" : `@${normalizedXHandle || "yourhandle"}`} burned</span>
+              <span>{anonymousEntry ? "Private founder" : `@${normalizedXHandle || "yourhandle"}`} burned</span>
               <strong className={aiResult ? "" : "is-pending"}>{aiResult ? formatMoney(aiResult.amountUsd) : "WAITING"}</strong>
               <div className="preview-product-line">
                 <span

@@ -14,12 +14,14 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { BoostModal } from "@/components/boost-modal";
-import { ReactionControls } from "@/components/reaction-controls";
 import { ListingQuickView } from "@/components/listing-quick-view";
+import { ReactionControls } from "@/components/reaction-controls";
+import { TrackedProductLink } from "@/components/tracked-product-link";
 import { trackDataFast } from "@/lib/datafast";
 import {
   formatEfficiency,
   formatMoney,
+  formatOrdinal,
   safeExternalUrl,
 } from "@/lib/format";
 import {
@@ -66,7 +68,7 @@ export function Leaderboard({
   initialBoostId?: string;
   paymentCancelled?: boolean;
 }) {
-  const [board, setBoard] = useState<Board>("funded");
+  const [board, setBoard] = useState<Board>("respected");
   const [listings, setListings] = useState(initialListings);
 
   const ordered = useMemo(
@@ -96,19 +98,8 @@ export function Leaderboard({
         <aside className="board-sidebar">
           <span className="eyebrow">LEADERBOARD</span>
           <h2>Public verdict</h2>
-          <p>One founder pool, three transparent ways to rank it.</p>
+          <p>Proof and public judgment lead. Paid exposure stays in its own board.</p>
           <div className="board-switch" role="tablist" aria-label="Leaderboard view">
-          <button
-            className={board === "funded" ? "is-active" : ""}
-            type="button"
-            role="tab"
-            aria-selected={board === "funded"}
-            onClick={() => chooseBoard("funded")}
-          >
-            <span aria-hidden="true">⚡</span>
-            Top Funded
-            <small>by bid</small>
-          </button>
           <button
             className={board === "respected" ? "is-active" : ""}
             type="button"
@@ -130,6 +121,18 @@ export function Leaderboard({
             <span aria-hidden="true">😂</span>
             Most Roasted
             <small>by laugh votes</small>
+          </button>
+          <span className="board-switch-divider">PAID EXPOSURE · SEPARATE RANK</span>
+          <button
+            className={`${board === "funded" ? "is-active" : ""} is-funded-board`}
+            type="button"
+            role="tab"
+            aria-selected={board === "funded"}
+            onClick={() => chooseBoard("funded")}
+          >
+            <span aria-hidden="true">⚡</span>
+            Top Funded
+            <small>cash backing only</small>
           </button>
           </div>
           <div className="board-proof-key">
@@ -192,19 +195,15 @@ export function Leaderboard({
                 <div className="founder-builds" title={buildNames} aria-label={`Builds: ${buildNames}`}>
                   <span className="founder-builds-label">BUILT</span>
                   {listing.products.slice(0, 3).map((product, productIndex) => (
-                    <a
+                    <TrackedProductLink
                       className="founder-build-chip"
-                      href={safeExternalUrl(product.url)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`Visit ${product.name}`}
+                      listingId={listing.id}
+                      productName={product.name}
+                      productUrl={product.url}
+                      source="leaderboard"
+                      ariaLabel={`Visit ${product.name}`}
                       title={`Visit ${product.name}`}
                       key={`${product.url}-${productIndex}`}
-                      onClick={() => trackDataFast("product_visit_clicked", {
-                        listing_id: listing.id,
-                        product_name: product.name,
-                        source: "leaderboard",
-                      })}
                     >
                       <i
                         className="founder-build-icon"
@@ -220,7 +219,7 @@ export function Leaderboard({
                       <span className="founder-build-visit">
                         Visit <ExternalLink size={11} aria-hidden="true" />
                       </span>
-                    </a>
+                    </TrackedProductLink>
                   ))}
                   {listing.products.length > 3 ? (
                     <ListingQuickView
@@ -236,6 +235,8 @@ export function Leaderboard({
                   <span className="row-metric is-burn"><small><Flame size={11} /> AI burn · {getReportingPeriodDefinition(listing.reportingPeriod).shortLabel}</small><strong>{formatMoney(listing.tokensSpentUsd, true)}</strong></span>
                   <span className="row-metric is-revenue"><small>Revenue</small><strong>{formatMoney(listing.revenueUsd, true)}</strong></span>
                   <span className="row-metric is-return"><small>Return</small><strong>{formatEfficiency(listing.efficiencyScore)} / $1</strong></span>
+                  <span className="row-metric is-standing"><small><Trophy size={11} /> Efficiency</small><strong>#{listing.efficiencyRank}/{listing.listingCount}</strong></span>
+                  <span className="row-metric is-visits"><small><Eye size={11} /> Product visits</small><strong>{listing.visitCount.toLocaleString()}</strong></span>
                   <span className={`row-proof ${hasFounderReportedNumbers(listing) ? "is-reported" : ""}`}>
                     {hasFounderReportedNumbers(listing) ? <AtSign size={11} /> : <BadgeCheck size={11} fill="currentColor" />}
                     {listingProofLabel(listing)} · {getReportingPeriodDefinition(listing.reportingPeriod).shortLabel}
@@ -243,11 +244,19 @@ export function Leaderboard({
                 </div>
               </div>
               <div className="row-ranking">
-                <div className="bid-cell" data-label="Bid">
-                  <span>TOTAL BID</span>
-                  <strong>{wholeDollar(listing.bidCents)}</strong>
-                  <small>{rank === 1 && board === "funded" ? "current #1" : "one-time total"}</small>
-                </div>
+                {board === "funded" ? (
+                  <div className="bid-cell" data-label="Paid backing">
+                    <span>PAID BACKING</span>
+                    <strong>{wholeDollar(listing.bidCents)}</strong>
+                    <small>{listing.bidCents === 0 ? "no paid backing yet" : rank === 1 ? "current paid #1" : "cash total only"}</small>
+                  </div>
+                ) : (
+                  <div className="evidence-cell">
+                    <span>{board === "respected" ? "PUBLIC LOVE" : "PUBLIC ROASTS"}</span>
+                    <strong>{board === "respected" ? listing.loveCount : listing.laughCount}</strong>
+                    <small>{board === "respected" ? `${listing.weeklyVisitCount} visits this week` : `${formatOrdinal(listing.efficiencyPercentile)} ROI percentile`}</small>
+                  </div>
+                )}
                 <div className="verdict-cell">
                   {board === "funded" ? (
                     <BoostModal

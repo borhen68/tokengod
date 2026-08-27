@@ -1,4 +1,4 @@
-export const ANONYMOUS_FOUNDER_NAME = "Anonymous builder";
+export const ANONYMOUS_FOUNDER_NAME = "Private founder";
 
 const ANONYMOUS_HANDLE_PREFIX = "anonymous:";
 

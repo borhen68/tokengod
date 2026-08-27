@@ -15,6 +15,8 @@ import {
 } from "@/lib/anonymous-founder";
 import { getDatabase } from "@/lib/db";
 import { getDataFastStripeMetadata } from "@/lib/datafast-server";
+import type { MaterializedEntry } from "@/lib/entry-materializer";
+import { finalizeLaunchEntry } from "@/lib/launch-entry";
 import { getPlatformStripe } from "@/lib/platform-stripe";
 import { verifyVerificationReceipt } from "@/lib/verification";
 import { lookupPublicXProfile } from "@/lib/x-profile";
@@ -42,6 +44,7 @@ const entrySchema = z.object({
   tokenReceipt: z.string().min(40),
   revenueReceipt: z.string().min(40),
   bidCents: z.number().int().min(300).max(100_000).multipleOf(100),
+  claimLaunchFree: z.boolean().optional().default(false),
 }).superRefine((value, context) => {
   if (!value.anonymous && !/^[A-Za-z0-9_]{1,15}$/.test(value.xHandle)) {
     context.addIssue({
@@ -56,7 +59,6 @@ export async function POST(request: NextRequest) {
   try {
     assertSameOrigin(request);
     requireSubmissionConfiguration();
-    requirePaymentConfiguration();
     const input = entrySchema.parse(await request.json());
     const tokens = verifyVerificationReceipt(input.tokenReceipt, {
       userId: input.submissionId,
@@ -107,6 +109,10 @@ export async function POST(request: NextRequest) {
       if (String(existing.rows[0].x_handle) !== storedXHandle) {
         throw new ApiError("This checkout was created with a different identity choice. Refresh and verify again.", 409);
       }
+      if (input.claimLaunchFree) {
+        throw new ApiError("This verification already started a paid checkout. Refresh and verify again to claim a launch pass.", 409);
+      }
+      requirePaymentConfiguration();
       const checkout = await getPlatformStripe().checkout.sessions.retrieve(
         String(existing.rows[0].stripe_checkout_session_id),
       );
@@ -117,6 +123,40 @@ export async function POST(request: NextRequest) {
     const founderProfile = input.anonymous
       ? null
       : await lookupPublicXProfile(input.xHandle);
+    const preparedEntry: MaterializedEntry = {
+      submissionId: input.submissionId,
+      xHandle: storedXHandle,
+      founderName: input.anonymous
+        ? ANONYMOUS_FOUNDER_NAME
+        : founderProfile?.name || `@${input.xHandle}`,
+      founderAvatarUrl: input.anonymous ? null : founderProfile?.avatarUrl || null,
+      products,
+      tokensSpentUsd: tokens.amountUsd,
+      revenueUsd: revenue.amountUsd,
+      efficiencyScore: Math.round((revenue.amountUsd / tokens.amountUsd) * 10_000) / 10_000,
+      modelProvider: tokens.provider === "openai" ? "openai" : "anthropic",
+      aiSpendVerification: tokens.verificationMethod,
+      revenueProvider: revenue.provider,
+      verificationPeriodStart: new Date(tokens.periodStart).getTime(),
+      verificationPeriodEnd: new Date(tokens.periodEnd).getTime(),
+      tokenNonce: tokens.nonce,
+      revenueNonce: revenue.nonce,
+    };
+
+    if (input.claimLaunchFree) {
+      if (input.bidCents !== 300 || products.length > 3) {
+        throw new ApiError("Launch passes cover the base profile and up to three products. Remove paid extras to publish free.", 400);
+      }
+      const listingId = await finalizeLaunchEntry(preparedEntry, {
+        anonymous: input.anonymous,
+      });
+      if (!listingId) {
+        throw new ApiError("The final free launch pass was just claimed. Refresh to continue with the $3 entry.", 409);
+      }
+      return Response.json({ listingId, entryKind: "launch_free" });
+    }
+
+    requirePaymentConfiguration();
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
     const dataFastMetadata = getDataFastStripeMetadata(request);
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [{

@@ -4,6 +4,7 @@ import { ArrowRight, Minus, Plus } from "lucide-react";
 import { useState } from "react";
 
 import { EntryModal } from "@/components/entry-modal";
+import type { LaunchOffer } from "@/lib/launch-offer";
 import type { Viewer } from "@/lib/types";
 
 function dollars(cents: number) {
@@ -16,6 +17,8 @@ export function HeroEntry({
   paymentsReady,
   initialBidCents,
   takeFirstCents,
+  launchOffer,
+  defaultLaunchFree = false,
   defaultOpen,
   initialError,
 }: {
@@ -24,6 +27,8 @@ export function HeroEntry({
   paymentsReady: boolean;
   initialBidCents: number;
   takeFirstCents: number;
+  launchOffer: LaunchOffer;
+  defaultLaunchFree?: boolean;
   defaultOpen: boolean;
   initialError?: string;
 }) {
@@ -62,6 +67,8 @@ export function HeroEntry({
           configurationReady={configurationReady}
           paymentsReady={paymentsReady}
           initialBidCents={bidCents}
+          launchOffer={launchOffer}
+          preferLaunchFree={defaultLaunchFree}
           defaultOpen={defaultOpen}
           initialError={initialError}
           className="button button-primary button-large"

@@ -59,11 +59,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <span>Explore</span>
               <Link href="/#leaderboard">Leaderboard</Link>
               <Link href="/#how-it-works">Verification</Link>
-              <Link href="/?enter=1">Enter for $3</Link>
+              <Link href="/?enter=1">Create a profile</Link>
             </div>
             <div className="footer-manifesto">
               <span>THE RULE</span>
-              <p>$3 is the minimum Top Funded bid. Love and Roast are ranked only by public reactions.</p>
+              <p>Paid backing ranks Top Funded only. Proof, efficiency, and public votes control every evidence board.</p>
             </div>
           </div>
           <div className="footer-bottom">

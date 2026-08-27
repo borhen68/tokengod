@@ -9,6 +9,7 @@ import {
   BadgeCheck,
   Download,
   Droplets,
+  Eye,
   Flame,
   Layers3,
   Share2,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { ReactionControls } from "@/components/reaction-controls";
+import { TrackedProductLink } from "@/components/tracked-product-link";
 import {
   getLeaderboardListings,
   getListing,
@@ -28,8 +30,8 @@ import {
 import {
   formatEfficiency,
   formatMoney,
+  formatOrdinal,
   pressureLabel,
-  safeExternalUrl,
   waterPressure,
 } from "@/lib/format";
 import {
@@ -64,7 +66,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: listing.isAnonymous
-      ? `${listing.productName} by an anonymous builder`
+      ? `${listing.productName} by a private founder`
       : `${listing.productName} by @${listing.xHandle}`,
     description,
     alternates: { canonical: pageUrl },
@@ -121,7 +123,7 @@ export default async function ListingPage({ params }: PageProps) {
     : `${getRevenueProvider(listing.revenueVerification).name} revenue verified`;
   const periodDefinition = getReportingPeriodDefinition(listing.reportingPeriod);
   const normalShare = listing.isAnonymous
-    ? `An anonymous builder spent ${formatMoney(listing.tokensSpentUsd)} on AI over ${periodDefinition.label.toLowerCase()} to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; ${revenueDisclosure}. Respect it or roast it 👇`
+    ? `A private founder spent ${formatMoney(listing.tokensSpentUsd)} on AI over ${periodDefinition.label.toLowerCase()} to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; ${revenueDisclosure}. Respect it or roast it 👇`
     : `I spent ${formatMoney(listing.tokensSpentUsd)} on AI over ${periodDefinition.label.toLowerCase()} to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; ${revenueDisclosure}. Respect it or roast it 👇`;
 
   const droppedBoard = respectedRank > 10 ? "Most Respected" : roastedRank > 10 ? "Most Roasted" : null;
@@ -159,7 +161,7 @@ export default async function ListingPage({ params }: PageProps) {
                 ? <span className="listing-owner-private">Identity hidden</span>
                 : <a href={`https://x.com/${listing.xHandle}`} target="_blank" rel="noopener noreferrer">@{listing.xHandle}</a>}
             </div>
-            <a className="visit-listing" href={safeExternalUrl(listing.productUrl)} target="_blank" rel="noopener noreferrer">Visit product <ArrowUpRight size={15} /></a>
+            <TrackedProductLink className="visit-listing" listingId={listing.id} productName={listing.productName} productUrl={listing.productUrl} source="listing">Visit product <ArrowUpRight size={15} /></TrackedProductLink>
           </div>
         </div>
         <div className="listing-rank-stack">
@@ -171,8 +173,14 @@ export default async function ListingPage({ params }: PageProps) {
       <section className="listing-scoreboard">
         <article><span><Flame size={15} /> AI token burn</span><strong>{formatMoney(listing.tokensSpentUsd)}</strong><small>{periodDefinition.label} · {listing.modelProvider} · {listing.aiSpendVerification === "api" ? "API verified" : "founder reported"}</small></article>
         <article><span>Revenue made</span><strong>{formatMoney(listing.revenueUsd)}</strong><small>{periodDefinition.label} · {revenueProofLabel(listing)}</small></article>
-        <article className="efficiency-highlight"><span>Efficiency score</span><strong>{formatEfficiency(listing.efficiencyScore)}</strong><small>made per $1 spent</small></article>
+        <article className="efficiency-highlight"><span>Efficiency score</span><strong>{formatEfficiency(listing.efficiencyScore)}</strong><small>#{listing.efficiencyRank} of {listing.listingCount} · {formatOrdinal(listing.efficiencyPercentile)} percentile</small></article>
         <article className="detail-water"><div className="detail-water-gauge"><i style={{ height: `${pressure}%` }} /></div><div><span><Droplets size={14} /> AI spend waterline</span><strong>{pressure}%</strong><small>{pressureLabel(pressure)}</small></div></article>
+      </section>
+
+      <section className="listing-impact-strip" aria-label="Founder exposure">
+        <div><Eye size={16} /><span><strong>{listing.visitCount.toLocaleString()}</strong> tracked product {listing.visitCount === 1 ? "visit" : "visits"}</span></div>
+        <div><Eye size={16} /><span><strong>{listing.weeklyVisitCount.toLocaleString()}</strong> {listing.weeklyVisitCount === 1 ? "visit" : "visits"} this week</span></div>
+        <p>Private founder or public founder, the product always gets the traffic.</p>
       </section>
 
       {listing.products.length > 1 ? (
@@ -186,11 +194,12 @@ export default async function ListingPage({ params }: PageProps) {
           </header>
           <div className="listing-product-grid">
             {listing.products.map((product, index) => (
-              <a
+              <TrackedProductLink
                 className="listing-product-card"
-                href={safeExternalUrl(product.url)}
-                target="_blank"
-                rel="noopener noreferrer"
+                listingId={listing.id}
+                productName={product.name}
+                productUrl={product.url}
+                source="listing"
                 key={`${product.url}-${index}`}
               >
                 <span
@@ -206,7 +215,7 @@ export default async function ListingPage({ params }: PageProps) {
                   {product.description ? <p>{product.description}</p> : null}
                 </div>
                 <ArrowUpRight size={17} />
-              </a>
+              </TrackedProductLink>
             ))}
           </div>
         </section>

@@ -5,6 +5,7 @@ import { EntryModal } from "@/components/entry-modal";
 import { Logo } from "@/components/logo";
 import { isApplicationConfigured, isPaymentConfigured } from "@/lib/config";
 import { getViewer } from "@/lib/data";
+import { getLaunchOffer } from "@/lib/launch-offer";
 
 function InitialAvatar({ name }: { name: string }) {
   return (
@@ -15,7 +16,7 @@ function InitialAvatar({ name }: { name: string }) {
 }
 
 export async function Header() {
-  const viewer = await getViewer();
+  const [viewer, launchOffer] = await Promise.all([getViewer(), getLaunchOffer()]);
 
   return (
     <header className="site-header">
@@ -44,6 +45,7 @@ export async function Header() {
             viewer={viewer}
             configurationReady={isApplicationConfigured()}
             paymentsReady={isPaymentConfigured()}
+            launchOffer={launchOffer}
             className="button button-primary header-cta"
           >
             Enter for $3
