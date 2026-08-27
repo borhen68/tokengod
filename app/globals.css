@@ -2262,16 +2262,19 @@ a.founder-build-chip:focus-visible {
 .entry-dialog-bar {
   min-height: 62px;
   padding: 0 16px 0 22px;
-  background: #071923;
-  border-bottom-color: rgba(116, 217, 238, .22);
+  color: var(--ink);
+  background: rgba(255, 255, 255, .96);
+  border-bottom-color: var(--line);
 }
-.entry-dialog-bar > span { gap: 8px; color: #b4d1da; font-size: 9px; }
-.entry-dialog-bar > span svg { color: var(--lime); }
-.entry-dialog-bar > strong { color: #f5fbfd; font-size: 13px; }
+.entry-dialog-brand { min-width: 0; display: flex; align-items: center; gap: 13px; }
+.entry-dialog-brand > span { color: var(--muted); font-size: 8px; font-weight: 900; letter-spacing: .1em; }
+.entry-dialog-bar > strong { color: var(--ink); font-size: 13px; }
 .entry-dialog-bar button {
   width: 38px;
   height: 38px;
-  border-color: rgba(255, 255, 255, .14);
+  color: var(--ink);
+  background: #eef2f1;
+  border-color: var(--line);
   border-radius: 11px;
 }
 .entry-dialog-scroll { scrollbar-color: #afbec2 transparent; }
@@ -2482,8 +2485,8 @@ a.founder-build-chip:focus-visible {
 
 @media (max-width: 540px) {
   .entry-dialog-bar { min-height: 56px; grid-template-columns: 1fr auto; padding-inline: 13px; }
-  .entry-dialog-bar > span { display: none; }
-  .entry-dialog-bar > strong { justify-self: start; }
+  .entry-dialog-brand > span,
+  .entry-dialog-bar > strong { display: none; }
   .submit-page-modal { padding-inline: 11px; }
   .submit-modal-intro { min-height: 0; grid-template-columns: 1fr 86px; gap: 10px; padding: 14px 5px 15px; }
   .submit-modal-copy > span { font-size: 7px; }

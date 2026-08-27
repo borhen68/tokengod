@@ -1,6 +1,6 @@
 "use client";
 
-import { Waves, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   type KeyboardEvent,
@@ -13,6 +13,7 @@ import {
 import { createPortal } from "react-dom";
 
 import { SubmitFlow } from "@/components/submit-flow";
+import { Logo } from "@/components/logo";
 import { trackDataFast } from "@/lib/datafast";
 import type { LaunchOffer } from "@/lib/launch-offer";
 import type { Viewer } from "@/lib/types";
@@ -118,7 +119,10 @@ export function EntryModal({
         onKeyDown={keepFocusInside}
       >
         <div className="entry-dialog-bar">
-          <span><Waves size={15} /> TOKEN GOD · {preferLaunchFree && launchOffer.remaining > 0 ? `${launchOffer.remaining} FREE PASSES LEFT` : "$3 ONCE"}</span>
+          <div className="entry-dialog-brand">
+            <Logo />
+            <span>{preferLaunchFree && launchOffer.remaining > 0 ? `${launchOffer.remaining} FREE PASSES LEFT` : "$3 ONCE"}</span>
+          </div>
           <strong id="entry-dialog-title">Build your public proof</strong>
           <button ref={closeRef} type="button" onClick={closeModal} aria-label="Close entry form">
             <X size={18} />
