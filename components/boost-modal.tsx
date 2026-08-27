@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   type KeyboardEvent,
@@ -23,7 +24,7 @@ import { trackDataFast } from "@/lib/datafast";
 import type { LeaderboardListing } from "@/lib/types";
 
 const focusableSelector =
-  'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  'button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
 function subscribeToClient() {
   return () => undefined;
@@ -237,7 +238,7 @@ export function BoostModal({
         </button>
         <div className="boost-rule">
           <ShieldCheck size={15} />
-          <span><strong>Top Funded only.</strong> This never changes Love, Roast, revenue, or efficiency.</span>
+          <span><strong>Top Funded only.</strong> This never changes Love, Roast, revenue, or efficiency. Payments are final and non-refundable. <Link href="/terms" target="_blank" rel="noopener noreferrer">Terms &amp; Privacy</Link></span>
         </div>
       </div>
     </div>

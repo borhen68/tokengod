@@ -65,6 +65,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <Link href="/#leaderboard">Leaderboard</Link>
               <Link href="/#how-it-works">Verification</Link>
               <Link href="/?enter=1">Create a profile</Link>
+              <Link href="/terms">Terms &amp; privacy</Link>
             </div>
             <div className="footer-manifesto">
               <span>THE RULE</span>

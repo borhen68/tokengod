@@ -1061,7 +1061,13 @@ export function SubmitFlow({
               <button className="button button-primary publish-button" type="submit" disabled={!identityIsReady || !sitesAreReady || !revenueResult || !aiResult || !configurationReady || (!launchEligible && !paymentsReady) || busy !== null}>
                 {busy === "publish" ? <><LoaderCircle className="spinner" size={17} /> {launchEligible ? "Claiming launch pass" : "Opening secure checkout"}</> : <>{launchEligible ? "Publish free" : `Pay ${wholeDollar(checkoutTotalCents)} & publish`} {sites.length} site{sites.length === 1 ? "" : "s"} <ArrowRight size={17} /></>}
               </button>
-              <p className="publish-note"><ShieldCheck size={14} /> {launchEligible ? "No card required. The pass is claimed only after every proof check succeeds." : "One-time Stripe payment."} Revenue and AI-spend proof labels stay visible.</p>
+              <p className="publish-note">
+                <ShieldCheck size={14} />
+                <span>
+                  {launchEligible ? "No card required. " : "One-time Stripe payment. Paid entries and extras are non-refundable. "}
+                  By publishing, you agree to the <Link href="/terms" target="_blank" rel="noopener noreferrer">Terms &amp; Privacy</Link>.
+                </span>
+              </p>
             </form>
           </section>
         </div>

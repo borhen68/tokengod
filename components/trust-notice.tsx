@@ -46,7 +46,7 @@ export function TrustNotice() {
       <span className="trust-notice-icon" aria-hidden="true"><ShieldCheck size={20} /></span>
       <div>
         <strong>Verification keys are never stored.</strong>
-        <p>Used once, then discarded. Only your public profile and verified totals remain.</p>
+        <p>Used once, then discarded. We retain the result—not the credential.</p>
       </div>
       <button type="button" onClick={dismiss}>Got it</button>
     </aside>
