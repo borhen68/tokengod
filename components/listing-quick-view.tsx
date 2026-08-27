@@ -25,6 +25,7 @@ import { TrackedProductLink } from "@/components/tracked-product-link";
 import { trackDataFast } from "@/lib/datafast";
 import { formatEfficiency, formatMoney, formatOrdinal } from "@/lib/format";
 import { hasFounderReportedNumbers, listingProofLabel, revenueProofLabel } from "@/lib/proof";
+import { projectOutcomeLabel } from "@/lib/project-outcomes";
 import { getReportingPeriodDefinition } from "@/lib/reporting-period";
 import { getSocialCacheKey } from "@/lib/social-share";
 import type { LeaderboardListing } from "@/lib/types";
@@ -105,7 +106,9 @@ export function ListingQuickView({
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://tokengod.lol").replace(/\/$/, "");
   const listingUrl = `${siteUrl}/listing/${listing.id}?v=${encodeURIComponent(getSocialCacheKey(listing.updatedAt))}`;
   const periodLabel = getReportingPeriodDefinition(listing.reportingPeriod).label.toLowerCase();
-  const shareText = `${listing.founderName} burned ${formatMoney(listing.tokensSpentUsd)} in AI tokens over ${periodLabel}, built ${buildLabel}, and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. Respect it or roast it 👇`;
+  const shareText = listing.projectOutcome === "shut_down"
+    ? `${listing.founderName} shut down ${buildLabel} after burning ${formatMoney(listing.tokensSpentUsd)} in AI tokens. It made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1.${listing.founderLesson ? ` Lesson: ${listing.founderLesson}` : ""} Honest numbers beat survivorship bias 👇`
+    : `${listing.founderName} burned ${formatMoney(listing.tokensSpentUsd)} in AI tokens over ${periodLabel}, built ${buildLabel}, and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. Respect it or roast it 👇`;
   const shareHref = `https://x.com/intent/post?${new URLSearchParams({ text: shareText, url: listingUrl })}`;
   const modal = open ? (
     <div
@@ -143,7 +146,7 @@ export function ListingQuickView({
               : !founderImage ? listing.founderName.slice(0, 1).toUpperCase() : null}
           </div>
           <div className="listing-quick-title">
-            <span>FOUNDER PROFILE · {listing.products.length} {listing.products.length === 1 ? "BUILD" : "BUILDS"}</span>
+            <span>FOUNDER PROFILE · {listing.projectOutcome !== "revenue" ? projectOutcomeLabel(listing.projectOutcome).toUpperCase() : `${listing.products.length} ${listing.products.length === 1 ? "BUILD" : "BUILDS"}`}</span>
             <h2 id={`listing-quick-title-${listing.id}`}>{listing.founderName}</h2>
             {listing.isAnonymous ? (
               <span className="listing-quick-anonymous">Identity hidden · {listing.products.length} {listing.products.length === 1 ? "build" : "builds"}</span>
@@ -181,6 +184,10 @@ export function ListingQuickView({
           <span><strong>{listing.visitCount.toLocaleString()}</strong> product visits sent</span>
           <span><strong>{listing.weeklyVisitCount.toLocaleString()}</strong> visits this week</span>
         </div>
+
+        {listing.projectOutcome === "shut_down" && listing.founderLesson ? (
+          <div className="listing-quick-lesson"><strong>What I learned</strong><span>“{listing.founderLesson}”</span></div>
+        ) : null}
 
         <section className="listing-quick-sites">
           <header>

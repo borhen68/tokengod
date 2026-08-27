@@ -90,6 +90,10 @@ export async function finalizeCheckoutSession(
         tokensSpentUsd: Number(pending.tokens_spent_usd),
         revenueUsd: Number(pending.revenue_usd),
         efficiencyScore: Number(pending.efficiency_score),
+        projectOutcome: pending.project_outcome === "pre_revenue" || pending.project_outcome === "shut_down"
+          ? pending.project_outcome
+          : "revenue",
+        founderLesson: String(pending.founder_lesson || ""),
         modelProvider: String(pending.model_provider) === "openai" ? "openai" : "anthropic",
         aiSpendVerification: pending.ai_spend_verification === "self_reported" ? "self_reported" : "api",
         revenueProvider: pending.revenue_provider ? String(pending.revenue_provider) : "stripe",

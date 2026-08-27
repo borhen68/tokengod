@@ -6,6 +6,7 @@ import {
 } from "@/lib/anonymous-founder";
 import { getDatabase } from "@/lib/db";
 import { proofStrength } from "@/lib/proof";
+import { normalizeProjectOutcome } from "@/lib/project-outcomes";
 import { getReactionViewerId } from "@/lib/reaction-identity";
 import { inferReportingPeriod } from "@/lib/reporting-period";
 import { isRevenueProvider } from "@/lib/revenue-providers";
@@ -41,6 +42,8 @@ function listingSelect() {
     l.tokens_spent_usd,
     l.revenue_usd,
     l.efficiency_score,
+    l.project_outcome,
+    l.founder_lesson,
     l.model_provider,
     l.ai_spend_verification,
     l.revenue_verification,
@@ -128,6 +131,8 @@ function normalizeRow(row: LeaderboardRow): LeaderboardListing {
     tokensSpentUsd: Number(row.tokens_spent_usd),
     revenueUsd: Number(row.revenue_usd),
     efficiencyScore: Number(row.efficiency_score),
+    projectOutcome: normalizeProjectOutcome(row.project_outcome),
+    founderLesson: String(row.founder_lesson || ""),
     modelProvider: String(row.model_provider) as LeaderboardListing["modelProvider"],
     aiSpendVerification: row.ai_spend_verification === "self_reported" ? "self_reported" : "api",
     revenueVerification: row.revenue_verification === "self_reported"

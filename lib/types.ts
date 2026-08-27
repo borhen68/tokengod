@@ -1,5 +1,6 @@
 import type { ReportingPeriod } from "@/lib/reporting-period";
 import type { RevenueProvider } from "@/lib/revenue-providers";
+import type { ProjectOutcome } from "@/lib/project-outcomes";
 
 export type Board = "funded" | "respected" | "roasted";
 export type ModelProvider = "anthropic" | "openai" | "other";
@@ -30,6 +31,8 @@ export type LeaderboardListing = {
   tokensSpentUsd: number;
   revenueUsd: number;
   efficiencyScore: number;
+  projectOutcome: ProjectOutcome;
+  founderLesson: string;
   modelProvider: ModelProvider;
   aiSpendVerification: AiSpendVerification;
   revenueVerification: RevenueVerification;

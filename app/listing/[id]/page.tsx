@@ -43,6 +43,7 @@ import {
 } from "@/lib/proof";
 import { getReportingPeriodDefinition } from "@/lib/reporting-period";
 import { getRevenueProvider } from "@/lib/revenue-providers";
+import { projectOutcomeLabel } from "@/lib/project-outcomes";
 import { getSocialCacheKey } from "@/lib/social-share";
 
 type PageProps = { params: Promise<{ id: string }> };
@@ -64,7 +65,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? "founder-reported"
     : `${getRevenueProvider(listing.revenueVerification).name}-verified`;
   const periodLabel = getReportingPeriodDefinition(listing.reportingPeriod).label.toLowerCase();
-  const description = `${listing.founderName} ${spendProof} ${formatMoney(listing.tokensSpentUsd)} in AI spend over ${periodLabel}, built ${buildLabel}, and made ${formatMoney(listing.revenueUsd)} in ${revenueProof} revenue.`;
+  const description = listing.projectOutcome === "shut_down"
+    ? `${listing.founderName} shut down ${buildLabel} after ${spendProof} ${formatMoney(listing.tokensSpentUsd)} in AI spend and ${formatMoney(listing.revenueUsd)} in ${revenueProof} revenue.`
+    : `${listing.founderName} ${spendProof} ${formatMoney(listing.tokensSpentUsd)} in AI spend over ${periodLabel}, built ${buildLabel}, and made ${formatMoney(listing.revenueUsd)} in ${revenueProof} revenue.`;
 
   return {
     title: listing.isAnonymous
@@ -124,9 +127,11 @@ export default async function ListingPage({ params }: PageProps) {
     ? "founder-reported revenue"
     : `${getRevenueProvider(listing.revenueVerification).name} revenue verified`;
   const periodDefinition = getReportingPeriodDefinition(listing.reportingPeriod);
-  const normalShare = listing.isAnonymous
-    ? `A private founder spent ${formatMoney(listing.tokensSpentUsd)} on AI over ${periodDefinition.label.toLowerCase()} to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; ${revenueDisclosure}. Respect it or roast it 👇`
-    : `I spent ${formatMoney(listing.tokensSpentUsd)} on AI over ${periodDefinition.label.toLowerCase()} to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; ${revenueDisclosure}. Respect it or roast it 👇`;
+  const normalShare = listing.projectOutcome === "shut_down"
+    ? `${listing.isAnonymous ? "A private founder" : "I"} shut down ${buildLabel} after spending ${formatMoney(listing.tokensSpentUsd)} on AI. It made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1.${listing.founderLesson ? ` Lesson: ${listing.founderLesson}` : ""} Honest numbers beat survivorship bias 👇`
+    : listing.isAnonymous
+      ? `A private founder spent ${formatMoney(listing.tokensSpentUsd)} on AI over ${periodDefinition.label.toLowerCase()} to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; ${revenueDisclosure}. Respect it or roast it 👇`
+      : `I spent ${formatMoney(listing.tokensSpentUsd)} on AI over ${periodDefinition.label.toLowerCase()} to build ${buildLabel} and made ${formatMoney(listing.revenueUsd)} — ${formatEfficiency(listing.efficiencyScore)} back per $1. ${spendDisclosure}; ${revenueDisclosure}. Respect it or roast it 👇`;
 
   const droppedBoard = respectedRank > 10 ? "Most Respected" : roastedRank > 10 ? "Most Roasted" : null;
   const overtaker = droppedBoard === "Most Respected" ? respected[9] : droppedBoard === "Most Roasted" ? roasted[9] : null;
@@ -144,10 +149,13 @@ export default async function ListingPage({ params }: PageProps) {
         <div className="listing-main-copy">
           <div className={`verified-line ${hasFounderReportedNumbers(listing) ? "is-reported" : ""}`}>
             {hasFounderReportedNumbers(listing) ? <AtSign size={16} /> : <BadgeCheck size={16} fill="currentColor" />}
-            {listingProofLabel(listing).toUpperCase()} · {periodDefinition.label.toUpperCase()}
+            {listingProofLabel(listing).toUpperCase()} · {periodDefinition.label.toUpperCase()}{listing.projectOutcome !== "revenue" ? ` · ${projectOutcomeLabel(listing.projectOutcome).toUpperCase()}` : ""}
           </div>
           <h1>{listing.productName}</h1>
           <p>{listing.productDescription}</p>
+          {listing.projectOutcome === "shut_down" && listing.founderLesson ? (
+            <p className="listing-founder-lesson"><strong>What I learned</strong> “{listing.founderLesson}”</p>
+          ) : null}
           <div className="listing-owner">
             <span
               className={ownerImage ? "has-product-logo" : ""}
@@ -174,7 +182,7 @@ export default async function ListingPage({ params }: PageProps) {
 
       <section className="listing-scoreboard">
         <article><span><Flame size={15} /> AI token burn</span><strong>{formatMoney(listing.tokensSpentUsd)}</strong><small>{periodDefinition.label} · {listing.modelProvider} · {listing.aiSpendVerification === "api" ? "API verified" : "founder reported"}</small></article>
-        <article><span>Revenue made</span><strong>{formatMoney(listing.revenueUsd)}</strong><small>{periodDefinition.label} · {revenueProofLabel(listing)}</small></article>
+        <article><span>{listing.projectOutcome === "shut_down" ? "Revenue before shutdown" : listing.projectOutcome === "pre_revenue" ? "Revenue so far" : "Revenue made"}</span><strong>{formatMoney(listing.revenueUsd)}</strong><small>{periodDefinition.label} · {revenueProofLabel(listing)}</small></article>
         <article className="efficiency-highlight"><span>Efficiency score</span><strong>{formatEfficiency(listing.efficiencyScore)}</strong><small>#{listing.efficiencyRank} of {listing.listingCount} · {formatOrdinal(listing.efficiencyPercentile)} percentile</small></article>
         <article className="detail-water"><div className="detail-water-gauge"><i style={{ height: `${pressure}%` }} /></div><div><span><Droplets size={14} /> AI spend waterline</span><strong>{pressure}%</strong><small>{pressureLabel(pressure)}</small></div></article>
       </section>

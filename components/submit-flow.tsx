@@ -26,6 +26,10 @@ import { FormEvent, useMemo, useRef, useState, type CSSProperties } from "react"
 import { trackDataFast } from "@/lib/datafast";
 import { formatEfficiency, formatMoney } from "@/lib/format";
 import type { LaunchOffer } from "@/lib/launch-offer";
+import {
+  projectOutcomeOptions,
+  type ProjectOutcome,
+} from "@/lib/project-outcomes";
 import { RevenueProviderIcon } from "@/components/revenue-provider-icon";
 import {
   defaultReportingPeriod,
@@ -137,6 +141,8 @@ export function SubmitFlow({
   const [revenueProvider, setRevenueProvider] = useState<RevenueProvider>("stripe");
   const [spendVerification, setSpendVerification] = useState<SpendVerification>("self_reported");
   const [anonymousEntry, setAnonymousEntry] = useState(false);
+  const [projectOutcome, setProjectOutcome] = useState<ProjectOutcome>("revenue");
+  const [founderLesson, setFounderLesson] = useState("");
   const [activeStep, setActiveStep] = useState<1 | 2 | 3 | 4>(1);
   const [xHandle, setXHandle] = useState(viewer?.xHandle ?? "");
   const [xProfile, setXProfile] = useState<XProfileResult | null>(() =>
@@ -266,6 +272,10 @@ export function SubmitFlow({
         period: reportingPeriod,
       });
       setRevenueResult(result);
+      setProjectOutcome((current) => {
+        if (current === "shut_down") return current;
+        return result.amountUsd === 0 ? "pre_revenue" : "revenue";
+      });
       setRevenueKey("");
       if (variant === "modal") setActiveStep(3);
       trackDataFast("revenue_verified", {
@@ -441,6 +451,7 @@ export function SubmitFlow({
       total_cents: checkoutTotalCents,
       spend_source: aiResult.verificationMethod,
       identity_visibility: anonymousEntry ? "anonymous" : "public",
+      project_outcome: projectOutcome,
     });
     try {
       const result = await postJson<{ url?: string; listingId?: string }>("/api/checkout/entry", {
@@ -455,6 +466,8 @@ export function SubmitFlow({
         })),
         tokenReceipt: aiResult.receipt,
         revenueReceipt: revenueResult.receipt,
+        projectOutcome,
+        founderLesson,
         bidCents,
         claimLaunchFree: launchEligible,
       });
@@ -851,9 +864,47 @@ export function SubmitFlow({
           <section className={`submit-card ${sitesAreReady ? "has-content" : ""} ${variant === "modal" ? activeStep === 4 ? "is-active-step" : "is-hidden-step" : ""}`}>
             <header>
               <StepState done={sitesAreReady} number="4" />
-              <div><span>YOUR BUILDS + ENTRY</span><h2>{preferLaunchFree && launchOffer.remaining > 0 ? "Add up to 3 sites with your free pass" : "Add up to 3 sites for the same $3"}</h2></div>
+              <div><span>OUTCOME + BUILDS</span><h2>{preferLaunchFree && launchOffer.remaining > 0 ? "Add up to 3 sites with your free pass" : "Add up to 3 sites for the same $3"}</h2></div>
             </header>
             <form className="step-body product-form" onSubmit={publish}>
+              <fieldset className="project-outcome-fieldset">
+                <legend>Where did this project end up? <small>Founder selected · revenue stays verified</small></legend>
+                <div className="project-outcome-switch" role="group" aria-label="Project outcome">
+                  {projectOutcomeOptions.map((outcome) => {
+                    const verifiedRevenue = revenueResult?.amountUsd;
+                    const conflictsWithRevenue = verifiedRevenue !== undefined
+                      && ((outcome.id === "revenue" && verifiedRevenue === 0)
+                        || (outcome.id === "pre_revenue" && verifiedRevenue > 0));
+                    return (
+                      <button
+                        className={projectOutcome === outcome.id ? "is-active" : ""}
+                        type="button"
+                        aria-pressed={projectOutcome === outcome.id}
+                        disabled={conflictsWithRevenue}
+                        onClick={() => setProjectOutcome(outcome.id)}
+                        key={outcome.id}
+                      >
+                        <strong>{outcome.label}</strong>
+                        <span>{outcome.description}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {projectOutcome === "shut_down" ? (
+                  <label className="founder-lesson-field">
+                    <span>What did you learn? · optional</span>
+                    <textarea
+                      value={founderLesson}
+                      onChange={(event) => setFounderLesson(event.target.value)}
+                      placeholder="One useful sentence for the next builder."
+                      maxLength={180}
+                      rows={2}
+                    />
+                    <small>{founderLesson.length}/180</small>
+                  </label>
+                ) : null}
+              </fieldset>
+
               <div className="site-bundle-note">
                 <Layers3 size={16} />
                 <span><strong>{Math.min(sites.length, 3)}/3 included{extraSiteCount ? ` · ${extraSiteCount} paid extra` : ""}</strong> · {preferLaunchFree && launchOffer.remaining > 0 ? "A launch pass covers up to 3 sites. Site 4 switches this submission to the paid entry." : "Site 4 and beyond add $1 each."} Every site shares one founder score.</span>
@@ -995,8 +1046,8 @@ export function SubmitFlow({
                 <p>in AI tokens to build <b>{primarySite.name || "your product"}</b>{sites.length > 1 ? <em> +{sites.length - 1} more</em> : null}</p>
               </div>
             </div>
-            <div className="preview-outcome">
-              <span>REVENUE MADE</span><strong className={revenueResult ? "" : "is-pending"}>{revenueResult ? formatMoney(revenueResult.amountUsd) : "WAITING"}</strong>
+            <div className={`preview-outcome ${projectOutcome === "shut_down" ? "is-failure" : ""}`}>
+              <span>{projectOutcome === "shut_down" ? "SHUT DOWN · REVENUE" : projectOutcome === "pre_revenue" ? "PRE-REVENUE" : "REVENUE MADE"}</span><strong className={revenueResult ? "" : "is-pending"}>{revenueResult ? formatMoney(revenueResult.amountUsd) : "WAITING"}</strong>
             </div>
             <div className="preview-ratio"><span>{efficiency !== null ? formatEfficiency(efficiency) : "—"}</span><small>{efficiency !== null ? "made per $1 spent" : "efficiency after verification"}</small></div>
             <div className="preview-water"><i /><i /><i /></div>

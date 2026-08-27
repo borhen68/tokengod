@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import type { Transaction } from "@libsql/client";
 
 import { ApiError } from "@/lib/api";
+import type { ProjectOutcome } from "@/lib/project-outcomes";
 import type { AiSpendVerification, ModelProvider } from "@/lib/types";
 
 export type MaterializedProduct = {
@@ -22,6 +23,8 @@ export type MaterializedEntry = {
   tokensSpentUsd: number;
   revenueUsd: number;
   efficiencyScore: number;
+  projectOutcome: ProjectOutcome;
+  founderLesson: string;
   modelProvider: ModelProvider;
   aiSpendVerification: AiSpendVerification;
   revenueProvider: string;
@@ -84,11 +87,12 @@ export async function materializeEntry(
             id, owner_user_id, product_name, product_url, product_description,
             product_logo_url, products_json,
             tokens_spent_usd, revenue_usd, efficiency_score, model_provider,
+            project_outcome, founder_lesson,
             ai_spend_verification, revenue_provider,
             verification_period_start, verification_period_end, verified_at,
             created_at, updated_at, bid_cents, funded_cents, entry_source,
             stripe_checkout_session_id
-          ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       listingId,
       entry.submissionId,
@@ -101,6 +105,8 @@ export async function materializeEntry(
       entry.revenueUsd,
       entry.efficiencyScore,
       entry.modelProvider,
+      entry.projectOutcome,
+      entry.founderLesson,
       entry.aiSpendVerification,
       entry.revenueProvider,
       entry.verificationPeriodStart,

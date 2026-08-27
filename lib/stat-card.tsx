@@ -24,6 +24,8 @@ export function renderStatCard(
   const apiVerified = listing.aiSpendVerification === "api";
   const reportedNumbers = hasFounderReportedNumbers(listing);
   const periodDefinition = getReportingPeriodDefinition(listing.reportingPeriod);
+  const isFailure = listing.projectOutcome === "shut_down";
+  const lesson = listing.founderLesson.slice(0, 100);
 
   return new ImageResponse(
     (
@@ -62,20 +64,25 @@ export function renderStatCard(
 
           <div style={{ display: "flex", flexDirection: "column", marginTop: 52 }}>
             <div style={{ display: "flex", color: "#8da6b8", fontSize: 24, marginBottom: 9 }}>
-              {listing.isAnonymous ? "Private founder" : `@${listing.xHandle}`} {apiVerified ? "burned" : "reports spending"}
+              {listing.isAnonymous ? "Private founder" : `@${listing.xHandle}`} {isFailure ? "shut this project down after" : apiVerified ? "burned" : "reports spending"}
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
               <span style={{ color: "#f5fbff", fontSize: 84, lineHeight: 1, fontWeight: 850, letterSpacing: -5 }}>
                 {formatMoney(listing.tokensSpentUsd)}
               </span>
-              <span style={{ color: "#ff8d74", fontSize: 22, fontWeight: 700 }}>in AI tokens</span>
+              <span style={{ color: "#ff8d74", fontSize: 22, fontWeight: 700 }}>{isFailure ? "AI tokens burned" : "in AI tokens"}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", marginTop: 17, color: "#a9bdca", fontSize: 24 }}>
               → built&nbsp;<span style={{ color: "#f5fbff", fontWeight: 800 }}>{buildLabel}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", marginTop: 9, color: "#a9bdca", fontSize: 24 }}>
-              → made&nbsp;<span style={{ color: "#bfff5b", fontWeight: 800 }}>{formatMoney(listing.revenueUsd)}</span>
+              → made&nbsp;<span style={{ color: isFailure ? "#ff8d74" : "#bfff5b", fontWeight: 800 }}>{formatMoney(listing.revenueUsd)}</span>{isFailure ? <span>&nbsp;before shutdown</span> : null}
             </div>
+            {isFailure && lesson ? (
+              <div style={{ display: "flex", marginTop: 16, color: "#d7e4e9", fontSize: 18, lineHeight: 1.35 }}>
+                <span style={{ color: "#ff8d74", fontWeight: 800 }}>LESSON&nbsp;·&nbsp;</span>“{lesson}”
+              </div>
+            ) : null}
           </div>
 
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginTop: "auto" }}>
@@ -85,7 +92,7 @@ export function renderStatCard(
               </span>
               <span style={{ color: "#8da6b8", fontSize: 17, marginTop: 7 }}>made per $1 spent</span>
             </div>
-            <div style={{ color: "#678092", display: "flex", fontSize: 15 }}>respect it or roast it · {site}</div>
+            <div style={{ color: isFailure ? "#ff8d74" : "#678092", display: "flex", fontSize: 15 }}>{isFailure ? "HONEST FAILURE · NO SURVIVORSHIP BIAS" : "respect it or roast it"} · {site}</div>
           </div>
         </div>
 

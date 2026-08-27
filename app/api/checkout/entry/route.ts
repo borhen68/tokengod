@@ -18,6 +18,7 @@ import { getDataFastStripeMetadata } from "@/lib/datafast-server";
 import type { MaterializedEntry } from "@/lib/entry-materializer";
 import { finalizeLaunchEntry } from "@/lib/launch-entry";
 import { getPlatformStripe } from "@/lib/platform-stripe";
+import { projectOutcomeIds } from "@/lib/project-outcomes";
 import { verifyVerificationReceipt } from "@/lib/verification";
 import { lookupPublicXProfile } from "@/lib/x-profile";
 
@@ -43,6 +44,8 @@ const entrySchema = z.object({
   products: z.array(productSchema).min(1).max(20),
   tokenReceipt: z.string().min(40),
   revenueReceipt: z.string().min(40),
+  projectOutcome: z.enum(projectOutcomeIds).default("revenue"),
+  founderLesson: z.string().trim().max(180).optional().default(""),
   bidCents: z.number().int().min(300).max(100_000).multipleOf(100),
   claimLaunchFree: z.boolean().optional().default(false),
 }).superRefine((value, context) => {
@@ -74,6 +77,12 @@ export async function POST(request: NextRequest) {
     }
     if (tokens.amountUsd <= 0) {
       throw new ApiError("AI spend must be greater than zero for the selected reporting window.", 400);
+    }
+    if (input.projectOutcome === "revenue" && revenue.amountUsd === 0) {
+      throw new ApiError("Verified revenue is $0. Choose Pre-revenue or Shut down.", 400);
+    }
+    if (input.projectOutcome === "pre_revenue" && revenue.amountUsd > 0) {
+      throw new ApiError("Verified revenue is above $0. Choose Made revenue or Shut down.", 400);
     }
 
     const products = input.products.map((product) => ({
@@ -134,6 +143,8 @@ export async function POST(request: NextRequest) {
       tokensSpentUsd: tokens.amountUsd,
       revenueUsd: revenue.amountUsd,
       efficiencyScore: Math.round((revenue.amountUsd / tokens.amountUsd) * 10_000) / 10_000,
+      projectOutcome: input.projectOutcome,
+      founderLesson: input.founderLesson,
       modelProvider: tokens.provider === "openai" ? "openai" : "anthropic",
       aiSpendVerification: tokens.verificationMethod,
       revenueProvider: revenue.provider,
@@ -199,6 +210,7 @@ export async function POST(request: NextRequest) {
         ai_spend_verification: tokens.verificationMethod,
         revenue_provider: revenue.provider,
         identity_visibility: input.anonymous ? "anonymous" : "public",
+        project_outcome: input.projectOutcome,
         ...dataFastMetadata,
       },
       payment_intent_data: {
@@ -211,6 +223,7 @@ export async function POST(request: NextRequest) {
           ai_spend_verification: tokens.verificationMethod,
           revenue_provider: revenue.provider,
           identity_visibility: input.anonymous ? "anonymous" : "public",
+          project_outcome: input.projectOutcome,
           ...dataFastMetadata,
         },
       },
@@ -232,11 +245,12 @@ export async function POST(request: NextRequest) {
               product_name, product_url, product_description,
               product_logo_url, products_json,
               tokens_spent_usd, revenue_usd, efficiency_score, model_provider,
+              project_outcome, founder_lesson,
               ai_spend_verification, revenue_provider,
               verification_period_start, verification_period_end, token_nonce,
               revenue_nonce, bid_cents, site_fee_cents, stripe_checkout_session_id, status,
               listing_id, created_at, expires_at
-            ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', null, ?, ?)`,
+            ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', null, ?, ?)`,
       args: [
         input.submissionId,
         storedXHandle,
@@ -253,6 +267,8 @@ export async function POST(request: NextRequest) {
         revenue.amountUsd,
         Math.round((revenue.amountUsd / tokens.amountUsd) * 10_000) / 10_000,
         tokens.provider,
+        input.projectOutcome,
+        input.founderLesson,
         tokens.verificationMethod,
         revenue.provider,
         new Date(tokens.periodStart).getTime(),

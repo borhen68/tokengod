@@ -32,6 +32,7 @@ import {
   listingProofLabel,
   proofStrength,
 } from "@/lib/proof";
+import { projectOutcomeLabel } from "@/lib/project-outcomes";
 import { getReportingPeriodDefinition } from "@/lib/reporting-period";
 import type {
   Board,
@@ -204,8 +205,10 @@ export function Leaderboard({
                   >
                     {listing.founderName}
                   </ListingQuickView>
-                  <span className="founder-meta">
-                    {listing.isAnonymous ? "Identity hidden" : `@${listing.xHandle}`} · {listing.products.length} {listing.products.length === 1 ? "build" : "builds"}
+                  <span className={`founder-meta ${listing.projectOutcome !== "revenue" ? "has-outcome" : ""}`}>
+                    {listing.isAnonymous ? "Identity hidden" : `@${listing.xHandle}`} · {listing.projectOutcome !== "revenue" ? (
+                      <b className={`founder-outcome is-${listing.projectOutcome}`}>{projectOutcomeLabel(listing.projectOutcome)}</b>
+                    ) : `${listing.products.length} ${listing.products.length === 1 ? "build" : "builds"}`}
                   </span>
                 </div>
                 <div className="founder-builds" title={buildNames} aria-label={`Builds: ${buildNames}`}>
