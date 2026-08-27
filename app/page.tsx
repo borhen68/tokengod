@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { AiProviderLogo } from "@/components/ai-provider-logo";
 import { EntryModal } from "@/components/entry-modal";
 import { HeroEntry } from "@/components/hero-entry";
 import { Leaderboard } from "@/components/leaderboard";
@@ -101,6 +102,27 @@ export default async function HomePage({
               <span><Check size={14} /><b>Up to 3 products</b></span>
               <span><Check size={14} /><b>Bid + public reactions</b></span>
             </div>
+            <div className={styles.providerSupport} aria-label="Supported AI spend sources">
+              <span className={styles.providerLabel}>AI SPEND FROM</span>
+              <div className={styles.providerList}>
+                <span className={styles.provider}>
+                  <i className={styles.providerIcon} data-provider="anthropic"><AiProviderLogo provider="anthropic" /></i>
+                  <b>Anthropic</b>
+                </span>
+                <span className={styles.provider}>
+                  <i className={styles.providerIcon} data-provider="openai"><AiProviderLogo provider="openai" /></i>
+                  <b>OpenAI</b>
+                </span>
+                <span className={styles.provider}>
+                  <i className={styles.providerIcon} data-provider="cursor"><AiProviderLogo provider="cursor" /></i>
+                  <b>Cursor</b>
+                </span>
+                <span className={styles.provider}>
+                  <i className={styles.providerIcon} data-provider="openrouter"><AiProviderLogo provider="openrouter" /></i>
+                  <b>OpenRouter</b>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
         {launchOffer.remaining > 0 ? (
@@ -143,7 +165,7 @@ export default async function HomePage({
             <span className="step-number">01</span>
             <div className="step-icon"><KeyRound size={24} /></div>
             <h3>Choose your proof</h3>
-            <p>Verify organization API spend, or report a personal Claude/ChatGPT plan. Every row shows which path you used.</p>
+            <p>Verify organization API spend, or report a Claude, ChatGPT, or Cursor membership—or exact OpenRouter usage. Every row shows which path you used.</p>
             <small>API verified or founder reported</small>
           </article>
           <article>

@@ -194,6 +194,67 @@
 
 .heroRules :global(svg) { color: var(--blue-dark); }
 
+.providerSupport {
+  width: fit-content;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 14px auto 0;
+}
+
+.providerLabel {
+  color: #7b8b92;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  white-space: nowrap;
+}
+
+.providerList {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.provider {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #475b64;
+}
+
+.provider b {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+
+.providerIcon {
+  width: 27px;
+  height: 27px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--ink);
+  background: rgba(255, 255, 255, .9);
+  border: 1px solid rgba(7, 20, 30, .11);
+  border-radius: 9px;
+  box-shadow: 0 4px 12px rgba(7, 20, 30, .055);
+}
+
+.providerIcon[data-provider="anthropic"] { color: #c55d3c; background: #fff1e9; }
+.providerIcon[data-provider="openai"] { color: #16836b; background: #e9f7f2; }
+.providerIcon[data-provider="cursor"] { color: #172027; background: #f0ffd9; }
+.providerIcon[data-provider="openrouter"] { color: #5965cf; background: #edf0ff; }
+
+.providerIcon :global(svg) {
+  width: 15px;
+  height: 15px;
+}
+
 @media (max-width: 760px) {
   .hero { min-height: 420px; padding-top: 28px; padding-bottom: 28px; }
 
@@ -214,7 +275,7 @@
   .hero {
     min-height: 430px;
     padding-top: 22px;
-    padding-bottom: 26px;
+    padding-bottom: 82px;
   }
 
   .heroKicker { margin-bottom: 20px; }
@@ -257,6 +318,18 @@
     margin-top: 18px;
     font-size: 9px;
   }
+
+  .providerSupport {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .providerList { gap: 9px; }
+  .provider { gap: 4px; }
+  .provider b { font-size: 8.5px; }
+  .providerIcon { width: 25px; height: 25px; border-radius: 8px; }
+  .providerIcon :global(svg) { width: 14px; height: 14px; }
 }
 
 .launchToast {
@@ -317,9 +390,12 @@
 
 @media (max-width: 540px) {
   .launchToast {
-    bottom: 68px;
-    left: 12px;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
   }
+
+  .launchToast:hover { transform: translateX(-50%) translateY(-2px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
