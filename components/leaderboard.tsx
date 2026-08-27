@@ -9,6 +9,8 @@ import {
   Flame,
   Heart,
   Laugh,
+  Skull,
+  TrendingUp,
   Trophy,
   UserRound,
   Zap,
@@ -90,6 +92,18 @@ export function Leaderboard({
     [board, listings],
   );
   const visibleListings = ordered.slice(0, 50);
+  const topMoneyMaker = useMemo(
+    () => [...listings]
+      .filter((listing) => listing.projectOutcome === "revenue" && listing.revenueUsd > 0)
+      .sort((a, b) => b.revenueUsd - a.revenueUsd || b.efficiencyScore - a.efficiencyScore)[0],
+    [listings],
+  );
+  const topHonestFailure = useMemo(
+    () => [...listings]
+      .filter((listing) => listing.projectOutcome === "shut_down")
+      .sort((a, b) => b.loveCount - a.loveCount || b.tokensSpentUsd - a.tokensSpentUsd)[0],
+    [listings],
+  );
 
   function chooseBoard(nextBoard: Board) {
     setBoard(nextBoard);
@@ -148,6 +162,36 @@ export function Leaderboard({
           <div className="board-proof-key">
             <span><BadgeCheck size={13} fill="currentColor" /> API + Stripe verified</span>
             <span className="is-reported"><AtSign size={13} /> Founder reported</span>
+          </div>
+          <div className="board-outcome-spotlight" aria-label="Real project outcomes">
+            <span className="board-outcome-heading">REAL OUTCOMES</span>
+            {topMoneyMaker ? (
+              <ListingQuickView
+                listing={topMoneyMaker}
+                className="board-outcome-item is-winner"
+                ariaLabel={`Open top money-maker ${topMoneyMaker.productName}`}
+              >
+                <TrendingUp size={16} aria-hidden="true" />
+                <span><small>Top money-maker</small><strong>{topMoneyMaker.productName}</strong></span>
+                <em>{formatMoney(topMoneyMaker.revenueUsd, true)}</em>
+              </ListingQuickView>
+            ) : null}
+            {topHonestFailure ? (
+              <ListingQuickView
+                listing={topHonestFailure}
+                className="board-outcome-item is-failure"
+                ariaLabel={`Open honest failure ${topHonestFailure.productName}`}
+              >
+                <Skull size={16} aria-hidden="true" />
+                <span><small>Honest failure</small><strong>{topHonestFailure.productName}</strong></span>
+                <em>{formatEfficiency(topHonestFailure.efficiencyScore)}/$1</em>
+              </ListingQuickView>
+            ) : (
+              <Link className="board-outcome-item is-failure is-empty" href="/?enter=1">
+                <Skull size={16} aria-hidden="true" />
+                <span><small>Honest failure</small><strong>Be the first to share</strong></span>
+              </Link>
+            )}
           </div>
         </aside>
 

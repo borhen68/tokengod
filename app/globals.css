@@ -3422,3 +3422,62 @@ a.founder-build-chip:focus-visible {
   .project-outcome-switch button span { display: none; }
   .listing-quick-lesson { align-items: flex-start; flex-direction: column; gap: 3px; padding-inline: 16px; }
 }
+
+/* Desktop outcome spotlight uses the empty rail without extending leaderboard rows. */
+.board-outcome-spotlight {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.board-outcome-heading {
+  display: block;
+  margin-bottom: 4px;
+  color: #8b979c;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: .13em;
+}
+.board-outcome-item {
+  width: 100%;
+  min-height: 51px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 0;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.board-outcome-item + .board-outcome-item { border-top: 1px dashed rgba(7, 20, 30, .13); }
+.board-outcome-item > svg { color: #3f8d2d; }
+.board-outcome-item.is-failure > svg { color: var(--coral); }
+.board-outcome-item > span { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.board-outcome-item small {
+  color: #89969d;
+  font-size: 6.5px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.board-outcome-item strong {
+  overflow: hidden;
+  font-size: 10.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.board-outcome-item em {
+  color: #3f8d2d;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
+}
+.board-outcome-item.is-failure em { color: #bd4939; }
+.board-outcome-item:hover strong,
+.board-outcome-item:focus-visible strong { color: var(--blue-dark); text-decoration: underline; }
+
+@media (max-width: 980px) {
+  .board-outcome-spotlight { display: none; }
+}
