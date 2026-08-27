@@ -57,7 +57,6 @@ export default async function HomePage({
   ].map((listing) => listing.id);
   const uniqueListingIds = [...new Set(visibleListingIds)];
   const reactions = await getViewerReactions(uniqueListingIds);
-  const deepestBurn = Math.max(0, ...listings.map((listing) => listing.tokensSpentUsd));
   const topBidCents = Math.max(
     200,
     ...listings.map((listing) => listing.bidCents),
@@ -76,7 +75,7 @@ export default async function HomePage({
   return (
     <main>
       <section className={styles.heroStage}>
-        <TokenWaterfall spend={deepestBurn} />
+        <TokenWaterfall />
         <div className={`${styles.hero} section-shell`}>
           <div className={styles.heroCopy}>
             <div className={`${styles.heroKicker} hero-kicker`}>

@@ -2277,39 +2277,20 @@ a.founder-build-chip:focus-visible {
 .entry-dialog-scroll { scrollbar-color: #afbec2 transparent; }
 .submit-page-modal { padding: 0 24px 34px; }
 .submit-modal-intro {
-  min-height: 140px;
+  min-height: 124px;
   position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  margin: 18px 0 12px;
+  margin: 8px 0 12px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 150px;
   align-items: center;
   gap: 26px;
-  padding: 20px 24px;
-  color: #f4fbfd;
-  background:
-    radial-gradient(circle at 76% 25%, rgba(56, 207, 239, .2), transparent 28%),
-    linear-gradient(130deg, #071923, #0a3545);
-  border: 1px solid rgba(111, 216, 238, .26);
-  border-radius: 17px;
-  box-shadow: 0 14px 36px rgba(7, 25, 35, .13);
-}
-.submit-modal-intro::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  opacity: .18;
-  background-image:
-    linear-gradient(rgba(162, 229, 242, .15) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(162, 229, 242, .12) 1px, transparent 1px);
-  background-size: 34px 34px;
-  mask-image: linear-gradient(90deg, #000, transparent 75%);
+  padding: 17px 20px 18px;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
 }
 .submit-modal-copy { min-width: 0; }
 .submit-modal-copy > span {
-  color: #8ee3f2;
+  color: var(--blue-dark);
   font-size: 8px;
   font-weight: 900;
   letter-spacing: .14em;
@@ -2320,11 +2301,12 @@ a.founder-build-chip:focus-visible {
   line-height: .98;
   letter-spacing: -.055em;
 }
-.submit-modal-copy h1 em { color: var(--blue); font-style: normal; }
-.submit-modal-copy > p { margin: 0; color: #b7cad2; font-size: 12px; line-height: 1.45; }
+.submit-modal-copy h1 span { color: var(--coral); }
+.submit-modal-copy h1 em { color: #559816; font-style: normal; }
+.submit-modal-copy > p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
 .submit-modal-copy > div { margin-top: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 7px 15px; }
-.submit-modal-copy > div span { display: inline-flex; align-items: center; gap: 5px; color: #d5e6eb; font-size: 8px; font-weight: 750; }
-.submit-modal-copy > div svg { color: var(--lime); }
+.submit-modal-copy > div span { display: inline-flex; align-items: center; gap: 5px; color: #526168; font-size: 8px; font-weight: 750; }
+.submit-modal-copy > div svg { color: #559816; }
 .submit-modal-ticket {
   min-height: 96px;
   position: relative;
@@ -2490,7 +2472,7 @@ a.founder-build-chip:focus-visible {
   .entry-dialog { width: 100%; height: 100svh; border: 0; border-radius: 0; }
   .entry-dialog-bar { position: sticky; top: 0; z-index: 20; }
   .submit-page-modal { padding: 0 14px 34px; }
-  .submit-modal-intro { min-height: 142px; margin-top: 14px; grid-template-columns: minmax(0, 1fr) 118px; gap: 15px; padding: 19px; }
+  .submit-modal-intro { min-height: 126px; margin-top: 6px; grid-template-columns: minmax(0, 1fr) 118px; gap: 15px; padding: 16px; }
   .submit-modal-copy h1 { font-size: 33px; }
   .submit-modal-ticket { min-height: 96px; }
   .submit-modal-ticket strong { font-size: 35px; }
@@ -2503,7 +2485,7 @@ a.founder-build-chip:focus-visible {
   .entry-dialog-bar > span { display: none; }
   .entry-dialog-bar > strong { justify-self: start; }
   .submit-page-modal { padding-inline: 11px; }
-  .submit-modal-intro { min-height: 0; grid-template-columns: 1fr 86px; gap: 10px; padding: 16px; border-radius: 14px; }
+  .submit-modal-intro { min-height: 0; grid-template-columns: 1fr 86px; gap: 10px; padding: 14px 5px 15px; }
   .submit-modal-copy > span { font-size: 7px; }
   .submit-modal-copy h1 { margin-top: 6px; font-size: 27px; }
   .submit-modal-copy > p { font-size: 10px; }

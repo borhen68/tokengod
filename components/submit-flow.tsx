@@ -498,7 +498,7 @@ export function SubmitFlow({
         <div className="submit-modal-intro">
           <div className="submit-modal-copy">
             <span>GET RANKED IN FOUR STEPS</span>
-            <h1>Show the spend. <em>Prove the return.</em></h1>
+            <h1>Show the <span>spend.</span> <em>Prove the return.</em></h1>
             <p>Your product gets the spotlight. You decide whether your identity does.</p>
             <div>
               <span><Check size={13} /> Up to 3 products</span>

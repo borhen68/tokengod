@@ -25,14 +25,14 @@
 }
 
 .hero {
-  min-height: 400px;
+  min-height: 350px;
   position: relative;
   z-index: 2;
   display: flex;
   align-items: flex-start;
   justify-content: center;
   padding-top: 28px;
-  padding-bottom: 76px;
+  padding-bottom: 30px;
 }
 
 .heroCopy {
@@ -191,7 +191,7 @@
 .heroRules :global(svg) { color: var(--blue-dark); }
 
 @media (max-width: 760px) {
-  .hero { min-height: 472px; padding-top: 28px; padding-bottom: 74px; }
+  .hero { min-height: 420px; padding-top: 28px; padding-bottom: 28px; }
 
   .heroEntry :global(.hero-bid-line) {
     flex-direction: column;
@@ -208,9 +208,9 @@
 
 @media (max-width: 540px) {
   .hero {
-    min-height: 490px;
+    min-height: 430px;
     padding-top: 22px;
-    padding-bottom: 72px;
+    padding-bottom: 26px;
   }
 
   .heroKicker { margin-bottom: 20px; }
