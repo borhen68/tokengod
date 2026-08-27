@@ -59,7 +59,7 @@ export function HeroEntry({
         </div>
       </div>
       <p className="hero-deck">
-        <b>New entries start at $3.</b> Higher bids move up Top Funded. Love and Roast remain public reaction rankings.
+        <b>Every founder has an AI story.</b> Show what it cost, what it earned, and how it changed your life.
       </p>
       <div className="hero-actions">
         <EntryModal

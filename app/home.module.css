@@ -58,7 +58,7 @@
   backdrop-filter: blur(10px);
 }
 
-.heroKicker :global(.public-traffic-badge) {
+.heroCopy .heroKicker :global(.public-traffic-badge) {
   min-height: 31px;
   color: #52646c;
   background: rgba(255, 255, 255, .78);
@@ -66,18 +66,18 @@
   box-shadow: 0 5px 18px rgba(7, 20, 30, .045);
 }
 
-.heroKicker :global(.public-traffic-badge:hover) {
+.heroCopy .heroKicker :global(.public-traffic-badge:hover) {
   color: var(--ink);
   background: #fff;
   border-color: rgba(8, 127, 164, .34);
 }
 
-.heroKicker :global(.public-traffic-badge b),
-.heroKicker :global(.public-traffic-badge em) {
+.heroCopy .heroKicker :global(.public-traffic-badge b),
+.heroCopy .heroKicker :global(.public-traffic-badge em) {
   color: #52646c;
 }
 
-.heroKicker :global(.public-traffic-badge small) { color: #98a5aa; }
+.heroCopy .heroKicker :global(.public-traffic-badge small) { color: #98a5aa; }
 
 .heroEntry :global(.hero-bid-line) {
   display: flex;
@@ -219,7 +219,7 @@
 
   .heroKicker { margin-bottom: 20px; }
 
-  .heroKicker :global(.public-traffic-badge) {
+  .heroCopy .heroKicker :global(.public-traffic-badge) {
     min-height: 32px;
     padding-inline: 9px;
   }
