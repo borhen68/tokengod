@@ -45,8 +45,8 @@ export function TrustNotice() {
     <aside className="trust-notice" role="status" aria-label="TokenGod privacy promise">
       <span className="trust-notice-icon" aria-hidden="true"><ShieldCheck size={20} /></span>
       <div>
-        <strong>Your verification keys are never stored.</strong>
-        <p>Used once to verify totals, then discarded. We keep your published profile and verified results—not your keys.</p>
+        <strong>Verification keys are never stored.</strong>
+        <p>Used once, then discarded. Only your public profile and verified totals remain.</p>
       </div>
       <button type="button" onClick={dismiss}>Got it</button>
     </aside>
