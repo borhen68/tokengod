@@ -46,6 +46,8 @@
   margin-bottom: 24px;
 }
 
+.heroCopy .heroKicker { justify-content: center; }
+
 .heroKicker > :global(span) {
   min-height: 31px;
   height: auto;
@@ -187,6 +189,8 @@
   margin-top: 20px;
   color: #5e7078;
 }
+
+.heroCopy .heroRules { justify-content: center; }
 
 .heroRules :global(svg) { color: var(--blue-dark); }
 
