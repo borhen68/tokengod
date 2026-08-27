@@ -23,7 +23,7 @@ function requirePaidUsd(session: Stripe.Checkout.Session) {
 
 function toModelProvider(provider: unknown): ModelProvider {
   const value = String(provider || "");
-  if (value === "openai" || value === "anthropic" || value === "cursor" || value === "openrouter") {
+  if (value === "openai" || value === "anthropic") {
     return value;
   }
   return "other";

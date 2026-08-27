@@ -4,7 +4,7 @@ import type { ProjectOutcome } from "@/lib/project-outcomes";
 
 export type Board = "funded" | "respected" | "roasted";
 export type AiSpendProvider = "anthropic" | "openai" | "cursor" | "openrouter";
-export type ModelProvider = AiSpendProvider | "other";
+export type ModelProvider = "anthropic" | "openai" | "other";
 export type ReactionType = "love" | "laugh";
 export type AiSpendVerification = "api" | "self_reported";
 export type RevenueVerification = RevenueProvider | "self_reported";

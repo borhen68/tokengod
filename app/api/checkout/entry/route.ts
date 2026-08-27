@@ -24,7 +24,7 @@ import { lookupPublicXProfile } from "@/lib/x-profile";
 import type { ModelProvider } from "@/lib/types";
 
 function toModelProvider(provider: string): ModelProvider {
-  if (provider === "openai" || provider === "anthropic" || provider === "cursor" || provider === "openrouter") {
+  if (provider === "openai" || provider === "anthropic") {
     return provider;
   }
   return "other";
