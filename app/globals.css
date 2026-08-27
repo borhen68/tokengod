@@ -3219,6 +3219,42 @@ a.founder-build-chip:focus-visible {
 .battle-feedback.has-message { color: #397b29; }
 .roi-battle-empty { min-height: 82px; }
 
+/* Fixed icon frames avoid platform emoji baselines shifting controls on mobile. */
+.board-switch button > .board-tab-icon {
+  width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  line-height: 0;
+}
+.board-tab-icon svg,
+.reaction-icon svg,
+.board-results-kicker svg,
+.listing-rank-label svg {
+  display: block;
+  flex: 0 0 auto;
+}
+.board-tab-icon.is-love,
+.reaction-love .reaction-icon { color: #e44e62; }
+.board-tab-icon.is-laugh,
+.reaction-laugh .reaction-icon { color: #b87508; }
+.board-tab-icon.is-funded { color: var(--coral); }
+.board-results-heading .board-results-kicker,
+.listing-rank-stack .listing-rank-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1;
+}
+.reaction-button .reaction-icon {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  flex: 0 0 18px;
+  place-items: center;
+  line-height: 0;
+}
+
 @media (max-width: 700px) {
   .roi-battle {
     margin-bottom: 22px;
@@ -3273,4 +3309,16 @@ a.founder-build-chip:focus-visible {
 
   .battle-versus { height: 15px; }
   .battle-feedback { margin-top: 4px; }
+
+  .founder-build-visit {
+    width: 14px;
+    height: 14px;
+    display: grid;
+    place-items: center;
+    gap: 0;
+    line-height: 0;
+  }
+
+  .founder-build-visit svg { width: 12px; height: 12px; }
+  .row-metric small { min-height: 11px; line-height: 11px; }
 }

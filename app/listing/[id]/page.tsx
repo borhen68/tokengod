@@ -11,6 +11,8 @@ import {
   Droplets,
   Eye,
   Flame,
+  Heart,
+  Laugh,
   Layers3,
   Share2,
   ShieldCheck,
@@ -165,8 +167,8 @@ export default async function ListingPage({ params }: PageProps) {
           </div>
         </div>
         <div className="listing-rank-stack">
-          <div><span>❤️ Most Respected</span><strong>#{respectedRank || "—"}</strong><small>{listing.loveCount.toLocaleString()} loves</small></div>
-          <div><span>😂 Most Roasted</span><strong>#{roastedRank || "—"}</strong><small>{listing.laughCount.toLocaleString()} laughs</small></div>
+          <div><span className="listing-rank-label"><Heart size={13} strokeWidth={2.3} fill="currentColor" aria-hidden="true" /> Most Respected</span><strong>#{respectedRank || "—"}</strong><small>{listing.loveCount.toLocaleString()} loves</small></div>
+          <div><span className="listing-rank-label"><Laugh size={13} strokeWidth={2.3} aria-hidden="true" /> Most Roasted</span><strong>#{roastedRank || "—"}</strong><small>{listing.laughCount.toLocaleString()} laughs</small></div>
         </div>
       </section>
 

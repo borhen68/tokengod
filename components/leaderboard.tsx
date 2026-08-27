@@ -7,8 +7,11 @@ import {
   Eye,
   ExternalLink,
   Flame,
+  Heart,
+  Laugh,
   Trophy,
   UserRound,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -107,7 +110,9 @@ export function Leaderboard({
             aria-selected={board === "respected"}
             onClick={() => chooseBoard("respected")}
           >
-            <span aria-hidden="true">❤️</span>
+            <span className="board-tab-icon is-love" aria-hidden="true">
+              <Heart size={16} strokeWidth={2.3} fill="currentColor" />
+            </span>
             Most Respected
             <small>by love votes</small>
           </button>
@@ -118,7 +123,9 @@ export function Leaderboard({
             aria-selected={board === "roasted"}
             onClick={() => chooseBoard("roasted")}
           >
-            <span aria-hidden="true">😂</span>
+            <span className="board-tab-icon is-laugh" aria-hidden="true">
+              <Laugh size={17} strokeWidth={2.3} />
+            </span>
             Most Roasted
             <small>by laugh votes</small>
           </button>
@@ -130,7 +137,9 @@ export function Leaderboard({
             aria-selected={board === "funded"}
             onClick={() => chooseBoard("funded")}
           >
-            <span aria-hidden="true">⚡</span>
+            <span className="board-tab-icon is-funded" aria-hidden="true">
+              <Zap size={16} strokeWidth={2.3} fill="currentColor" />
+            </span>
             Top Funded
             <small>cash backing only</small>
           </button>
@@ -144,7 +153,14 @@ export function Leaderboard({
         <div className="board-results">
           <header className="board-results-heading">
             <div>
-              <span>{board === "funded" ? "⚡ TOP FUNDED" : board === "respected" ? "❤️ MOST RESPECTED" : "😂 MOST ROASTED"}</span>
+              <span className={`board-results-kicker is-${board}`}>
+                {board === "funded"
+                  ? <Zap size={12} strokeWidth={2.4} fill="currentColor" aria-hidden="true" />
+                  : board === "respected"
+                    ? <Heart size={12} strokeWidth={2.4} fill="currentColor" aria-hidden="true" />
+                    : <Laugh size={12} strokeWidth={2.4} aria-hidden="true" />}
+                {board === "funded" ? "TOP FUNDED" : board === "respected" ? "MOST RESPECTED" : "MOST ROASTED"}
+              </span>
               <h2>{board === "funded" ? "Highest bids right now" : board === "respected" ? "Founders earning respect" : "Spending under scrutiny"}</h2>
             </div>
             <p>

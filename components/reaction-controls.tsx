@@ -1,5 +1,6 @@
 "use client";
 
+import { Heart, Laugh } from "lucide-react";
 import { useState } from "react";
 
 import { trackDataFast } from "@/lib/datafast";
@@ -82,7 +83,9 @@ export function ReactionControls({
           disabled={busy !== null}
           onClick={() => react("love")}
         >
-          <span aria-hidden="true">❤️</span>
+          <span className="reaction-icon" aria-hidden="true">
+            <Heart size={17} strokeWidth={2.3} fill="currentColor" />
+          </span>
           <strong>{formatCount(counts.love)}</strong>
         </button>
         <button
@@ -93,7 +96,9 @@ export function ReactionControls({
           disabled={busy !== null}
           onClick={() => react("laugh")}
         >
-          <span aria-hidden="true">😂</span>
+          <span className="reaction-icon" aria-hidden="true">
+            <Laugh size={18} strokeWidth={2.3} />
+          </span>
           <strong>{formatCount(counts.laugh)}</strong>
         </button>
       </div>
