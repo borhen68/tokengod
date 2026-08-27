@@ -3466,3 +3466,68 @@ a.founder-build-chip:focus-visible {
 @media (max-width: 980px) {
   .board-outcome-spotlight { display: none; }
 }
+
+/* First-visit privacy promise: compact like a cookie notice, without blocking the page. */
+.trust-notice {
+  width: min(640px, calc(100vw - 32px));
+  position: fixed;
+  z-index: 900;
+  right: 18px;
+  bottom: 18px;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 11px 11px 13px;
+  color: #f4fbfd;
+  background: rgba(7, 20, 30, .96);
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 15px;
+  box-shadow: 0 18px 48px rgba(7, 20, 30, .26);
+  backdrop-filter: blur(14px);
+  animation: trust-notice-in .24s cubic-bezier(.2, .8, .2, 1) both;
+}
+.trust-notice-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  background: var(--lime);
+  border-radius: 11px;
+}
+.trust-notice > div { min-width: 0; }
+.trust-notice strong { display: block; font-size: 12px; letter-spacing: -.01em; }
+.trust-notice p { margin: 3px 0 0; color: #afc1c9; font-size: 9px; line-height: 1.45; }
+.trust-notice button {
+  min-height: 36px;
+  padding: 0 14px;
+  color: var(--ink);
+  background: var(--lime);
+  border: 1px solid rgba(255, 255, 255, .5);
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 850;
+  cursor: pointer;
+}
+.trust-notice button:hover { background: #d0ff8b; }
+
+@keyframes trust-notice-in {
+  from { opacity: 0; transform: translateY(12px); }
+}
+
+@media (max-width: 540px) {
+  .trust-notice {
+    width: calc(100vw - 22px);
+    right: 11px;
+    bottom: 11px;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    gap: 9px;
+    padding: 9px;
+    border-radius: 13px;
+  }
+  .trust-notice-icon { width: 34px; height: 34px; border-radius: 9px; }
+  .trust-notice strong { font-size: 10px; }
+  .trust-notice p { font-size: 8px; }
+  .trust-notice button { min-height: 34px; padding-inline: 11px; font-size: 9px; }
+}

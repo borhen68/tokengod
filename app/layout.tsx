@@ -4,6 +4,7 @@ import Script from "next/script";
 
 import { Header } from "@/components/header";
 import { Logo } from "@/components/logo";
+import { TrustNotice } from "@/components/trust-notice";
 
 import "./globals.css";
 
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <div className="ambient-bubble bubble-bg-two" />
         <Header />
         {children}
+        <TrustNotice />
         <footer className="site-footer">
           <div className="footer-main">
             <div>
