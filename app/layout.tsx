@@ -31,6 +31,9 @@ export const metadata: Metadata = {
     title: "TokenGod — AI spend. Real revenue. Public ranking.",
     description: "Founder results with visible proof labels, ranked by public reactions.",
   },
+  other: {
+    "ory-verify": "orynth-ac9426a953944d7488a03bf29042e5af",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
