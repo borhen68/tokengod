@@ -44,7 +44,8 @@ import {
   type RevenueProvider,
 } from "@/lib/revenue-providers";
 import {
-  calculateSubscriptionSpend,
+  calculateReportedAiSpend,
+  getSubscriptionPlan,
   subscriptionPlans,
   type SubscriptionPlanId,
 } from "@/lib/subscription-plans";
@@ -157,6 +158,7 @@ export function SubmitFlow({
   const [reportingPeriod, setReportingPeriod] = useState<ReportingPeriod>(defaultReportingPeriod);
   const [subscriptionPlanId, setSubscriptionPlanId] = useState<SubscriptionPlanId>("claude-pro");
   const [subscriptionMonths, setSubscriptionMonths] = useState(3);
+  const [usageSpendUsd, setUsageSpendUsd] = useState("20");
   const [revenueResult, setRevenueResult] = useState<VerificationResult | null>(null);
   const [aiResult, setAiResult] = useState<VerificationResult | null>(null);
   const [busy, setBusy] = useState<"revenue" | "ai" | "publish" | null>(null);
@@ -183,9 +185,13 @@ export function SubmitFlow({
     { length: subscriptionMonthLimit },
     (_, index) => index + 1,
   );
-  const subscriptionSelection = calculateSubscriptionSpend(
+  const selectedSpendPlan = getSubscriptionPlan(subscriptionPlanId);
+  const reportedSpendSelection = calculateReportedAiSpend(
     subscriptionPlanId,
-    subscriptionMonths,
+    {
+      months: subscriptionMonths,
+      amountUsd: Number(usageSpendUsd),
+    },
     reportingPeriod,
   );
   const selectedRevenueProvider = getRevenueProvider(revenueProvider);
@@ -323,8 +329,10 @@ export function SubmitFlow({
 
   async function reportAiSpend(event: FormEvent) {
     event.preventDefault();
-    if (!subscriptionSelection) {
-      setError("Choose an AI subscription plan and the number of months you paid for it.");
+    if (!reportedSpendSelection) {
+      setError(selectedSpendPlan?.billingModel === "usage"
+        ? "Enter the OpenRouter amount charged during this reporting period."
+        : "Choose an AI membership and the number of months you paid for it.");
       return;
     }
 
@@ -332,18 +340,21 @@ export function SubmitFlow({
     setError("");
     try {
       const result = await postJson<VerificationResult>("/api/verify/self-reported", {
-        planId: subscriptionSelection.plan.id,
-        months: subscriptionSelection.months,
+        planId: reportedSpendSelection.plan.id,
+        ...(reportedSpendSelection.plan.billingModel === "monthly"
+          ? { months: reportedSpendSelection.months }
+          : { amountUsd: reportedSpendSelection.amountUsd }),
         submissionId: getSubmissionId(),
         period: reportingPeriod,
       });
       setAiResult(result);
       if (variant === "modal") setActiveStep(4);
       trackDataFast("ai_spend_reported", {
-        provider: subscriptionSelection.plan.provider,
-        plan: subscriptionSelection.plan.id,
-        months: subscriptionSelection.months,
-        amount_usd: subscriptionSelection.amountUsd,
+        provider: reportedSpendSelection.plan.provider,
+        plan: reportedSpendSelection.plan.id,
+        billing_model: reportedSpendSelection.plan.billingModel,
+        months: reportedSpendSelection.months ?? 0,
+        amount_usd: reportedSpendSelection.amountUsd,
         reporting_period: reportingPeriod,
       });
     } catch (caught) {
@@ -756,8 +767,8 @@ export function SubmitFlow({
                   type="button"
                   onClick={() => chooseSpendVerification("self_reported")}
                 >
-                  <strong>Personal / subscription</strong>
-                  <span>No admin key · gray badge</span>
+                  <strong>Membership / provider spend</strong>
+                  <span>Claude · ChatGPT · Cursor · OpenRouter</span>
                 </button>
                 <button
                   className={spendVerification === "api" ? "is-active is-api" : ""}
@@ -770,10 +781,10 @@ export function SubmitFlow({
               </div>
               {spendVerification === "self_reported" ? (
                 <>
-                  <p>Choose your subscription and how many completed billing months you paid {reportingPeriod === "all" ? "since January 2020" : `during the last ${periodDefinition.label.toLowerCase()}`}. TokenGod calculates the burn automatically.</p>
+                  <p>Choose a paid AI membership, or enter your exact OpenRouter usage spend, {reportingPeriod === "all" ? "since January 2020" : `during the last ${periodDefinition.label.toLowerCase()}`}. TokenGod calculates fixed memberships automatically.</p>
                   <div className="subscription-fields">
                     <label className="subscription-field">
-                      <span>Subscription plan</span>
+                      <span>Membership or provider</span>
                       <select
                         value={subscriptionPlanId}
                         onChange={(event) => {
@@ -784,56 +795,83 @@ export function SubmitFlow({
                         disabled={busy !== null}
                       >
                         {subscriptionPlans.map((plan) => (
-                          <option value={plan.id} key={plan.id}>{plan.name} · ${plan.monthlyUsd}/mo</option>
+                          <option value={plan.id} key={plan.id}>
+                            {plan.name} · {plan.billingModel === "monthly" ? `$${plan.monthlyUsd}/mo` : "enter exact spend"}
+                          </option>
                         ))}
                       </select>
                     </label>
-                    <label className="subscription-field">
-                      <span>Months paid · max {subscriptionMonthLimit}</span>
-                      {reportingPeriod === "all" ? (
+                    {selectedSpendPlan?.billingModel === "usage" ? (
+                      <label className="subscription-field">
+                        <span>OpenRouter spend · USD</span>
                         <input
                           type="number"
-                          min={1}
-                          max={subscriptionMonthLimit}
-                          step={1}
-                          value={subscriptionMonths}
+                          min={0.01}
+                          max={10_000_000}
+                          step={0.01}
+                          value={usageSpendUsd}
                           onChange={(event) => {
-                            setSubscriptionMonths(Number(event.target.value));
+                            setUsageSpendUsd(event.target.value);
                             setAiResult(null);
                             setError("");
                           }}
                           disabled={busy !== null}
-                          inputMode="numeric"
+                          inputMode="decimal"
+                          placeholder="e.g. 42.50"
                         />
-                      ) : (
-                        <select
-                          value={subscriptionMonths}
-                          onChange={(event) => {
-                            setSubscriptionMonths(Number(event.target.value));
-                            setAiResult(null);
-                            setError("");
-                          }}
-                          disabled={busy !== null}
-                        >
-                          {subscriptionMonthOptions.map((months) => (
-                            <option value={months} key={months}>{months} {months === 1 ? "month" : "months"}</option>
-                          ))}
-                        </select>
-                      )}
-                    </label>
+                      </label>
+                    ) : (
+                      <label className="subscription-field">
+                        <span>Months paid · max {subscriptionMonthLimit}</span>
+                        {reportingPeriod === "all" ? (
+                          <input
+                            type="number"
+                            min={1}
+                            max={subscriptionMonthLimit}
+                            step={1}
+                            value={subscriptionMonths}
+                            onChange={(event) => {
+                              setSubscriptionMonths(Number(event.target.value));
+                              setAiResult(null);
+                              setError("");
+                            }}
+                            disabled={busy !== null}
+                            inputMode="numeric"
+                          />
+                        ) : (
+                          <select
+                            value={subscriptionMonths}
+                            onChange={(event) => {
+                              setSubscriptionMonths(Number(event.target.value));
+                              setAiResult(null);
+                              setError("");
+                            }}
+                            disabled={busy !== null}
+                          >
+                            {subscriptionMonthOptions.map((months) => (
+                              <option value={months} key={months}>{months} {months === 1 ? "month" : "months"}</option>
+                            ))}
+                          </select>
+                        )}
+                      </label>
+                    )}
                   </div>
-                  {subscriptionSelection ? (
+                  {reportedSpendSelection ? (
                     <div className="subscription-total" aria-live="polite">
                       <div>
                         <span>Calculated {periodDefinition.label} burn</span>
-                        <small>{subscriptionSelection.months} × ${subscriptionSelection.plan.monthlyUsd}/month · {subscriptionSelection.plan.name}</small>
+                        <small>
+                          {reportedSpendSelection.plan.billingModel === "monthly"
+                            ? `${reportedSpendSelection.months} × $${reportedSpendSelection.plan.monthlyUsd}/month · ${reportedSpendSelection.plan.name}`
+                            : `Exact credits / usage entered · ${reportedSpendSelection.plan.name}`}
+                        </small>
                       </div>
-                      <strong>{formatMoney(subscriptionSelection.amountUsd)}</strong>
+                      <strong>{formatMoney(reportedSpendSelection.amountUsd)}</strong>
                     </div>
                   ) : null}
                   <div className="reporting-disclosure"><AtSign size={14} /><span>Your card and leaderboard row will say <strong>Founder Reported</strong>. API-verified entries win reaction-count ties.</span></div>
                   <button className="button button-secondary" type="submit" disabled={!configurationReady || busy !== null || Boolean(aiResult)}>
-                    {busy === "ai" ? <><LoaderCircle className="spinner" size={16} /> Recording the burn</> : aiResult ? <><Check size={16} /> Spend recorded</> : <>Record {formatMoney(subscriptionSelection?.amountUsd ?? 0)} subscription spend <Waves size={16} /></>}
+                    {busy === "ai" ? <><LoaderCircle className="spinner" size={16} /> Recording the burn</> : aiResult ? <><Check size={16} /> Spend recorded</> : <>Record {formatMoney(reportedSpendSelection?.amountUsd ?? 0)} AI spend <Waves size={16} /></>}
                   </button>
                 </>
               ) : (

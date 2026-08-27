@@ -3,7 +3,8 @@ import type { RevenueProvider } from "@/lib/revenue-providers";
 import type { ProjectOutcome } from "@/lib/project-outcomes";
 
 export type Board = "funded" | "respected" | "roasted";
-export type ModelProvider = "anthropic" | "openai" | "other";
+export type AiSpendProvider = "anthropic" | "openai" | "cursor" | "openrouter";
+export type ModelProvider = AiSpendProvider | "other";
 export type ReactionType = "love" | "laugh";
 export type AiSpendVerification = "api" | "self_reported";
 export type RevenueVerification = RevenueProvider | "self_reported";
@@ -70,7 +71,7 @@ export type VerificationReceiptPayload = {
   version: 1;
   kind: "tokens" | "revenue";
   userId: string;
-  provider: "openai" | "anthropic" | RevenueProvider;
+  provider: AiSpendProvider | RevenueProvider;
   verificationMethod: "api" | "self_reported";
   amountUsd: number;
   periodStart: string;

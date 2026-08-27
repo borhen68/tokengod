@@ -5,6 +5,7 @@ import type Stripe from "stripe";
 import { ApiError } from "@/lib/api";
 import { getDatabase } from "@/lib/db";
 import { materializeEntry } from "@/lib/entry-materializer";
+import type { ModelProvider } from "@/lib/types";
 
 type PaymentResult = {
   kind: "entry" | "boost";
@@ -18,6 +19,14 @@ function requirePaidUsd(session: Stripe.Checkout.Session) {
   if (session.currency?.toLowerCase() !== "usd" || !session.amount_total) {
     throw new ApiError("Payment amount could not be verified.", 400);
   }
+}
+
+function toModelProvider(provider: unknown): ModelProvider {
+  const value = String(provider || "");
+  if (value === "openai" || value === "anthropic" || value === "cursor" || value === "openrouter") {
+    return value;
+  }
+  return "other";
 }
 
 export async function finalizeCheckoutSession(
@@ -94,7 +103,7 @@ export async function finalizeCheckoutSession(
           ? pending.project_outcome
           : "revenue",
         founderLesson: String(pending.founder_lesson || ""),
-        modelProvider: String(pending.model_provider) === "openai" ? "openai" : "anthropic",
+        modelProvider: toModelProvider(pending.model_provider),
         aiSpendVerification: pending.ai_spend_verification === "self_reported" ? "self_reported" : "api",
         revenueProvider: pending.revenue_provider ? String(pending.revenue_provider) : "stripe",
         verificationPeriodStart: Number(pending.verification_period_start),

@@ -21,6 +21,14 @@ import { getPlatformStripe } from "@/lib/platform-stripe";
 import { projectOutcomeIds } from "@/lib/project-outcomes";
 import { verifyVerificationReceipt } from "@/lib/verification";
 import { lookupPublicXProfile } from "@/lib/x-profile";
+import type { ModelProvider } from "@/lib/types";
+
+function toModelProvider(provider: string): ModelProvider {
+  if (provider === "openai" || provider === "anthropic" || provider === "cursor" || provider === "openrouter") {
+    return provider;
+  }
+  return "other";
+}
 
 const publicUrlSchema = z.string().trim().url().refine(
     (value) => ["http:", "https:"].includes(new URL(value).protocol),
@@ -145,7 +153,7 @@ export async function POST(request: NextRequest) {
       efficiencyScore: Math.round((revenue.amountUsd / tokens.amountUsd) * 10_000) / 10_000,
       projectOutcome: input.projectOutcome,
       founderLesson: input.founderLesson,
-      modelProvider: tokens.provider === "openai" ? "openai" : "anthropic",
+      modelProvider: toModelProvider(tokens.provider),
       aiSpendVerification: tokens.verificationMethod,
       revenueProvider: revenue.provider,
       verificationPeriodStart: new Date(tokens.periodStart).getTime(),
@@ -266,7 +274,7 @@ export async function POST(request: NextRequest) {
         tokens.amountUsd,
         revenue.amountUsd,
         Math.round((revenue.amountUsd / tokens.amountUsd) * 10_000) / 10_000,
-        tokens.provider,
+        toModelProvider(tokens.provider),
         input.projectOutcome,
         input.founderLesson,
         tokens.verificationMethod,

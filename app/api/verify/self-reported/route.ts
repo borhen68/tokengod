@@ -6,12 +6,13 @@ import {
   getSubscriptionMonthLimit,
   reportingPeriodIds,
 } from "@/lib/reporting-period";
-import { calculateSubscriptionSpend, subscriptionPlanIds } from "@/lib/subscription-plans";
+import { calculateReportedAiSpend, subscriptionPlanIds } from "@/lib/subscription-plans";
 import { getVerificationWindow, issueVerificationReceipt } from "@/lib/verification";
 
 const schema = z.object({
   planId: z.enum(subscriptionPlanIds),
-  months: z.number().int().min(1).max(getSubscriptionMonthLimit("all")),
+  months: z.number().int().min(1).max(getSubscriptionMonthLimit("all")).optional(),
+  amountUsd: z.number().finite().min(0.01).max(10_000_000).optional(),
   submissionId: z.string().uuid(),
   period: z.enum(reportingPeriodIds).default(defaultReportingPeriod),
 });
@@ -20,10 +21,10 @@ export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
     requireSubmissionConfiguration();
-    const { planId, months, submissionId, period } = schema.parse(await request.json());
-    const selection = calculateSubscriptionSpend(planId, months, period);
+    const { planId, months, amountUsd, submissionId, period } = schema.parse(await request.json());
+    const selection = calculateReportedAiSpend(planId, { months, amountUsd }, period);
     if (!selection) {
-      throw new ApiError("Choose a valid number of paid months for this reporting window.", 400);
+      throw new ApiError("Choose a valid membership period or enter the exact provider spend for this reporting window.", 400);
     }
     const { periodStart, periodEnd } = getVerificationWindow(period);
     const result = issueVerificationReceipt({
@@ -46,7 +47,8 @@ export async function POST(request: Request) {
       subscription: {
         planId: selection.plan.id,
         name: selection.plan.name,
-        monthlyUsd: selection.plan.monthlyUsd,
+        billingModel: selection.plan.billingModel,
+        monthlyUsd: selection.plan.billingModel === "monthly" ? selection.plan.monthlyUsd : null,
         months: selection.months,
       },
     });
