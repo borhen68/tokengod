@@ -13,28 +13,28 @@
   flex: 0 0 auto;
   overflow: hidden;
   color: #f8fbfc;
-  background: #0b1720;
-  border: 1px solid rgba(255, 255, 255, .12);
+  background: #101318;
+  border: 1px solid #3a424d;
   border-radius: 9px;
-  box-shadow: 0 8px 22px rgba(5, 16, 24, .15);
+  box-shadow: none;
 }
 
 .crown,
 .waves { position: absolute; left: 50%; transform: translateX(-50%); }
-.crown { top: 3px; color: #b9f16c; }
-.waves { bottom: 1px; color: #6edcf2; }
+.crown { top: 3px; color: #b4ed68; }
+.waves { bottom: 1px; color: #57c8da; }
 
 .word {
-  color: #0b1720;
+  color: #eef1f4;
   font-size: 20px;
   font-weight: 820;
   letter-spacing: -.045em;
 }
 
-.word span { color: #0b7f99; }
+.word span { color: #57c8da; }
 
 :global(.site-footer) .word { color: #f5fbff; }
-:global(.site-footer) .word span { color: #b9f16c; }
+:global(.site-footer) .word span { color: #b4ed68; }
 
 @media (max-width: 540px) {
   .brand { gap: 8px; }

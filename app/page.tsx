@@ -12,7 +12,6 @@ import { EntryModal } from "@/components/entry-modal";
 import { HeroEntry } from "@/components/hero-entry";
 import { Leaderboard } from "@/components/leaderboard";
 import { PublicTrafficBadge } from "@/components/public-traffic-badge";
-import { TokenWaterfall } from "@/components/token-waterfall";
 import { isApplicationConfigured, isPaymentConfigured } from "@/lib/config";
 import {
   getLeaderboardListings,
@@ -75,9 +74,8 @@ export default async function HomePage({
   const paymentsReady = isPaymentConfigured();
 
   return (
-    <main>
+    <main className="network-home">
       <section className={styles.heroStage}>
-        <TokenWaterfall />
         <div className={`${styles.hero} section-shell`}>
           <div className={styles.heroCopy}>
             <div className={`${styles.heroKicker} hero-kicker`}>
@@ -143,7 +141,7 @@ export default async function HomePage({
         ) : null}
       </section>
 
-      <div className="section-shell">
+      <div className="section-shell network-board-shell">
         <Leaderboard
           initialListings={listings}
           initialReactions={reactions}

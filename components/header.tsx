@@ -1,4 +1,4 @@
-import { LogOut } from "lucide-react";
+import { BadgePlus, CircleHelp, LogOut, Trophy } from "lucide-react";
 import Link from "next/link";
 
 import { EntryModal } from "@/components/entry-modal";
@@ -23,9 +23,9 @@ export async function Header() {
       <div className="header-inner">
         <Logo />
         <nav className="desktop-nav" aria-label="Main navigation">
-          <Link href="/#leaderboard">Leaderboard</Link>
-          <Link href="/#how-it-works">How it works</Link>
-          <Link href="/?enter=1">Get ranked</Link>
+          <Link href="/#leaderboard"><Trophy className="nav-icon" size={22} aria-hidden="true" /><span>Leaderboard</span></Link>
+          <Link href="/#how-it-works"><CircleHelp className="nav-icon" size={22} aria-hidden="true" /><span>How it works</span></Link>
+          <Link href="/?enter=1"><BadgePlus className="nav-icon" size={22} aria-hidden="true" /><span>Get ranked</span></Link>
         </nav>
         <div className="header-actions">
           {viewer ? (

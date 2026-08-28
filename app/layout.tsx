@@ -8,6 +8,7 @@ import { TrustNotice } from "@/components/trust-notice";
 
 import "./globals.css";
 import "./professional.css";
+import "./network.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 const dataFastWebsiteId = process.env.NEXT_PUBLIC_DATAFAST_WEBSITE_ID
