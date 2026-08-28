@@ -2231,3 +2231,15 @@ body textarea::placeholder {
     border-radius: 18px 18px 0 0;
   }
 }
+
+/* Keep the founder count from inheriting the legacy light hero badge rules. */
+.network-home .hero-kicker .founderCount {
+  color: #eef1f4;
+  background: #171b21;
+  border-color: #3a424d;
+  box-shadow: inset 0 0 0 1px rgba(180, 237, 104, .12);
+}
+
+.network-home .hero-kicker .founderCount svg {
+  color: #b4ed68;
+}
