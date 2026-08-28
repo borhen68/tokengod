@@ -6,42 +6,40 @@
 }
 
 .mark {
-  width: 38px;
-  height: 38px;
+  width: 35px;
+  height: 35px;
   position: relative;
   display: block;
   flex: 0 0 auto;
   overflow: hidden;
-  color: var(--ink);
-  background:
-    radial-gradient(circle at 72% 18%, rgba(255, 255, 255, .7), transparent 22%),
-    var(--lime);
-  border: 1px solid var(--ink);
-  border-radius: 11px;
-  box-shadow: 3px 3px 0 var(--blue-dark);
+  color: #f8fbfc;
+  background: #0b1720;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 9px;
+  box-shadow: 0 8px 22px rgba(5, 16, 24, .15);
 }
 
 .crown,
 .waves { position: absolute; left: 50%; transform: translateX(-50%); }
-.crown { top: 3px; }
-.waves { bottom: 1px; }
+.crown { top: 3px; color: #b9f16c; }
+.waves { bottom: 1px; color: #6edcf2; }
 
 .word {
-  color: var(--ink);
-  font-size: 21px;
-  font-weight: 900;
-  letter-spacing: -.055em;
+  color: #0b1720;
+  font-size: 20px;
+  font-weight: 820;
+  letter-spacing: -.045em;
 }
 
-.word span { color: var(--blue-dark); }
+.word span { color: #0b7f99; }
 
 :global(.site-footer) .word { color: #f5fbff; }
-:global(.site-footer) .word span { color: var(--lime); }
+:global(.site-footer) .word span { color: #b9f16c; }
 
 @media (max-width: 540px) {
   .brand { gap: 8px; }
-  .mark { width: 34px; height: 34px; border-radius: 10px; }
+  .mark { width: 32px; height: 32px; border-radius: 8px; }
   .crown { width: 14px; top: 2px; }
   .waves { width: 21px; bottom: 0; }
-  .word { font-size: 19px; }
+  .word { font-size: 18px; }
 }

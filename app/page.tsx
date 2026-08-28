@@ -3,6 +3,7 @@ import {
   BarChart3,
   Check,
   KeyRound,
+  Laugh,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -177,7 +178,7 @@ export default async function HomePage({
           </article>
           <article className="step-roast">
             <span className="step-number">03</span>
-            <div className="step-icon"><span aria-hidden="true">😂</span></div>
+            <div className="step-icon"><Laugh size={22} aria-hidden="true" /></div>
             <h3>Let people decide</h3>
             <p>Share your generated card. Every visitor can love it, roast it, or—perfectly legally—do both.</p>
             <small>One of each reaction per browser</small>

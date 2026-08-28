@@ -9,13 +9,13 @@
 .atmosphere { position: absolute; inset: 0; }
 
 .halo {
-  width: 820px;
-  height: 280px;
+  width: min(920px, 82vw);
+  height: 310px;
   position: absolute;
-  bottom: -150px;
+  bottom: -205px;
   left: 50%;
-  background: radial-gradient(ellipse, rgba(61, 207, 243, .26), rgba(61, 207, 243, .06) 54%, transparent 72%);
-  filter: blur(5px);
+  background: radial-gradient(ellipse, rgba(61, 207, 243, .24), rgba(61, 207, 243, .055) 52%, transparent 72%);
+  filter: blur(12px);
   transform: translateX(-50%);
 }
 
@@ -26,33 +26,19 @@
   height: 112px;
   position: absolute;
   top: -130px;
-  opacity: .5;
-  background: linear-gradient(transparent, rgba(8, 127, 164, .42), transparent);
-  animation: rain 7.5s linear infinite;
+  opacity: .22;
+  background: linear-gradient(transparent, rgba(118, 224, 244, .44), transparent);
+  animation: rain 11s linear infinite;
 }
 
-.rainOne { left: 12%; animation-delay: -2.1s; }
-.rainTwo { right: 17%; height: 158px; animation-delay: -5.4s; animation-duration: 9s; }
-.rainThree { right: 5%; height: 82px; animation-delay: -1.2s; animation-duration: 6.5s; }
+.rainOne { left: 13%; animation-delay: -2.1s; }
+.rainTwo { right: 18%; height: 158px; animation-delay: -5.4s; animation-duration: 13s; }
+.rainThree { right: 5%; height: 82px; animation-delay: -1.2s; animation-duration: 9.5s; }
 
 .tokenOne,
 .tokenTwo,
 .tokenThree {
-  width: 25px;
-  height: 25px;
-  position: absolute;
-  top: -34px;
-  display: grid;
-  place-items: center;
-  opacity: .48;
-  color: #31520a;
-  background: rgba(189, 255, 91, .62);
-  border: 1px solid rgba(79, 126, 13, .24);
-  border-radius: 7px;
-  box-shadow: 0 7px 18px rgba(60, 100, 15, .08);
-  font-size: 7px;
-  font-weight: 950;
-  animation: tokenFall 8s linear infinite;
+  display: none;
 }
 
 .tokenOne { left: 8%; animation-delay: -5.2s; }
@@ -61,16 +47,9 @@
 
 @keyframes rain {
   0% { opacity: 0; transform: translateY(-80px); }
-  12% { opacity: .5; }
-  86% { opacity: .26; }
-  100% { opacity: 0; transform: translateY(480px); }
-}
-
-@keyframes tokenFall {
-  0% { opacity: 0; transform: translateY(-45px) rotate(-8deg); }
-  14% { opacity: .48; }
-  84% { opacity: .35; }
-  100% { opacity: 0; transform: translateY(475px) rotate(13deg); }
+  12% { opacity: .22; }
+  86% { opacity: .12; }
+  100% { opacity: 0; transform: translateY(560px); }
 }
 
 @media (max-width: 540px) {
