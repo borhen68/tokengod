@@ -38,6 +38,27 @@
 
 .heroCopy .heroKicker { justify-content: flex-start; }
 
+.founderCount {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px;
+  color: #eef1f4;
+  background: #171b21;
+  border: 1px solid #3a424d;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(180, 237, 104, .12);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+
+.founderCount :global(svg) {
+  color: #b4ed68;
+}
+
 .heroKicker > :global(span) {
   min-height: 30px;
   height: auto;

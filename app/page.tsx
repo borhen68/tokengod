@@ -80,7 +80,7 @@ export default async function HomePage({
           <div className={styles.heroCopy}>
             <div className={`${styles.heroKicker} hero-kicker`}>
               <PublicTrafficBadge />
-              <span><BarChart3 size={14} /> {listings.length} {listings.length === 1 ? "FOUNDER" : "FOUNDERS"}</span>
+              <span className={styles.founderCount}><BarChart3 size={14} /> {listings.length} {listings.length === 1 ? "FOUNDER" : "FOUNDERS"}</span>
             </div>
             <div className={styles.heroEntry}>
               <HeroEntry
