@@ -1,0 +1,48 @@
+.backdrop { position: fixed; z-index: 1000; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(28, 42, 38, .28); backdrop-filter: blur(14px); }
+.dialog { width: min(440px, 100%); position: relative; padding: 31px; color: #15231f; background: #fff; border: 1px solid rgba(31, 69, 60, .13); border-radius: 25px; box-shadow: 0 28px 90px rgba(29, 55, 48, .25); }
+.close { width: 34px; height: 34px; position: absolute; top: 15px; right: 15px; display: grid; place-items: center; color: #60736e; background: #eff4f1; border: 0; border-radius: 50%; cursor: pointer; }
+.eyebrow { margin: 0 0 9px; color: #ec765c; font-size: 10px; font-weight: 850; letter-spacing: .12em; }
+.dialog h2 { margin: 0; font-size: clamp(34px, 8vw, 48px); line-height: .96; letter-spacing: -.065em; }
+.intro { margin: 13px 0 25px; color: #6c7e79; font-size: 14px; }
+.dialog label { display: block; margin-bottom: 7px; color: #536660; font-size: 9px; font-weight: 850; letter-spacing: .11em; }
+.inputWrap { height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 15px; color: #2bb5a4; border: 1.5px solid #8ad8cc; border-radius: 13px; box-shadow: 0 0 0 4px rgba(53, 184, 165, .06); }
+.inputWrap input { width: 100%; color: #17241f; background: transparent; border: 0; outline: 0; font: inherit; }
+.preview { display: grid; grid-template-columns: 42px minmax(0, 1fr) 20px; align-items: center; gap: 11px; margin-top: 13px; padding: 11px; background: #f1f7f4; border: 1px solid #d9e8e2; border-radius: 14px; }
+.preview > span { width: 42px; height: 42px; display: grid; place-items: center; overflow: hidden; color: #fff; background: #2fb6a5; border-radius: 50%; font-weight: 800; }
+.preview img { width: 100%; height: 100%; object-fit: cover; }
+.preview div { min-width: 0; }
+.preview strong, .preview small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.preview small { margin-top: 3px; color: #73857f; font-size: 10px; }
+.preview > svg { color: #21a38f; }
+.amountLabel { margin-top: 18px; }
+.amountWrap { height: 49px; display: grid; grid-template-columns: 18px minmax(0,1fr) auto; align-items: center; gap: 5px; padding: 0 14px; color: #40524c; background: #fbfcfb; border: 1px solid #dce6e2; border-radius: 12px; }
+.amountWrap input { width: 100%; color: #17241f; background: transparent; border: 0; outline: 0; font: inherit; font-size: 15px; }.amountWrap small { color: #82918c; font-size: 9px; }
+.amountChoices { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }.amountChoices button { min-height: 30px; padding: 0 10px; color: #63746e; background: #f2f6f4; border: 1px solid #dce6e2; border-radius: 999px; cursor: pointer; font-size: 9px; font-weight: 750; }.amountChoices button.activeAmount { color: #123a32; background: #cff2e9; border-color: #82d4c5; }
+.leadHint { margin: 9px 0 0; color: #229586; font-size: 10px; line-height: 1.4; }
+.error { margin: 10px 0 0; color: #b24433; font-size: 11px; }
+.submit, .success button { width: 100%; min-height: 51px; display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 17px; color: #fff; background: #172b26; border: 0; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 800; }
+.submit:disabled { opacity: .55; cursor: wait; }
+.note { margin: 14px 0 0; color: #8a9994; font-size: 10px; text-align: center; }
+.spinner { animation: spin .8s linear infinite; }
+.success { padding: 28px 0 8px; text-align: center; }
+.success > span { width: 58px; height: 58px; display: grid; place-items: center; margin: 0 auto 18px; color: #0e6f62; background: #ccf4eb; border-radius: 50%; }
+.success p { margin: 0 0 8px; color: #1c9c8c; font-size: 10px; font-weight: 850; letter-spacing: .13em; }
+:global(html[data-theme="dark"]) .backdrop { background: rgba(0,0,0,.58); }
+:global(html[data-theme="dark"]) .dialog { color: #f1f2e9; background: #131c19; border-color: #30403a; box-shadow: 0 32px 100px rgba(0,0,0,.55); }
+:global(html[data-theme="dark"]) .close { color: #a7b4ae; background: #24312d; }
+:global(html[data-theme="dark"]) .eyebrow { color: #9cb0ff; }
+:global(html[data-theme="dark"]) .intro,
+:global(html[data-theme="dark"]) .preview small,
+:global(html[data-theme="dark"]) .note { color: #8f9c96; }
+:global(html[data-theme="dark"]) .dialog label { color: #a6b2ac; }
+:global(html[data-theme="dark"]) .inputWrap { color: #9cb0ff; border-color: #596da9; box-shadow: 0 0 0 4px rgba(93,112,209,.1); }
+:global(html[data-theme="dark"]) .inputWrap input,
+:global(html[data-theme="dark"]) .amountWrap input { color: #f1f2e9; }
+:global(html[data-theme="dark"]) .preview,
+:global(html[data-theme="dark"]) .amountWrap { color: #c6d0ca; background: #19241f; border-color: #30403a; }
+:global(html[data-theme="dark"]) .amountChoices button { color: #a8b4ae; background: #1a2521; border-color: #33443e; }
+:global(html[data-theme="dark"]) .amountChoices button.activeAmount { color: #e7f2c8; background: #34432a; border-color: #758d45; }
+:global(html[data-theme="dark"]) .leadHint { color: #a8bdff; }
+:global(html[data-theme="dark"]) .submit { color: #111912; background: #b9d96c; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 520px) { .backdrop { align-items: end; padding: 0; } .dialog { padding: 28px 21px 23px; border-radius: 25px 25px 0 0; } }

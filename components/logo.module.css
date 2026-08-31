@@ -33,6 +33,11 @@
 
 .word span { color: #57c8da; }
 
+:global(body:has(> main.tg-main)) .word { color: #17231f; }
+:global(body:has(> main.tg-main)) .word span { color: #3659d9; }
+:global(html[data-theme="dark"]) :global(body:has(> main.tg-main)) .word { color: #f1f2e9; }
+:global(html[data-theme="dark"]) :global(body:has(> main.tg-main)) .word span { color: #9cb0ff; }
+
 :global(.site-footer) .word { color: #f5fbff; }
 :global(.site-footer) .word span { color: #b4ed68; }
 

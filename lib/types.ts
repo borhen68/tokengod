@@ -67,6 +67,17 @@ export type Viewer = {
 export type ReactionState = Record<string, Partial<Record<ReactionType, boolean>>>;
 export type BattleVoteState = Record<string, string>;
 
+export type WallProduct = {
+  id: string;
+  name: string;
+  url: string;
+  description: string;
+  logoUrl: string | null;
+  builderLabel: string;
+  score: number;
+  paidCents: number;
+};
+
 export type VerificationReceiptPayload = {
   version: 1;
   kind: "tokens" | "revenue";

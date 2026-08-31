@@ -455,17 +455,14 @@ export function SubmitFlow({
 
     setBusy("publish");
     setError("");
-    trackDataFast(launchEligible ? "launch_free_claim_started" : "entry_checkout_started", {
+    trackDataFast("profile_publish_started", {
       site_count: sites.length,
-      entry_cents: bidCents,
-      site_fee_cents: siteFeeCents,
-      total_cents: checkoutTotalCents,
       spend_source: aiResult.verificationMethod,
       identity_visibility: anonymousEntry ? "anonymous" : "public",
       project_outcome: projectOutcome,
     });
     try {
-      const result = await postJson<{ url?: string; listingId?: string }>("/api/checkout/entry", {
+      const result = await postJson<{ listingId?: string }>("/api/listings/free", {
         submissionId: getSubmissionId(),
         anonymous: anonymousEntry,
         xHandle: anonymousEntry ? "" : normalizedXHandle,
@@ -479,21 +476,13 @@ export function SubmitFlow({
         revenueReceipt: revenueResult.receipt,
         projectOutcome,
         founderLesson,
-        bidCents,
-        claimLaunchFree: launchEligible,
       });
       if (result.listingId) {
-        if (launchEligible) {
-          trackDataFast("launch_free_profile_published", {
-            listing_id: result.listingId,
-            remaining_before_claim: launchOffer.remaining,
-          });
-        }
+        trackDataFast("profile_published", { listing_id: result.listingId, entry_kind: "free" });
         router.push(`/listing/${result.listingId}`);
         return;
       }
-      if (!result.url) throw new Error("Stripe checkout could not be opened.");
-      window.location.assign(result.url);
+      throw new Error("The profile could not be published.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Publishing failed.");
       setBusy(null);
@@ -517,18 +506,18 @@ export function SubmitFlow({
               <span><ShieldCheck size={13} /> Credentials never stored</span>
             </div>
           </div>
-          <div className={`submit-modal-ticket ${launchEligible ? "is-launch-free" : ""}`} aria-label={launchEligible ? `${launchOffer.remaining} free launch passes left` : "$3 minimum one-time entry"}>
-            <span>{launchEligible ? "FOUNDING FIVE" : "ONE-TIME ENTRY"}</span>
-            <strong>{launchEligible ? "$0" : "$3+"}</strong>
-            <small>{launchEligible ? `${launchOffer.remaining} passes left` : "No subscription"}</small>
+          <div className="submit-modal-ticket is-launch-free" aria-label="Free public profile">
+            <span>OPEN FIELD</span>
+            <strong>FREE</strong>
+            <small>Always open</small>
           </div>
         </div>
       ) : (
         <div className="submit-intro">
           <div>
-            <span className="eyebrow">{preferLaunchFree && launchOffer.remaining > 0 ? `FOUNDING FIVE · ${launchOffer.remaining} FREE LEFT` : "$3 ONE-TIME ENTRY"}</span>
+            <span className="eyebrow">FREE PUBLIC PROFILE</span>
             <h1>Show the spend.<br /><span>Prove the return.</span></h1>
-            <p>One founder profile, up to three products, and a shareable card. Your bid ranks Top Funded; reactions rank Respect and Roast.</p>
+            <p>One founder profile, up to twenty products, and a shareable proof card. Your signal is ranked by evidence, efficiency, and public reactions.</p>
           </div>
           <div className="privacy-seal">
             <ShieldCheck size={25} />
@@ -541,12 +530,6 @@ export function SubmitFlow({
         <div className="setup-notice" role="status">
           <strong>Verification setup needed</strong>
           Add the Turso and receipt-secret environment variables from <code>.env.example</code> to enable verification.
-        </div>
-      ) : null}
-      {!paymentsReady && !launchEligible ? (
-        <div className="setup-notice" role="status">
-          <strong>Checkout setup needed</strong>
-          Add the TokenGod Stripe secret key from <code>.env.example</code> to accept entry and extra-site payments.
         </div>
       ) : null}
       {error ? <div className="submit-error" role="alert">{error}</div> : null}
@@ -902,7 +885,7 @@ export function SubmitFlow({
           <section className={`submit-card ${sitesAreReady ? "has-content" : ""} ${variant === "modal" ? activeStep === 4 ? "is-active-step" : "is-hidden-step" : ""}`}>
             <header>
               <StepState done={sitesAreReady} number="4" />
-              <div><span>OUTCOME + BUILDS</span><h2>{preferLaunchFree && launchOffer.remaining > 0 ? "Add up to 3 sites with your free pass" : "Add up to 3 sites for the same $3"}</h2></div>
+              <div><span>OUTCOME + BUILDS</span><h2>Add up to 20 sites to your signal</h2></div>
             </header>
             <form className="step-body product-form" onSubmit={publish}>
               <fieldset className="project-outcome-fieldset">
@@ -945,20 +928,18 @@ export function SubmitFlow({
 
               <div className="site-bundle-note">
                 <Layers3 size={16} />
-                <span><strong>{Math.min(sites.length, 3)}/3 included{extraSiteCount ? ` · ${extraSiteCount} paid extra` : ""}</strong> · {preferLaunchFree && launchOffer.remaining > 0 ? "A launch pass covers up to 3 sites. Site 4 switches this submission to the paid entry." : "Site 4 and beyond add $1 each."} Every site shares one founder score.</span>
+                <span><strong>{sites.length}/20 included</strong> · Every site shares one founder score and one public signal.</span>
               </div>
 
               <div className="product-sites">
                 {sites.map((site, index) => (
-                  <div className={`product-site-card ${index >= 3 ? "is-paid-extra" : ""}`} key={site.id}>
+                  <div className="product-site-card" key={site.id}>
                     <header>
                       <div>
                         <span>SITE {String(index + 1).padStart(2, "0")}</span>
                         <strong>{index === 0 ? "Primary build" : site.name || "Another build"}</strong>
                       </div>
-                      <span className={`site-cost-badge ${index >= 3 ? "is-paid" : ""}`}>
-                        {index < 3 ? "Included" : "+$1"}
-                      </span>
+                      <span className="site-cost-badge">Included</span>
                       {index > 0 ? (
                         <button type="button" className="remove-site-button" onClick={() => removeSite(site.id)} aria-label={`Remove site ${index + 1}`}>
                           <Trash2 size={14} />
@@ -1020,52 +1001,16 @@ export function SubmitFlow({
 
               <button className="add-site-button" type="button" onClick={addSite} disabled={sites.length >= 20}>
                 <Plus size={15} />
-                {sites.length < 3 ? `Add site ${sites.length + 1} · included` : "Add another site · +$1"}
+                Add another site · included
               </button>
 
-              <div className="entry-price-panel">
-                <div className="entry-price-head">
-                  <div><strong>{launchEligible ? "Founding Five launch pass" : "Leaderboard entry"}</strong><small>{launchEligible ? `${launchOffer.remaining} free passes remain at this moment` : "$3 minimum · founder profile + up to 3 products"}</small></div>
-                  <b>{wholeDollar(checkoutTotalCents)}</b>
-                </div>
-                {launchEligible ? (
-                  <div className="entry-price-rule is-launch-credit">
-                    <span>Base founder profile</span>
-                    <strong><s>$3</s> FREE</strong>
-                  </div>
-                ) : (
-                  <div className="entry-price-rule">
-                    <span>Base entry</span>
-                    <strong>$3</strong>
-                  </div>
-                )}
-                {!launchEligible && bidCents > 300 ? (
-                  <div className="entry-price-rule">
-                    <span>Top Funded backing</span>
-                    <strong>+{wholeDollar(bidCents - 300)}</strong>
-                  </div>
-                ) : null}
-                {extraSiteCount ? (
-                  <div className="entry-price-rule">
-                    <span>{extraSiteCount} extra product{extraSiteCount === 1 ? "" : "s"} × $1</span>
-                    <strong>+{wholeDollar(siteFeeCents)}</strong>
-                  </div>
-                ) : null}
-                <div className="entry-price-total">
-                  <span>{launchEligible ? "Due today" : "Total due today"}</span>
-                  <b>{wholeDollar(checkoutTotalCents)}</b>
-                </div>
-                <p><ShieldCheck size={13} /> {launchEligible ? "Your profile starts with $0 paid backing. Proof, weekly votes, and reactions earn every non-paid rank." : "Paid backing sets Top Funded rank only. It never buys Respect, Roast, or efficiency standing."}</p>
-              </div>
-
-              <button className="button button-primary publish-button" type="submit" disabled={!identityIsReady || !sitesAreReady || !revenueResult || !aiResult || !configurationReady || (!launchEligible && !paymentsReady) || busy !== null}>
-                {busy === "publish" ? <><LoaderCircle className="spinner" size={17} /> {launchEligible ? "Claiming launch pass" : "Opening secure checkout"}</> : <>{launchEligible ? "Publish free" : `Pay ${wholeDollar(checkoutTotalCents)} & publish`} {sites.length} site{sites.length === 1 ? "" : "s"} <ArrowRight size={17} /></>}
+              <button className="button button-primary publish-button" type="submit" disabled={!identityIsReady || !sitesAreReady || !revenueResult || !aiResult || !configurationReady || busy !== null}>
+                {busy === "publish" ? <><LoaderCircle className="spinner" size={17} /> Publishing your signal</> : <>Publish free {sites.length} site{sites.length === 1 ? "" : "s"} <ArrowRight size={17} /></>}
               </button>
               <p className="publish-note">
                 <ShieldCheck size={14} />
                 <span>
-                  {launchEligible ? "No card required. " : "One-time Stripe payment. Paid entries and extras are non-refundable. "}
-                  By publishing, you agree to the <Link href="/terms" target="_blank" rel="noopener noreferrer">Terms &amp; Privacy</Link>.
+                  No card, subscription, or payment required. By publishing, you agree to the <Link href="/terms" target="_blank" rel="noopener noreferrer">Terms &amp; Privacy</Link>.
                 </span>
               </p>
             </form>

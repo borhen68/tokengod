@@ -1,56 +1,31 @@
-import { BadgePlus, CircleHelp, LogOut, Trophy } from "lucide-react";
+import { LogOut } from "lucide-react";
 import Link from "next/link";
 
-import { EntryModal } from "@/components/entry-modal";
 import { Logo } from "@/components/logo";
-import { isApplicationConfigured, isPaymentConfigured } from "@/lib/config";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { getViewer } from "@/lib/data";
-import { getLaunchOffer } from "@/lib/launch-offer";
 
 function InitialAvatar({ name }: { name: string }) {
-  return (
-    <span className="mini-avatar" aria-hidden="true">
-      {name.slice(0, 1).toUpperCase()}
-    </span>
-  );
+  return <span className="tg-mini-avatar" aria-hidden="true">{name.slice(0, 1).toUpperCase()}</span>;
 }
 
 export async function Header() {
-  const [viewer, launchOffer] = await Promise.all([getViewer(), getLaunchOffer()]);
+  const viewer = await getViewer();
 
   return (
-    <header className="site-header">
-      <div className="header-inner">
+    <header className="tg-header">
+      <div className="tg-header-inner">
         <Logo />
-        <nav className="desktop-nav" aria-label="Main navigation">
-          <Link href="/#leaderboard"><Trophy className="nav-icon" size={22} aria-hidden="true" /><span>Leaderboard</span></Link>
-          <Link href="/#how-it-works"><CircleHelp className="nav-icon" size={22} aria-hidden="true" /><span>How it works</span></Link>
-          <Link href="/?enter=1"><BadgePlus className="nav-icon" size={22} aria-hidden="true" /><span>Get ranked</span></Link>
-        </nav>
-        <div className="header-actions">
+        <nav className="tg-nav" aria-label="Main navigation"><Link href="/#live-map"><span className="tg-live-dot" /> {"products hanging out"}</Link></nav>
+        <div className="tg-header-actions">
           {viewer ? (
             <>
-              <span className="viewer-chip">
-                <InitialAvatar name={viewer.name} />
-                <span>@{viewer.xHandle}</span>
-              </span>
-              <form action="/auth/signout" method="post">
-                <button className="icon-button" type="submit" aria-label="Sign out">
-                  <LogOut size={17} />
-                </button>
-              </form>
+              <span className="tg-viewer-chip"><InitialAvatar name={viewer.name} /><span>@{viewer.xHandle}</span></span>
+              <form action="/auth/signout" method="post"><button className="tg-icon-button" type="submit" aria-label="Sign out"><LogOut size={15} /></button></form>
             </>
           ) : null}
-          <EntryModal
-            viewer={viewer}
-            configurationReady={isApplicationConfigured()}
-            paymentsReady={isPaymentConfigured()}
-            launchOffer={launchOffer}
-            className="button button-primary header-cta"
-          >
-            Enter for $3
-            <span aria-hidden="true">↗</span>
-          </EntryModal>
+          <ThemeToggle />
+          <Link className="tg-header-cta" href="/?join=1">Add your build <span aria-hidden="true">↗</span></Link>
         </div>
       </div>
     </header>

@@ -1,0 +1,7 @@
+.toggle { width: 36px; height: 36px; display: grid; place-items: center; color: #344b45; background: #edf2ef; border: 1px solid #d8e1dd; border-radius: 50%; cursor: pointer; transition: transform .18s ease, background .18s ease; }
+.toggle:hover { transform: translateY(-1px); background: #e4ebe7; }
+.sun { display: none; }
+:global(html[data-theme="dark"]) .toggle { color: #d9e4dc; background: #17211e; border-color: #2a3934; }
+:global(html[data-theme="dark"]) .toggle:hover { background: #202d29; }
+:global(html[data-theme="dark"]) .moon { display: none; }
+:global(html[data-theme="dark"]) .sun { display: block; }

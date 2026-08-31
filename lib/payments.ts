@@ -1,5 +1,6 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
 import type Stripe from "stripe";
 
 import { ApiError } from "@/lib/api";
@@ -8,7 +9,7 @@ import { materializeEntry } from "@/lib/entry-materializer";
 import type { ModelProvider } from "@/lib/types";
 
 type PaymentResult = {
-  kind: "entry" | "boost";
+  kind: "entry" | "boost" | "wall_entry";
   listingId: string;
 };
 
@@ -37,7 +38,7 @@ export async function finalizeCheckoutSession(
     throw new ApiError("Unknown TokenGod payment.", 400);
   }
   const kind = session.metadata?.kind;
-  if (kind !== "entry" && kind !== "boost") {
+  if (kind !== "entry" && kind !== "boost" && kind !== "wall_entry") {
     throw new ApiError("Unknown TokenGod payment.", 400);
   }
 
@@ -46,6 +47,31 @@ export async function finalizeCheckoutSession(
   const now = Date.now();
 
   try {
+    if (kind === "wall_entry") {
+      const pendingId = session.metadata?.pending_wall_product_id;
+      if (!pendingId) throw new ApiError("Missing wall payment metadata.", 400);
+      const result = await tx.execute({ sql: "select * from pending_wall_products where id = ? limit 1", args: [pendingId] });
+      const pending = result.rows[0];
+      if (!pending) throw new ApiError("That bubble checkout could not be found.", 404);
+      if (String(pending.status) === "completed" && pending.wall_product_id) {
+        await tx.rollback();
+        return { kind, listingId: String(pending.wall_product_id) };
+      }
+      if (String(pending.stripe_checkout_session_id) !== session.id || Number(pending.paid_cents) !== session.amount_total) {
+        throw new ApiError("Checkout does not match this bubble.", 400);
+      }
+      const wallProductId = randomUUID();
+      await tx.execute({
+        sql: `insert into wall_products
+          (id, product_name, product_url, product_description, product_logo_url, builder_label, visit_count, paid_cents, stripe_checkout_session_id, created_at, updated_at)
+          values (?, ?, ?, ?, ?, 'independent builder', 0, ?, ?, ?, ?)`,
+        args: [wallProductId, String(pending.product_name), String(pending.product_url), String(pending.product_description || ""), pending.product_logo_url ? String(pending.product_logo_url) : null, Number(pending.paid_cents), session.id, now, now],
+      });
+      await tx.execute({ sql: "update pending_wall_products set status = 'completed', wall_product_id = ? where id = ?", args: [wallProductId, pendingId] });
+      await tx.commit();
+      return { kind, listingId: wallProductId };
+    }
+
     if (kind === "entry") {
       const pendingId = session.metadata?.pending_submission_id;
       if (!pendingId) throw new ApiError("Missing submission payment metadata.", 400);

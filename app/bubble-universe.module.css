@@ -1,0 +1,17 @@
+.page {
+  min-height: 100vh;
+  overflow: hidden;
+  color: #17241f;
+  background:
+    radial-gradient(circle at 9% 14%, rgba(52, 198, 215, .13), transparent 28%),
+    radial-gradient(circle at 94% 20%, rgba(116, 105, 217, .12), transparent 27%),
+    #f5f8f4;
+}
+
+:global(html[data-theme="dark"]) .page {
+  color: #f1f2e9;
+  background:
+    radial-gradient(circle at 10% 13%, rgba(78, 98, 190, .16), transparent 29%),
+    radial-gradient(circle at 92% 19%, rgba(132, 161, 65, .1), transparent 27%),
+    #0b1210;
+}

@@ -4,8 +4,6 @@ import Script from "next/script";
 
 import { Header } from "@/components/header";
 import { Logo } from "@/components/logo";
-import { TrustNotice } from "@/components/trust-notice";
-
 import "./globals.css";
 import "./professional.css";
 import "./network.css";
@@ -18,21 +16,21 @@ const dataFastDomain = process.env.NEXT_PUBLIC_DATAFAST_DOMAIN || "tokengod.lol"
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "TokenGod — AI token efficiency leaderboard",
+    default: "TokenGod — the living map of AI-built products",
     template: "%s · TokenGod",
   },
   description:
-    "See what founders spent on AI, what their products made, and how the public ranks the result.",
+    "Explore the builders, products, and proof signals shaping the next wave of AI.",
   openGraph: {
-    title: "TokenGod — AI spend. Real revenue. Public ranking.",
-    description: "Founder results with visible proof labels, ranked by public reactions.",
+    title: "TokenGod — find the signal in the noise.",
+    description: "A living map of AI-built products, founder experiments, and public proof.",
     type: "website",
     siteName: "TokenGod",
   },
   twitter: {
     card: "summary_large_image",
-    title: "TokenGod — AI spend. Real revenue. Public ranking.",
-    description: "Founder results with visible proof labels, ranked by public reactions.",
+    title: "TokenGod — find the signal in the noise.",
+    description: "A living map of AI-built products, founder experiments, and public proof.",
   },
   other: {
     "ory-verify": "orynth-ac9426a953944d7488a03bf29042e5af",
@@ -43,6 +41,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <head>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`try{var t=localStorage.getItem('tokengod-theme');var d=t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.dataset.theme=d?'dark':'light';document.documentElement.style.colorScheme=d?'dark':'light'}catch(e){}`}
+        </Script>
         <Script id="datafast-queue" strategy="beforeInteractive">
           {`window.datafast = window.datafast || function() {
             window.datafast.q = window.datafast.q || [];
@@ -51,32 +52,28 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Script>
       </head>
       <body>
-        <div className="ambient-bubble bubble-bg-one" />
-        <div className="ambient-bubble bubble-bg-two" />
         <Header />
         {children}
-        <TrustNotice />
-        <footer className="site-footer">
-          <div className="footer-main">
+        <footer className="tg-footer">
+          <div className="tg-footer-main">
             <div>
               <Logo />
-              <p>See what founders spent on AI and what their products made back.</p>
+              <p>A living wall of products people are building.</p>
             </div>
-            <div className="footer-links">
+            <div className="tg-footer-links">
               <span>Explore</span>
-              <Link href="/#leaderboard">Leaderboard</Link>
-              <Link href="/#how-it-works">Verification</Link>
-              <Link href="/?enter=1">Create a profile</Link>
+              <Link href="/#live-map">Live field</Link>
+              <Link href="/?join=1">Add your build</Link>
               <Link href="/terms">Terms &amp; privacy</Link>
             </div>
-            <div className="footer-manifesto">
+            <div className="tg-footer-manifesto">
               <span>THE RULE</span>
-              <p>Paid backing ranks Top Funded only. Proof, efficiency, and public votes control every evidence board.</p>
+              <p>Every bubble is a product. Joining is free.</p>
             </div>
           </div>
-          <div className="footer-bottom">
+          <div className="tg-footer-bottom">
             <span>© 2026 TokenGod</span>
-            <span className="footer-live"><i /> The tank is open</span>
+            <span><i /> The field is open</span>
           </div>
         </footer>
       </body>

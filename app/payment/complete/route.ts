@@ -14,6 +14,11 @@ export async function GET(request: Request) {
   try {
     const session = await getPlatformStripe().checkout.sessions.retrieve(sessionId);
     const result = await finalizeCheckoutSession(session);
+    if (result.kind === "wall_entry") {
+      const destination = new URL("/", siteUrl);
+      destination.searchParams.set("joined", "1");
+      return NextResponse.redirect(destination);
+    }
     const destination = new URL(`/listing/${result.listingId}`, siteUrl);
     destination.searchParams.set("paid", "1");
     destination.searchParams.set("session_id", sessionId);
