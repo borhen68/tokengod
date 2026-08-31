@@ -31,6 +31,12 @@ export function JoinWallModal({ currentLeaderCents, className = "tg-header-cta",
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
+  useEffect(() => {
+    const openJoin = () => setOpen(true);
+    window.addEventListener("tokengod:open-join", openJoin);
+    return () => window.removeEventListener("tokengod:open-join", openJoin);
+  }, []);
+
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);

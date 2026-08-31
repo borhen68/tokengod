@@ -44,7 +44,7 @@ export function PublicTrafficBadge() {
 
   return (
     <a
-      className="public-traffic-badge"
+      className="public-traffic-badge tg-public-traffic"
       href={PUBLIC_STATS_URL}
       target="_blank"
       rel="noreferrer"
@@ -57,13 +57,12 @@ export function PublicTrafficBadge() {
         <>
           <strong>{number.format(online)} online</strong>
           <small>·</small>
-          <b>{number.format(totalVisitors)} visitors since launch</b>
-          <small>·</small>
+          <b>{number.format(totalVisitors)} visitors</b>
         </>
       ) : (
-        <b>Live traffic is public</b>
+        <b>Live analytics</b>
       )}
-      <em>see stats↗</em>
+      <em>view live analytics ↗</em>
     </a>
   );
 }

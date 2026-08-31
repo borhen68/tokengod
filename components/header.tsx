@@ -1,7 +1,8 @@
 import { LogOut } from "lucide-react";
-import Link from "next/link";
 
 import { Logo } from "@/components/logo";
+import { OpenJoinButton } from "@/components/open-join-button";
+import { PublicTrafficBadge } from "@/components/public-traffic-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getViewer } from "@/lib/data";
 
@@ -16,7 +17,7 @@ export async function Header() {
     <header className="tg-header">
       <div className="tg-header-inner">
         <Logo />
-        <nav className="tg-nav" aria-label="Main navigation"><Link href="/#live-map"><span className="tg-live-dot" /> {"products hanging out"}</Link></nav>
+        <nav className="tg-nav" aria-label="Live analytics"><PublicTrafficBadge /></nav>
         <div className="tg-header-actions">
           {viewer ? (
             <>
@@ -25,7 +26,7 @@ export async function Header() {
             </>
           ) : null}
           <ThemeToggle />
-          <Link className="tg-header-cta" href="/?join=1">Add your build <span aria-hidden="true">↗</span></Link>
+          <OpenJoinButton />
         </div>
       </div>
     </header>
