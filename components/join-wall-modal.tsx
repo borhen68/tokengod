@@ -4,6 +4,7 @@ import { ArrowUpRight, Check, Globe2, LoaderCircle, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 
+import { trackDataFast } from "@/lib/datafast";
 import styles from "./join-wall-modal.module.css";
 
 type Preview = { title: string; description: string; iconUrl: string | null; resolvedUrl: string };
@@ -11,6 +12,11 @@ type Preview = { title: string; description: string; iconUrl: string | null; res
 function normalizeUrl(value: string) {
   const trimmed = value.trim();
   return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+function hostname(value: string) {
+  try { return new URL(value).hostname.replace(/^www\./, ""); }
+  catch { return value.slice(0, 255); }
 }
 
 export function JoinWallModal({ currentLeaderCents, className = "tg-header-cta", label = "Add your build" }: { currentLeaderCents: number; className?: string; label?: string }) {
@@ -53,6 +59,9 @@ export function JoinWallModal({ currentLeaderCents, className = "tg-header-cta",
         if (!previewResponse.ok) throw new Error(nextPreview.error || "We could not read that website.");
         setPreview(nextPreview);
         setUrl(nextPreview.resolvedUrl);
+        trackDataFast("preview_product", {
+          product_domain: hostname(nextPreview.resolvedUrl),
+        });
         setBusy(false);
         return;
       }
@@ -72,6 +81,11 @@ export function JoinWallModal({ currentLeaderCents, className = "tg-header-cta",
       if (!response.ok) throw new Error(result.error || "Could not add this product.");
       const checkout = result as { error?: string; url?: string };
       if (!checkout.url) throw new Error("Checkout could not be opened.");
+      trackDataFast("initiate_checkout", {
+        amount: amountDollars,
+        currency: "USD",
+        product_domain: hostname(preview.resolvedUrl),
+      });
       window.location.assign(checkout.url);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Something went wrong.");
@@ -87,7 +101,13 @@ export function JoinWallModal({ currentLeaderCents, className = "tg-header-cta",
 
   return (
     <>
-      <button className={className} type="button" onClick={() => setOpen(true)}>
+      <button
+        className={className}
+        type="button"
+        onClick={() => setOpen(true)}
+        data-fast-goal="open_join_modal"
+        data-fast-goal-source="hero"
+      >
         {label} <ArrowUpRight size={14} />
       </button>
       {open ? (

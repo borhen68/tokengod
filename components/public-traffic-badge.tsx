@@ -48,6 +48,8 @@ export function PublicTrafficBadge() {
       href={PUBLIC_STATS_URL}
       target="_blank"
       rel="noreferrer"
+      data-fast-goal="view_public_analytics"
+      data-fast-goal-source="header"
       aria-label={hasCounts
         ? `${number.format(online)} online and ${number.format(totalVisitors)} visitors since launch. Open public analytics.`
         : "Open TokenGod public live analytics"}

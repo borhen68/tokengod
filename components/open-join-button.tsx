@@ -14,5 +14,15 @@ export function OpenJoinButton() {
     window.dispatchEvent(new Event("tokengod:open-join"));
   }
 
-  return <button className="tg-header-cta" type="button" onClick={openJoin}>Add your build <span aria-hidden="true">↗</span></button>;
+  return (
+    <button
+      className="tg-header-cta"
+      type="button"
+      onClick={openJoin}
+      data-fast-goal="open_join_modal"
+      data-fast-goal-source="header"
+    >
+      Add your build <span aria-hidden="true">↗</span>
+    </button>
+  );
 }

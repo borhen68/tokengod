@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerE
 
 import type { WallProduct } from "@/lib/types";
 import { JoinWallModal } from "@/components/join-wall-modal";
+import { trackDataFast } from "@/lib/datafast";
 import styles from "./bubble-universe.module.css";
 
 type PhysicsNode = {
@@ -191,7 +192,13 @@ export function BubbleUniverse({ products }: { products: WallProduct[] }) {
   }
 
   function visit(product: WallProduct) {
-    if (product.url !== "#") window.open(product.url, "_blank", "noopener,noreferrer");
+    if (product.url !== "#") {
+      trackDataFast("product_visit_clicked", {
+        product_domain: productDomain(product.url),
+        product_name: product.name,
+      });
+      window.open(product.url, "_blank", "noopener,noreferrer");
+    }
   }
 
   return (

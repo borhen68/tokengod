@@ -63,7 +63,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <div className="tg-footer-links">
               <span>Explore</span>
               <Link href="/#live-map">Live field</Link>
-              <Link href="/?join=1">Add your build</Link>
+              <Link
+                href="/?join=1"
+                data-fast-goal="open_join_modal"
+                data-fast-goal-source="footer"
+              >
+                Add your build
+              </Link>
               <Link href="/terms">Terms &amp; privacy</Link>
             </div>
             <div className="tg-footer-manifesto">
